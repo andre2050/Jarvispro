@@ -1,0 +1,24 @@
+# Configuração das ferramentas de desenvolvimento do NEXUS (não afeta quem só usa o programa).
+#   python -m pytest        → roda os testes (pasta tests/)
+#   ruff check .            → procura erros de verdade: nome que não existe, sintaxe quebrada, etc.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+extend-exclude = ["_internal", "build", "dist", "updates", "backups", "uploads"]
+
+[tool.ruff.lint]
+# F = erros de verdade (nome indefinido, import quebrado…); E9 = erro de sintaxe.
+select = ["F", "E9"]
+# Importações e variáveis soltas que já vinham do projeto antigo: não quebram nada, limpar aos poucos.
+ignore = ["F401", "F841", "F541"]
+
+[tool.ruff.lint.per-file-ignores]
+# A janela e o assistente usam "from ._qt import *" de propósito (um só lugar importa o Qt inteiro).
+"ui/**" = ["F403", "F405", "F811"]
+"assistant/**" = ["F403", "F405", "F811"]
+"main.py" = ["F403", "F405", "F811"]
