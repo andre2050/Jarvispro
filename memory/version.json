@@ -1,8 +1,13 @@
 {
-  "version": "2.4.3",
+  "version": "2.4.4",
   "codename": "Nexus Pro",
   "released": "2026-10-23",
   "changelog": [
+    {
+      "version": "2.4.4",
+      "date": "2026-10-23",
+      "notes": "NEXUS PRO 2.4.4 — painel VISÃO COMPUTACIONAL. O painel 👁 VISÃO da barra rápida virou 🤖 VISÃO COMPUTACIONAL: redes neurais no seu PC reconhecem objetos na câmera e na tela (80 tipos: pessoa, celular, garrafa, carro, cachorro…) e dizem quem é pelos rostos cadastrados, com uma caixa e o nome desenhados em cada um na imagem. Se as redes neurais ainda não estiverem instaladas, o botão ⬇ INSTALAR aparece no próprio painel (uma vez, ~60 MB). Novo também: ANALISAR A CÂMERA. QR na tela e na câmera, contar rostos, analisar a tela, vigia de movimento e ler/descrever continuam no mesmo painel. Tudo sem internet."
+    },
     {
       "version": "2.4.3",
       "date": "2026-10-23",

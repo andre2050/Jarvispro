@@ -12,7 +12,7 @@ COMANDOS = {
     "code_helper": ("Ajudante de código", "Escreve, edita, explica e roda arquivos de código.", "Cria um script que renomeia minhas fotos"),
     "computer_control": ("Controle do computador", "Digita, clica, usa atalhos, rola a tela e tira prints.", "Clica no botão Enviar"),
     "computer_settings": ("Ajustes do computador", "Volume, brilho, janelas, modo escuro, Wi-Fi, fechar apps.", "Aumenta o volume para 60%"),
-    "computer_vision": ("Visão local", "QR code, contar rostos e vigiar movimento, sem internet.", "Lê o QR code da minha tela"),
+    "computer_vision": ("Visão computacional", "QR code, contar rostos, analisar a tela e a câmera e vigiar movimento, sem internet.", "Lê o QR code da minha tela"),
     "conversation_threads": ("Assuntos em aberto", "Lembra do que você estava fazendo entre uma conversa e outra.", "Onde paramos ontem?"),
     "daily_planner": ("Planejar o dia", "Monta um plano a partir das suas notas, memória e hábitos.", "Planeja minha tarde"),
     "desktop_control": ("Área de trabalho", "Papel de parede e organizar os arquivos soltos em pastas por tipo (e desfazer: “desfaz a organização”).", "Organiza a área de trabalho"),

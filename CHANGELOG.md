@@ -2,6 +2,21 @@
 
 O histórico completo das versões anteriores fica em `memory/version.json` (é o que o botão ⬆ ATUALIZAR mostra).
 
+## 2.4.4 — 23/10/2026
+
+### Novo que você pediu
+* **Painel 🤖 VISÃO COMPUTACIONAL** no lugar do painel 👁 VISÃO (`ui/overlays/tools.py`, `VisionOverlay`):
+  * **Redes neurais** (`core/visao_ia.py`): 🎯 OBJETOS NA CÂMERA e 🎯 OBJETOS NA TELA (YOLOX, 80 classes) e 🧑 QUEM É?
+    (YuNet + SFace, rostos cadastrados por voz), com caixa e nome desenhados na imagem do painel (sem acento, que o
+    `putText` do OpenCV não desenha). Linha de situação dos modelos e botão ⬇ INSTALAR quando faltam.
+  * 📊 ANALISAR A CÂMERA (antes só a tela).
+  * Continuam: QR na tela e na câmera, contar rostos, analisar a tela, vigia de movimento, ler o texto e descrever.
+* Barra rápida: o botão "Visão" virou **🤖 Visão computacional** (`ui/quickbar.py`); na lista de comandos,
+  `computer_vision` aparece como "Visão computacional" (`ui/comandos_pt.py`).
+
+### Outras correções
+* Testes novos em `tests/test_painel_visao.py`.
+
 ## 2.4.3 — 23/10/2026
 
 ### Correções que você pediu

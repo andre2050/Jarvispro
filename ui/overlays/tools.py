@@ -12,11 +12,13 @@ from .._base import C, FONT_MAIN  # noqa: F401
 from ..overlays.base import _HudOverlay  # noqa: F401
 
 class VisionOverlay(_HudOverlay):
-    """Painel 👁 VISÃO (1.4.2) — tudo roda no próprio PC, sem internet.
+    """Painel 🤖 VISÃO COMPUTACIONAL (2.4.4; antes 👁 VISÃO, 1.4.2) — tudo no PC, sem internet.
 
-    OpenCV (actions/computer_vision.py): QR na tela e na câmera, contar rostos,
-    analisar a tela e a vigia de movimento. Visão local (core/visao_local.py):
-    ler o texto e descrever a tela.
+    Redes neurais (core/visao_ia.py, 2.4.4): objetos na câmera e na tela (YOLOX) e
+    quem é (rostos com YuNet+SFace), com as caixas desenhadas na imagem; se os modelos
+    faltam, o próprio painel instala. OpenCV (actions/computer_vision.py): QR na tela e
+    na câmera, contar rostos, analisar a tela e a câmera e a vigia de movimento. Visão
+    local (core/visao_local.py): ler o texto e descrever a tela.
 
     Na 1.4.2 cada botão roda numa thread (a janela não trava mais enquanto a
     câmera abre), o NEXUS sai da frente por um instante para fotografar a tela
@@ -26,6 +28,7 @@ class VisionOverlay(_HudOverlay):
     _OW = 420
     _pronto_sig = pyqtSignal(object)      # resultado de uma ação (dict)
     _sit_sig = pyqtSignal(str)
+    _ia_sig = pyqtSignal(str, bool)       # (situação das redes neurais, falta instalar?)
 
     _BTN_CSS = """
         QPushButton {{ background: {p2}; color: {t};
@@ -42,6 +45,7 @@ class VisionOverlay(_HudOverlay):
         self._res_link = ""
         self._pronto_sig.connect(self._pronto)
         self._sit_sig.connect(lambda t: self._local_line.setText(t))
+        self._ia_sig.connect(self._mostrar_situacao_ia)
         self.setObjectName("VisionOverlay")
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setStyleSheet(f"""
@@ -83,7 +87,9 @@ class VisionOverlay(_HudOverlay):
         lay.setSpacing(7)
 
         head = QHBoxLayout()
-        head.addWidget(_lbl("👁  VISÃO", 12, True))
+        titulo = _lbl("🤖  VISÃO COMPUTACIONAL", 12, True)
+        titulo.setWordWrap(False)
+        head.addWidget(titulo)
         head.addStretch()
         close_btn = QPushButton("✕")
         close_btn.setFixedSize(24, 24)
@@ -94,23 +100,48 @@ class VisionOverlay(_HudOverlay):
         close_btn.clicked.connect(self._close_panel)
         head.addWidget(close_btn)
         lay.addLayout(head)
-        lay.addWidget(_lbl("Tudo aqui roda no seu PC, sem internet. Para olhar a tela, o NEXUS "
+        lay.addWidget(_lbl("Redes neurais e OpenCV no seu PC, sem internet. Para olhar a tela, o NEXUS "
                            "sai da frente por um instante.", 8, color=C.TEXT_DIM))
 
         self._btns: list[QPushButton] = []
+
+        # redes neurais: objetos e rostos (2.4.4)
+        lay.addWidget(_lbl("🧠  REDES NEURAIS", 9, True))
+        irow = QHBoxLayout()
+        irow.setSpacing(5)
+        self._ia_line = _lbl("Verificando os modelos…", 8, color=C.TEXT_DIM)
+        irow.addWidget(self._ia_line, 1)
+        self._b_instalar = _btn("⬇  INSTALAR", self._instalar_ia,
+                                "Baixa os modelos de objetos e rostos (uma vez, ~60 MB)", altura=26)
+        self._b_instalar.hide()
+        irow.addWidget(self._b_instalar)
+        lay.addLayout(irow)
+
         grid = QGridLayout()
         grid.setSpacing(5)
+        ia_specs = [
+            ("🎯  OBJETOS NA CÂMERA", "objects", "camera", "O que a câmera está vendo, com as caixas desenhadas"),
+            ("🎯  OBJETOS NA TELA", "objects", "tela", "O que aparece na tela (pessoas, carros, animais, objetos…)"),
+            ("🧑  QUEM É?", "recognize", "camera",
+             "Reconhece os rostos cadastrados (por voz: “cadastra o rosto da Ana”)"),
+        ]
+        for i, (txt, acao, origem, tip) in enumerate(ia_specs):
+            b = _btn(txt, lambda _=False, a=acao, o=origem: self._run_ia(a, o), tip)
+            self._btns.append(b)
+            grid.addWidget(b, i // 2, i % 2)
         specs = [
+            ("👤  CONTAR ROSTOS", {"action": "faces", "angle": "camera"},
+             "Conta os rostos que a câmera está vendo"),
             ("📱  QR NA TELA", {"action": "qr", "angle": "screen"},
              "Lê os QR codes que estão na tela (em todos os monitores)"),
             ("📷  QR NA CÂMERA", {"action": "qr", "angle": "camera"},
              "Mostre o QR para a câmera, a uns 20 cm, com boa luz"),
-            ("👤  CONTAR ROSTOS", {"action": "faces", "angle": "camera"},
-             "Conta os rostos que a câmera está vendo"),
             ("📊  ANALISAR A TELA", {"action": "analyze", "angle": "screen"},
              "Brilho, nitidez e as cores principais da tela"),
+            ("📊  ANALISAR A CÂMERA", {"action": "analyze", "angle": "camera"},
+             "Brilho, nitidez e as cores principais da câmera"),
         ]
-        for i, (txt, params, tip) in enumerate(specs):
+        for i, (txt, params, tip) in enumerate(specs, start=len(ia_specs)):
             b = _btn(txt, lambda _=False, p=params: self._run(p), tip)
             self._btns.append(b)
             grid.addWidget(b, i // 2, i % 2)
@@ -189,6 +220,7 @@ class VisionOverlay(_HudOverlay):
         self._timer.start(1000)
         self._refresh_motion()
         threading.Thread(target=self._ver_situacao, daemon=True).start()
+        threading.Thread(target=self._ver_situacao_ia, daemon=True).start()
 
     # ── geral ───────────────────────────────────────────────────────────────
 
@@ -335,6 +367,107 @@ class VisionOverlay(_HudOverlay):
             QDesktopServices.openUrl(QUrl.fromLocalFile(str(_pasta_fotos())))
         except Exception as e:
             self._status.setText(f"Não consegui abrir a pasta das fotos: {e}")
+
+    # ── redes neurais: objetos e rostos (2.4.4) ─────────────────────────────
+
+    def _ver_situacao_ia(self) -> None:
+        try:
+            from core import visao_ia as V
+            s = V.situacao()
+            obj = "pronto" if s["yolox"] else "não instalado"
+            rost = "pronto" if s["yunet"] and s["sface"] else "não instalado"
+            n = len(V.cadastrados()) if s["yunet"] and s["sface"] else 0
+            texto = f"Objetos: {obj}   ·   Rostos: {rost}" + (f" ({n} cadastrado(s))" if n else "")
+            falta = not all(s.values())
+        except Exception as e:
+            texto, falta = f"Redes neurais indisponíveis: {e}", False
+        try:
+            self._ia_sig.emit(texto, falta)
+        except RuntimeError:
+            pass
+
+    def _mostrar_situacao_ia(self, texto: str, falta: bool) -> None:
+        self._ia_line.setText(texto)
+        self._b_instalar.setVisible(falta)
+        self._b_instalar.setEnabled(not self._ocupado)
+        self._ajustar()
+
+    def _instalar_ia(self) -> None:
+        if not self._comecar("Baixando os modelos de objetos e rostos (uma vez só)…"):
+            return
+        self._b_instalar.setEnabled(False)
+
+        def _trabalho():
+            try:
+                from actions.visao_ia import visao_ia
+                r = visao_ia({"action": "install"})
+                msg = ("Modelos instalados — já dá para usar OBJETOS e QUEM É?." if r.startswith("[done]")
+                       else f"Não consegui instalar: {r.removeprefix('[failed] ')}")
+            except Exception as e:
+                msg = f"Não consegui instalar: {e}"
+            self._emitir({"msg": msg})
+            self._ver_situacao_ia()
+
+        threading.Thread(target=_trabalho, daemon=True, name="painel-visao-instalar").start()
+
+    @staticmethod
+    def _rotulo(texto: str) -> str:
+        """O putText do OpenCV não desenha acento: 'avião' → 'aviao'."""
+        import unicodedata
+        t = unicodedata.normalize("NFKD", str(texto))
+        return "".join(c for c in t if not unicodedata.combining(c)).encode("ascii", "replace").decode()
+
+    @classmethod
+    def _marcar(cls, bgr, caixas: list[tuple[tuple, str]]):
+        """Desenha as caixas com o nome em cima (cópia da imagem)."""
+        import cv2
+        out = bgr.copy()
+        esp = max(2, out.shape[1] // 400)
+        for (x, y, w, h), nome in caixas:
+            cv2.rectangle(out, (x, y), (x + w, y + h), (255, 200, 60), esp)
+            rot = cls._rotulo(nome)
+            (tw, th), _ = cv2.getTextSize(rot, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)
+            y0 = max(th + 6, y)
+            cv2.rectangle(out, (x, y0 - th - 6), (x + tw + 6, y0), (255, 200, 60), -1)
+            cv2.putText(out, rot, (x + 3, y0 - 4), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (20, 20, 20), 2)
+        return out
+
+    def _run_ia(self, acao: str, origem: str) -> None:
+        tela = origem == "tela"
+        if not self._comecar("Olhando a tela…" if tela else "Abrindo a câmera (um segundinho para a luz ajustar)…"):
+            return
+        ocultar = self._ocultar_fn() if tela else None
+
+        def _trabalho():
+            d = {"msg": "", "jpeg": b"", "texto": "", "link": ""}
+            try:
+                from actions import computer_vision as CV
+                from core import visao_ia as V
+                precisa = ["yolox"] if acao == "objects" else ["yunet", "sface"]
+                if not all(V.instalado(m) for m in precisa):
+                    qual = "de objetos" if acao == "objects" else "de rostos"
+                    d["msg"] = f"A rede neural {qual} ainda não está instalada — clique em ⬇ INSTALAR."
+                    self._emitir(d)
+                    return
+                bgr = CV.capturar_telas(ocultar=ocultar, forcar=bool(ocultar))[0] if tela else CV.capturar_camera()
+                onde = "tela" if tela else "câmera"
+                if acao == "objects":
+                    objs = V.detectar_objetos(bgr)
+                    caixas = [(o["caixa"], f"{o['classe']} {o['nota']:.0%}") for o in objs]
+                    d["msg"] = f"Na {onde}: {V.resumo_objetos(objs)}."
+                else:
+                    rs = V.reconhecer(bgr)
+                    caixas = [(r["caixa"], r["nome"] or "desconhecido") for r in rs]
+                    nomes = [r["nome"] or "alguém que eu não conheço" for r in rs]
+                    d["msg"] = (f"Na {onde}: {', '.join(nomes)}." if rs else f"Não vi nenhum rosto na {onde}.")
+                    if rs and not V.cadastrados():
+                        d["msg"] += " Ainda não há rostos cadastrados (por voz: “cadastra o rosto da Ana”)."
+                d["jpeg"] = self._jpeg(self._marcar(bgr, caixas))
+            except Exception as e:
+                d["msg"] = f"Não consegui: {e}"
+            self._emitir(d)
+
+        threading.Thread(target=_trabalho, daemon=True, name="painel-visao-ia").start()
 
     # ── ler e descrever (visão local) ───────────────────────────────────────
 
