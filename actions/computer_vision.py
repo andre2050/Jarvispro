@@ -92,6 +92,121 @@ def _candidatos() -> list[tuple[int, int]]:
     return out
 
 
+_NOMES_DE_APP = {"whatsapp": "WhatsApp", "msteams": "Teams", "teams": "Teams", "zoom": "Zoom",
+                 "skype": "Skype", "discord": "Discord", "camerahd": "Camera HD", "windowscamera": "Câmera do Windows",
+                 "chrome": "Google Chrome", "msedge": "Microsoft Edge", "firefox": "Firefox", "obs64": "OBS",
+                 "obs32": "OBS", "telegram": "Telegram", "meet": "Google Meet"}
+
+
+def _nome_amigavel(chave: str) -> str:
+    """'5319275A.WhatsAppDesktop_cv1g…' → 'WhatsApp'; 'C:#…#zoom.exe' → 'Zoom'."""
+    import re
+    if "#" in chave:                                   # app comum: caminho com # no lugar de \
+        base = chave.rsplit("#", 1)[-1]
+        base = re.sub(r"\.exe$", "", base, flags=re.I)
+    else:                                              # app da Store: Editor.NomeDoApp_hash
+        base = chave.split("_", 1)[0].split(".")[-1]
+    chave_n = re.sub(r"[^a-z0-9]", "", base.lower())
+    for k, nome in _NOMES_DE_APP.items():
+        if k in chave_n:
+            return nome
+    return base
+
+
+def quem_usa_camera() -> list[str]:
+    """Programas que estão com a câmera agora (Windows). 2.4.3 — no Windows só um
+    programa usa a webcam por vez; antes o NEXUS dizia só "não achei nenhuma câmera"
+    quando era o WhatsApp que estava com ela. O próprio Windows anota quem está usando
+    (Configurações › Privacidade › Câmera): início marcado e fim zerado = em uso."""
+    if not _no_windows():
+        return []
+    try:
+        import winreg
+    except ImportError:
+        return []
+    raiz = r"Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\webcam"
+    meu_exe = os.path.normcase(os.path.abspath(sys.executable))
+    achados: list[str] = []
+
+    def _varrer(caminho: str) -> None:
+        try:
+            chave = winreg.OpenKey(winreg.HKEY_CURRENT_USER, caminho)
+        except OSError:
+            return
+        with chave:
+            i = 0
+            while True:
+                try:
+                    nome = winreg.EnumKey(chave, i)
+                except OSError:
+                    break
+                i += 1
+                if nome == "NonPackaged":
+                    continue
+                try:
+                    with winreg.OpenKey(chave, nome) as sub:
+                        inicio = winreg.QueryValueEx(sub, "LastUsedTimeStart")[0]
+                        fim = winreg.QueryValueEx(sub, "LastUsedTimeStop")[0]
+                except OSError:
+                    continue
+                if not inicio or fim:
+                    continue
+                if os.path.normcase(nome.replace("#", "\\")) == meu_exe:
+                    continue                           # o próprio NEXUS (a vigia, a prévia)
+                amigavel = _nome_amigavel(nome)
+                if amigavel not in achados:
+                    achados.append(amigavel)
+
+    _varrer(raiz)
+    _varrer(raiz + r"\NonPackaged")
+    return achados
+
+
+# Programas que costumam pegar a câmera: nome do processo → nome para o usuário.
+# Plano B de quem_usa_camera(): nem todo app aparece no registro do Windows (o Camera
+# HD, por exemplo, segura a câmera sem anotar nada lá).
+_PROCESSOS_DE_CAMERA = {"whatsapp": "WhatsApp", "ms-teams": "Teams", "teams": "Teams", "zoom": "Zoom",
+                        "skype": "Skype", "discord": "Discord", "webcamrecorderclient": "Camera HD",
+                        "windowscamera": "Câmera do Windows", "obs64": "OBS", "obs32": "OBS",
+                        "telegram": "Telegram"}
+
+
+def _apps_de_camera_abertos() -> list[str]:
+    try:
+        import psutil
+    except ImportError:
+        return []
+    abertos: list[str] = []
+    for p in psutil.process_iter(["name"]):
+        nome = (p.info.get("name") or "").lower().removesuffix(".exe")
+        amigavel = _PROCESSOS_DE_CAMERA.get(nome)
+        if amigavel and amigavel not in abertos:
+            abertos.append(amigavel)
+    return abertos
+
+
+def _msg_sem_camera() -> str:
+    try:
+        quem = quem_usa_camera()
+    except Exception:
+        quem = []
+    if quem:
+        nomes = " e ".join(quem)
+        return (f"a câmera está sendo usada pelo {nomes} — no Windows só um programa usa a câmera por vez. "
+                f"Feche a câmera (ou a chamada) no {nomes} e peça de novo")
+    try:
+        talvez = _apps_de_camera_abertos()
+    except Exception:
+        talvez = []
+    if talvez:
+        nomes = ", ".join(talvez)
+        return (f"a câmera não abriu — provavelmente outro programa está com ela (no Windows só um usa por vez). "
+                f"Abertos agora e que costumam usar a câmera: {nomes}. Feche a câmera ou a chamada neles "
+                "e peça de novo")
+    return ("não achei nenhuma câmera funcionando (ela está ligada? outro programa, como Teams ou Zoom, "
+            "está usando?)")
+
+
 def abrir_camera(largura: int = 1280, altura: int = 720):
     """Abre a câmera (a escolhida primeiro) e devolve o VideoCapture aberto."""
     if cv2 is None:
@@ -115,8 +230,7 @@ def abrir_camera(largura: int = 1280, altura: int = 720):
                 _cam_boa.update(idx=idx, backend=be)
                 return cap
             cap.release()
-    raise VisaoErro("não achei nenhuma câmera funcionando (ela está ligada? outro programa, "
-                    "como Teams ou Zoom, está usando?)")
+    raise VisaoErro(_msg_sem_camera())
 
 
 def _aquecer(cap, segundos: float = 1.6):

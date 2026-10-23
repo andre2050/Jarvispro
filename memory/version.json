@@ -1,8 +1,13 @@
 {
-  "version": "2.4.2",
+  "version": "2.4.3",
   "codename": "Nexus Pro",
   "released": "2026-10-23",
   "changelog": [
+    {
+      "version": "2.4.3",
+      "date": "2026-10-23",
+      "notes": "NEXUS PRO 2.4.3 — câmera ocupada e agente de código. CÂMERA: no Windows só um programa usa a câmera por vez; quando o WhatsApp, o Teams ou outro app está com ela, o NEXUS agora diz qual é (pelo registro de privacidade do Windows ou pelos apps de câmera abertos) e pede para fechar a câmera ou a chamada nele, em vez de só 'não achei nenhuma câmera'. AGENTE DE CÓDIGO: pedir para ele mudar o próprio NEXUS ('Nexus Pro') dava 'não achei o projeto' minutos depois e o NEXUS mandava registrar o projeto em 'Meus projetos' — que é só uma lista de tarefas, o agente não lê — e tentar de novo, em círculo. Agora ele confere na hora: explica que não altera o próprio código (as correções do NEXUS chegam por atualização) e, quando o projeto não existe, mostra os projetos que existem em Desktop\\NexusProjects. Também não arrisca mais mexer num projeto de nome parecido."
+    },
     {
       "version": "2.4.2",
       "date": "2026-10-23",

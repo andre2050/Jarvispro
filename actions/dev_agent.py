@@ -1008,6 +1008,39 @@ def _em_segundo_plano(rotulo: str, trabalho, speak) -> str:
             "Tell the user in one short sentence that you are on it and will say when it is ready.")
 
 
+_NOMES_DO_PROPRIO_NEXUS = {"voce", "vocemesmo", "voceproprio", "oassistente", "teucodigo", "seucodigo"}
+
+
+def _e_o_proprio_nexus(nome: str) -> bool:
+    """'Nexus Pro', 'o Nexus', 'Jarvis', 'você mesmo'… — o próprio assistente."""
+    n = DP._normalizar(nome)
+    n = n[1:] if n.startswith(("o", "a")) and n[1:].startswith(("nexus", "jarvis")) else n
+    return n.startswith(("nexus", "jarvis", "orion")) or n in _NOMES_DO_PROPRIO_NEXUS
+
+
+def _conferir_projeto(project_name: str) -> str | None:
+    """2.4.3 — confere ANTES de ir para o segundo plano. Antes o 'não achei' só chegava
+    minutos depois, e o Gemini mandava registrar o projeto em 'Meus projetos' (outra
+    função, que o agente não lê) e tentar de novo, em círculo. Devolve a mensagem de
+    falha, ou None quando o projeto existe."""
+    raiz = _projects_root()
+    nomes = [i["nome"] for i in DP.listar_projetos(raiz)]
+    exato = DP._normalizar(project_name) in {DP._normalizar(n) for n in nomes}
+    if project_name and _e_o_proprio_nexus(project_name) and not exato:
+        return ("[failed] The development agent does not change the NEXUS itself (its own code) — it only "
+                f"changes projects it created in {raiz}. The 'my projects' list (projetos) is a separate "
+                "to-do list: registering a project there does not make it editable here, so do not suggest it. "
+                "Fixes to the NEXUS arrive as updates: offer to check for updates (system_update). Tell the user "
+                "this in one or two short sentences.")
+    if DP.achar_projeto(raiz, project_name) is None:
+        lista = ", ".join(nomes[:8]) if nomes else "none yet"
+        return (f"[failed] There is no project called '{project_name}' in {raiz} (projects made by the "
+                f"development agent: {lista}). The 'my projects' list (projetos) is a separate to-do list and "
+                "is not where these live — do not suggest registering it there. Ask which of these projects "
+                "the user means, or offer to create a new one.")
+    return None
+
+
 def dev_agent(
     parameters: dict,
     response=None,
@@ -1034,6 +1067,9 @@ def dev_agent(
     if acao in ("modify", "alterar", "editar", "change", "edit", "update"):
         if not description:
             return "[failed] Tell me what to change in the project."
+        erro = _conferir_projeto(project_name)
+        if erro:
+            return erro
         trabalho = lambda: _alterar(project_name, description, timeout, player)      # noqa: E731
         rotulo = f"change {project_name or 'last project'}: {description}"
     else:
@@ -1058,7 +1094,9 @@ TOOL = {
         "action=create (default) builds a new project; action=modify changes a project it already made "
         "('add a dark mode to the site', 'make the button green', 'add a score counter to the game'); "
         "action=list shows the projects; action=open opens one; action=undo reverts the last modify. "
-        "For explaining, reviewing or editing ONE small snippet or file use code_helper instead."),
+        "For explaining, reviewing or editing ONE small snippet or file use code_helper instead. "
+        "Never use it to change the NEXUS assistant itself (fixes to the NEXUS come as updates: system_update); "
+        "the 'projetos' list is a separate to-do list and is not where these projects live."),
     "parameters": {
         "type": "OBJECT",
         "properties": {

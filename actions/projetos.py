@@ -248,7 +248,8 @@ TOOL = {
         "Virtual, próximo passo criar o carrinho' — name, next_step), update ('atualiza o "
         "projeto…', 'agora o próximo passo é…' — name + next_step/note/status), list "
         "('como estão meus projetos?' — shows a table on screen), show (one project), done "
-        "('terminei o projeto…'), pause, resume, remove. Match projects by part of the name."
+        "('terminei o projeto…'), pause, resume, remove. Match projects by part of the name. "
+        "It is only a to-do list: registering a project here does NOT let dev_agent find or edit it."
     ),
     "parameters": {
         "type": "OBJECT",

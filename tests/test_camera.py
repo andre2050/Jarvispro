@@ -47,6 +47,8 @@ def camera(monkeypatch, tmp_path):
     monkeypatch.setattr(CV, "_indice_configurado", lambda: None)
     monkeypatch.setattr(CV._vigia, "quadro_recente", lambda: None)
     monkeypatch.setattr(CV, "_no_windows", lambda: True)
+    monkeypatch.setattr(CV, "quem_usa_camera", lambda: [])          # não ler o registro/processos do PC
+    monkeypatch.setattr(CV, "_apps_de_camera_abertos", lambda: [])
     return CameraFalsa
 
 
@@ -104,3 +106,28 @@ def test_gravar_camera_preserva_a_chave_e_nao_estraga_arquivo_ilegivel(monkeypat
     arq.write_text("{ quebrado", encoding="utf-8")
     SP._save_config_key("camera_index", 2)
     assert arq.read_text(encoding="utf-8") == "{ quebrado"     # não virou um arquivo sem a chave
+
+
+# ── 2.4.3: quem está com a câmera ─────────────────────────────────────────────
+@pytest.mark.parametrize("chave, nome", [
+    ("5319275A.WhatsAppDesktop_cv1g1gvanyjgm", "WhatsApp"),
+    ("MSTeams_8wekyb3d8bbwe", "Teams"),
+    ("C:#Program Files#Zoom#bin#Zoom.exe", "Zoom"),
+    ("C:#Apps#OutroApp.exe", "OutroApp"),
+])
+def test_nome_amigavel_do_app(chave, nome):
+    assert CV._nome_amigavel(chave) == nome
+
+
+def test_camera_ocupada_diz_quem_esta_com_ela(camera, monkeypatch):
+    camera.liberadas = set()
+    monkeypatch.setattr(CV, "quem_usa_camera", lambda: ["WhatsApp"])
+    with pytest.raises(CV.VisaoErro, match="sendo usada pelo WhatsApp"):
+        SP._capture_camera()
+
+
+def test_sem_registro_lista_os_apps_de_camera_abertos(camera, monkeypatch):
+    camera.liberadas = set()
+    monkeypatch.setattr(CV, "_apps_de_camera_abertos", lambda: ["Camera HD"])
+    with pytest.raises(CV.VisaoErro, match="costumam usar a câmera: Camera HD"):
+        SP._capture_camera()

@@ -2,6 +2,25 @@
 
 O histórico completo das versões anteriores fica em `memory/version.json` (é o que o botão ⬆ ATUALIZAR mostra).
 
+## 2.4.3 — 23/10/2026
+
+### Correções que você pediu
+* **Câmera ocupada**: no Windows só um programa usa a webcam por vez. Quando o WhatsApp (ou Teams, Zoom, Camera HD…)
+  estava com ela, o NEXUS dizia só "não achei nenhuma câmera". Agora diz quem está com a câmera — pelo registro de
+  privacidade do Windows (`CapabilityAccessManager\ConsentStore\webcam`: início marcado e fim zerado = em uso) ou,
+  quando o app não aparece lá (o Camera HD não aparece), pelos apps de câmera abertos — e pede para fechar a câmera
+  ou a chamada nele (`actions/computer_vision.py`). Testado com o Camera HD segurando a câmera.
+* **"O projeto Nexus Pro não está sendo encontrado"**: o agente de código (`dev_agent`) só altera projetos que ele
+  criou em `Desktop\NexusProjects`; "Meus projetos" (`projetos`) é outra função, uma lista de tarefas. O "não achei"
+  chegava minutos depois e o Gemini mandava registrar em "Meus projetos" e tentar de novo, em círculo. Agora o
+  agente confere antes de ir para o segundo plano: pedido para mudar o próprio NEXUS é explicado na hora (as
+  correções do NEXUS vêm por atualização) e projeto inexistente responde com a lista dos que existem. As descrições
+  das duas ferramentas dizem que uma não tem relação com a outra (`actions/dev_agent.py`, `actions/projetos.py`).
+
+### Outras correções
+* O agente de código não pega mais um projeto de nome parecido quando o pedido é sobre o próprio NEXUS.
+* Testes novos: `tests/test_dev_agent_proprio_nexus.py` e casos de câmera ocupada em `tests/test_camera.py`.
+
 ## 2.4.2 — 23/10/2026
 
 ### Correções que você pediu
