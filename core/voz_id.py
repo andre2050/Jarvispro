@@ -110,7 +110,7 @@ def _versoes_do_dono(x: np.ndarray, rng: np.random.Generator, n: int) -> list[np
 
 def treinar(amostras: list, semente: int = 7, log=print) -> dict:
     """Aprende a sua voz com as gravações (lista de áudios int16/float). Devolve o relatório."""
-    from core import neural_engine as NE
+    from core.neural_backend import engine as NE
     rng = np.random.default_rng(semente)
     audios = [A.para_float(a) for a in amostras]
     audios = [a for a in audios if caracteristicas(a) is not None]
@@ -182,7 +182,7 @@ def _carregar():
         if "m" in _cache:
             return _cache["m"]
         try:
-            from core import neural_engine as NE
+            from core.neural_backend import engine as NE
             with np.load(ARQ_MODELO, allow_pickle=False) as z:
                 n = int(z["n_camadas"])
                 W = [z[f"W{i}"] for i in range(n)]
@@ -212,7 +212,7 @@ def probabilidade(x) -> float | None:
     f = caracteristicas(x)
     if f is None:
         return None
-    from core import neural_engine as NE
+    from core.neural_backend import engine as NE
     rede, media, desvio, _ = m
     return float(NE.softmax(rede.predict(((f - media) / desvio)[None, :]))[0, 1])
 

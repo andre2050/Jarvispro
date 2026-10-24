@@ -1,15 +1,16 @@
-"""Neural Core — uma rede neural de verdade, treinada do zero (NumPy puro).
+"""Neural Core — uma rede neural de verdade, treinada do zero.
 
-O motor está em core/neural_engine.py (camadas independentes: dados, rede,
-treino, busca, ensemble, compressão). Este arquivo é a ponta: lê CSV, guarda os
-modelos em memory/neural_models/, escreve relatórios e atende a ferramenta.
+O motor é escolhido por core/neural_backend.py: Keras/TensorFlow (core/keras_engine.py) quando o
+TensorFlow está instalado, senão NumPy puro (core/neural_engine.py). Os dois têm a mesma API e
+guardam os modelos no mesmo formato, então dá para trocar de motor sem perder nada. Este arquivo é a
+ponta: lê CSV, guarda os modelos em memory/neural_models/, escreve relatórios e atende a ferramenta.
 
   Dataset: texto CSV (vírgula ou ponto e vírgula), última coluna = alvo.
   Alvo numérico → regressão, texto → classificação. Colunas de texto viram
   one-hot, células vazias são tratadas, duplicatas removidas.
 
   Ações: train · predict · explain · finetune · distill · compress · augment ·
-         report · monitor · history · list · demo
+         report · monitor · history · list · export (.keras) · demo
 """
 
 import html
@@ -19,7 +20,7 @@ from pathlib import Path
 
 import numpy as np
 
-from core import neural_engine as eng
+from core.neural_backend import engine as eng   # Keras se houver TensorFlow, senão NumPy
 
 _MODELS_DIR = Path(__file__).resolve().parent.parent / "memory" / "neural_models"
 _SEED = 42
@@ -322,6 +323,7 @@ def _train_msg(rep: dict) -> str:
     if rep.get("importance"):
         top = ", ".join(f"{n} ({v:+.2f})" for n, v in rep["importance"][:3])
         msg += f"Most influential inputs: {top}. "
+    msg += f"Engine: {'Keras/TensorFlow' if rep.get('backend') == 'keras' else 'NumPy'}. "
     msg += f"Report: {rep['report_file']}"
     return msg
 
@@ -486,6 +488,22 @@ def _dispatch(action: str, parameters: dict, player) -> str:
         _log(msg, player)
         return msg
 
+    if action == "export":
+        name = _model_name(parameters)
+        model = _load(name)
+        if not hasattr(eng, "export_keras"):          # motor NumPy: não há Keras para gravar
+            raise ValueError("exporting to .keras needs TensorFlow installed "
+                             "(pip install tensorflow)")
+        out = (Path(str(parameters["output_path"])) if parameters.get("output_path")
+               else _MODELS_DIR / f"{name}.keras")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        path = eng.export_keras(model, out)
+        msg = (f"Sir, exported the network of '{name}' to the Keras format at {path}. "
+               f"It holds the layers and weights only; the input scaling and one-hot "
+               f"encoding stay in the saved model.")
+        _log(f"export '{name}' → {path}", player)
+        return msg
+
     if action == "report":
         name = _model_name(parameters)
         path = _MODELS_DIR / f"{name}_report.html"
@@ -536,7 +554,7 @@ def _dispatch(action: str, parameters: dict, player) -> str:
     msg = ("Sir, the neural core can: train (with layers, activations, optimizers, "
            "early stopping, search/AutoML, ensembles), predict, explain a prediction, "
            "fine-tune, distill, compress, augment a dataset, show a report, monitor "
-           "drift, show experiment history, list models, or run the demo.")
+           "drift, show experiment history, list models, export to Keras, or run the demo.")
     _log(msg, player)
     return msg
 
@@ -562,8 +580,9 @@ def _n(desc):
 TOOL = {
     "name": "neural_core",
     "description": (
-        "A real neural network (multilayer perceptron in pure NumPy, trained "
-        "locally). Train it on the user's CSV (last column = target; text = "
+        "A real neural network (multilayer perceptron trained locally, in "
+        "Keras/TensorFlow when it is installed, otherwise in pure NumPy). "
+        "Train it on the user's CSV (last column = target; text = "
         "classification, number = regression; text columns and blanks are "
         "handled). Options: hidden layers/neurons, 7 activations, 6 optimizers "
         "(sgd/momentum/nesterov/rmsprop/adam/adamw), learning-rate schedules, "
@@ -573,7 +592,8 @@ TOOL = {
         "Also: predict, explain a prediction, fine-tune a saved model on new "
         "data, distil it into a small student, prune/compress it, augment a "
         "CSV, write an HTML report, monitor drift in production, list "
-        "experiments and models, and run a demo."
+        "experiments and models, export a model to a native .keras file "
+        "(TensorFlow only), and run a demo."
     ),
     "parameters": {
         "type": "OBJECT",
@@ -581,7 +601,7 @@ TOOL = {
             "action": {"type": "STRING",
                        "enum": ["train", "predict", "explain", "finetune", "distill",
                                 "compress", "augment", "report", "monitor", "history",
-                                "list", "demo"],
+                                "list", "export", "demo"],
                        "description": "What to do (train = learn from CSV; auto=true "
                                       "makes train search the best setup itself)"},
             "dataset": _s("CSV text (comma or semicolon separated); last column is the target"),

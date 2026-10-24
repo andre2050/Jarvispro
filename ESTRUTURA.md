@@ -115,7 +115,7 @@ Enquanto o ditado está ligado: `assistant/audio.py` manda a sua fala para o Blo
 |---|---|
 | `actions/` | Uma habilidade por arquivo (abrir app, e-mail, rotinas, foco…). Descobertas sozinhas ao iniciar |
 | `plugins/` | Habilidades extras: solte um `.py` aqui |
-| `core/` | Peças internas: HUDs, voz, palavra de ativação, rede neural (`intent_net.py` entende comandos; `neural_engine.py` é o motor da ferramenta `neural_core`), preferências |
+| `core/` | Peças internas: HUDs, voz, palavra de ativação, rede neural (`intent_net.py` entende comandos; `neural_engine.py` é o motor NumPy da ferramenta `neural_core`; `keras_engine.py` / `keras_intent.py` são os motores Keras/TensorFlow opcionais; `neural_backend.py` escolhe entre eles), preferências |
 | `memory/` | Seus dados (memória, rotinas, notas) e o número da versão |
 | `config/` | Chaves e configurações (nunca publicar o `api_keys.json`) |
 | `dashboard/` | Painel de controle pelo celular |

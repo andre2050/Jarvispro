@@ -33,7 +33,7 @@ from .common import _pcm_level, agora, asyncio, audio_devices, data_hora  # noqa
 
 _TAXA_MIC = 16000
 _BLOCO = 512                      # 32 ms
-_SILENCIO_FIM = 0.7               # pausa que fecha a fala
+_SILENCIO_FIM = 0.5               # pausa que fecha a fala (2.4.5: 0,7 → 0,5 s; é tempo ganho em TODO pedido)
 _FALA_MAX = 25.0
 _FALA_MIN = 0.35
 _PRE = 0.3
@@ -338,10 +338,44 @@ class MotorProprioMixin:
         self.set_speaking(True)
         try:
             def _tocar():
-                for frase in V.frases(limpo):
-                    for pcm in voz.sintetizar(frase, idioma):
-                        if not tocador.tocar(pcm):
+                # 2.4.5 — a síntese da frase seguinte roda ENQUANTO a anterior toca (antes era
+                # uma depois da outra: cada frase abria uma pausa do tamanho da sua síntese).
+                fila: queue.Queue = queue.Queue(maxsize=3)
+                parar = threading.Event()
+
+                def _enviar(item) -> bool:
+                    while not parar.is_set():
+                        try:
+                            fila.put(item, timeout=0.2)
+                            return True
+                        except queue.Full:
+                            pass
+                    return False
+
+                def _produzir():
+                    try:
+                        for frase in V.frases(limpo):
+                            for pcm in voz.sintetizar(frase, idioma):
+                                if tocador.interrompido or not _enviar(pcm):
+                                    return
+                    except Exception as e:           # a falha chega ao consumidor
+                        _enviar(e)
+                        return
+                    _enviar(None)                    # fim
+
+                produtor = threading.Thread(target=_produzir, daemon=True, name="nexus-tts-sintese")
+                produtor.start()
+                try:
+                    while True:
+                        item = fila.get()
+                        if item is None:
                             return
+                        if isinstance(item, Exception):
+                            raise item
+                        if not tocador.tocar(item):
+                            return
+                finally:
+                    parar.set()
             await asyncio.to_thread(_tocar)
         except Exception as e:
             self.ui.write_log(f"SYS: A voz falhou ({str(e)[:120]}).")
@@ -413,11 +447,15 @@ class MotorProprioMixin:
         t0 = time.monotonic()
         primeira = True
 
+        # 2.4.5 — o prompt (lê arquivos e a memória) e as declarações das ferramentas eram
+        # refeitos a cada rodada do mesmo pedido; agora são montados uma vez por pedido.
+        sistema = self._proprio_sistema()
+        ferramentas = self._proprio_ferramentas(texto)
+
         for _ in range(_RODADAS):
             self.ui.set_state("THINKING")
-            ferramentas = self._proprio_ferramentas(texto)
             try:
-                resp = await asyncio.to_thread(cerebro.conversar, self._proprio_sistema(),
+                resp = await asyncio.to_thread(cerebro.conversar, sistema,
                                                L.janela_historico(hist, 30), ferramentas)
             except Exception as e:
                 if hist and hist[-1].get("images"):

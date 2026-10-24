@@ -1,8 +1,13 @@
 {
-  "version": "2.4.4",
+  "version": "2.4.5",
   "codename": "Nexus Pro",
-  "released": "2026-10-23",
+  "released": "2026-10-24",
   "changelog": [
+    {
+      "version": "2.4.5",
+      "date": "2026-10-24",
+      "notes": "NEXUS PRO 2.4.5 — respostas mais rápidas no MOTOR PRÓPRIO. A voz agora sintetiza a próxima frase enquanto a anterior toca (sem pausas entre frases); o pedido fecha 0,2 s mais cedo depois que você para de falar; o prompt e as ferramentas são montados uma vez por pedido, não a cada passo; o Whisper usa até 8 núcleos da CPU. NOVO (opcional): a rede neural pode rodar em Keras/TensorFlow (pip install tensorflow) — sem ele, nada muda; ação 'export' para .keras no neural_core."
+    },
     {
       "version": "2.4.4",
       "date": "2026-10-23",

@@ -79,7 +79,15 @@ class OuvidoWhisper:
         except Exception:
             disp = "cpu"
         tipo = "float16" if disp == "cuda" else "int8"
-        self._modelo = WhisperModel(modelo or "small", device=disp, compute_type=tipo)
+        # 2.4.5 — o padrão do faster-whisper é 4 threads de CPU; num PC com mais núcleos a
+        # transcrição fica bem mais rápida usando até 8 (deixa 1 núcleo livre para o resto).
+        import os as _os
+        nucleos = max(2, min(8, (_os.cpu_count() or 4) - 1))
+        try:
+            self._modelo = WhisperModel(modelo or "small", device=disp, compute_type=tipo,
+                                        cpu_threads=nucleos if disp == "cpu" else 0)
+        except TypeError:                     # versão antiga sem cpu_threads
+            self._modelo = WhisperModel(modelo or "small", device=disp, compute_type=tipo)
         self._idioma = None if not idioma or idioma == "auto" else idioma
         self._vocab = vocabulario or None
         self.descricao = f"Whisper {modelo} ({disp})"

@@ -106,7 +106,7 @@ def _transformar(X: np.ndarray) -> np.ndarray:
 
 
 def treinar(log=print) -> dict:
-    from core import neural_engine as NE
+    from core.neural_backend import engine as NE
     bruto = ler()
     if len(bruto) < MIN_AMOSTRAS:
         raise ValueError(f"Tenho {len(bruto)} medidas; preciso de {MIN_AMOSTRAS} (cerca de "
@@ -138,7 +138,7 @@ def treinar(log=print) -> dict:
 def _modelo():
     if "m" in _cache:
         return _cache["m"]
-    from core import neural_engine as NE
+    from core.neural_backend import engine as NE
     try:
         d = json.loads(ARQ_MODELO.read_text(encoding="utf-8"))
         W = [np.array(w, np.float32) for w in d["W"]]

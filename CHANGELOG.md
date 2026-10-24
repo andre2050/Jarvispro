@@ -2,6 +2,31 @@
 
 O histórico completo das versões anteriores fica em `memory/version.json` (é o que o botão ⬆ ATUALIZAR mostra).
 
+## 2.4.5 — 24/10/2026
+
+### Mais rápido para responder (motor próprio)
+* **A voz não faz pausas entre frases**: a síntese da próxima frase roda enquanto a anterior toca
+  (antes era uma depois da outra). Medido com uma voz simulada: 1,5 s contra 2,4 s para 4 frases (`assistant/motor_proprio.py`).
+* **Fecha o pedido mais cedo**: a pausa que encerra a sua fala caiu de 0,7 s para 0,5 s — ganho em todo pedido por voz.
+  Se ele cortar você no meio de frases com pausas longas, suba `_SILENCIO_FIM` para 0,6.
+* **Prompt e ferramentas uma vez por pedido**: eram refeitos (leitura de arquivos e memória) a cada passo de um pedido
+  com várias ferramentas.
+* **Whisper com mais núcleos**: usa até 8 threads de CPU (o padrão eram 4), `core/voz_propria.py`.
+* Não mexi no motor Gemini Live: a demora ali é de rede e de modelo, não do código local.
+
+
+### Rede neural em Keras/TensorFlow
+* Toda a camada neural ganhou um motor **Keras/TensorFlow** (`core/keras_engine.py`, `core/keras_intent.py`), usado
+  automaticamente quando o TensorFlow está instalado. Sem ele, o motor NumPy de sempre segue valendo.
+* Cobre `neural_core` (treino, busca, ensemble, fine-tune, distilação, poda), `intent_net`, anomalias, previsão de
+  hábitos, voz-ID e palavra de ativação personalizada.
+* Os modelos já treinados abrem nos dois motores (mesmo JSON / `.npz`): nada é retreinado.
+* Escolha manual: variável `NEXUS_NEURAL_BACKEND` = `auto` | `keras` | `numpy`. O TensorFlow só é importado no primeiro
+  uso (em segundo plano para o `intent_net`), nunca na abertura.
+* Nova ação `export` em `neural_core`: grava a rede em `.keras`.
+* O TensorFlow **não** entra no `.exe` por padrão (`NEXUS_EXE_COM_TF=1` para incluir).
+* Tradeoff: em tabelas pequenas o treino em Keras é bem mais lento que o NumPy (qualidade igual).
+
 ## 2.4.4 — 23/10/2026
 
 ### Novo que você pediu

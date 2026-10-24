@@ -1,6 +1,6 @@
 """Previsão de hábitos — NEXUS Pro 2.3.
 
-Uma rede neural pequena (core/neural_engine.py, NumPy) aprende, com o histórico de memory/habits.json,
+Uma rede neural pequena (motor de core/neural_backend.py: Keras se houver TensorFlow, senão NumPy) aprende, com o histórico de memory/habits.json,
 "o que você costuma pedir a esta hora, neste dia da semana, depois de pedir tal coisa" e estima o que
 vem a seguir. Só OBSERVA e sugere — executar algo continua dependendo do seu "sim".
 
@@ -57,7 +57,7 @@ def _montar(ev: list[dict], classes: list[str]):
 
 
 def treinar(log=print) -> dict:
-    from core import neural_engine as NE
+    from core.neural_backend import engine as NE
     ev = _eventos()
     if len(ev) < MIN_EVENTOS:
         raise ValueError(f"Tenho só {len(ev)} registros de uso; preciso de pelo menos {MIN_EVENTOS} "
@@ -92,7 +92,7 @@ def treinar(log=print) -> dict:
 
 
 def _carregar():
-    from core import neural_engine as NE
+    from core.neural_backend import engine as NE
     try:
         d = json.loads(ARQ.read_text(encoding="utf-8"))
         W = [np.array(w, np.float32) for w in d["W"]]
@@ -110,7 +110,7 @@ def relatorio() -> dict:
 
 def prever(quando: float | None = None, anterior: str | None = None, topo: int = 3) -> list[tuple[str, float]]:
     """[(hábito, chance)] mais prováveis; [] se não há modelo ou ele não é melhor que a contagem."""
-    from core import neural_engine as NE
+    from core.neural_backend import engine as NE
     m = _carregar()
     if not m or not m[1].get("melhor_que_contagem"):
         return []

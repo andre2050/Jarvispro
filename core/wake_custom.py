@@ -13,7 +13,7 @@ COMO APRENDE
                 própria chamada ("nex", "us", ao contrário, esticada, comprimida) — são os falsos
                 alarmes mais prováveis; (3) ruído, zumbido, estalos e silêncio.
     Entrada     MFCC do trecho aparado, redimensionado para 32 quadros × 20 coeficientes + duração.
-    Rede        MLP 641 → 64 → 2 (core/neural_engine.py), parada antecipada.
+    Rede        MLP 641 → 64 → 2 (core/neural_backend.py: Keras ou NumPy), parada antecipada.
 
 Mesma interface do detector atual (start/stop/feed/ready), então o resto do app nem percebe.
 Se o modelo não existir, o NEXUS continua usando o Whisper como antes.
@@ -107,7 +107,7 @@ def _sinteticos(rng: np.random.Generator, n: int) -> list[np.ndarray]:
 
 def treinar(positivos: list, negativos: list | None = None, semente: int = 3, log=print) -> dict:
     """positivos = trechos dizendo "Nexus"; negativos = outras falas suas. Salva o modelo."""
-    from core import neural_engine as NE
+    from core.neural_backend import engine as NE
     rng = np.random.default_rng(semente)
     pos = [A.para_float(p) for p in positivos]
     pos = [p for p in pos if vetor(p) is not None]
@@ -177,7 +177,7 @@ def _carregar():
         if "m" in _cache:
             return _cache["m"]
         try:
-            from core import neural_engine as NE
+            from core.neural_backend import engine as NE
             with np.load(ARQ_MODELO, allow_pickle=False) as z:
                 rede = NE.MLP.from_arrays([z["W0"].shape[0], z["W0"].shape[1], 2], "relu",
                                           [z["W0"], z["W1"]], [z["b0"], z["b1"]])
@@ -205,7 +205,7 @@ def probabilidade(trecho) -> float:
     f = vetor(trecho)
     if f is None:
         return 0.0
-    from core import neural_engine as NE
+    from core.neural_backend import engine as NE
     rede, media, desvio, _ = m
     return float(NE.softmax(rede.predict(((f - media) / desvio)[None, :]))[0, 1])
 

@@ -8,7 +8,9 @@ O QUE FAZ
     Gemini — e funciona mesmo sem internet. Tudo que ela não reconhece, ou não
     tem certeza, continua indo para o Gemini como sempre.
 
-A REDE (NumPy puro, sem bibliotecas de IA)
+A REDE (Keras/TensorFlow se estiver instalado — core/keras_intent.py; senão NumPy puro, aqui)
+    Os dois motores têm a mesma arquitetura e gravam o mesmo memory/intent_net.npz,
+    então dá para trocar de um para o outro sem retreinar.
     Entrada   texto → 4096 features: n-gramas de letras (2–4) dentro de cada
               palavra + palavras + pares de palavras, por "hashing". Por isso
               ela entende erro de digitação e frase sem acento.
@@ -319,6 +321,28 @@ class IntentMLP:
         net.T = float(d["T"])
         meta = json.loads(bytes(d["meta"]).decode())
         return net, meta
+
+
+def _keras_provavel() -> bool:
+    """Barato (não importa o TensorFlow): o Keras vai ser o motor?"""
+    try:
+        from core import neural_backend as _B
+        return _B.keras_provavel()
+    except Exception:
+        return False
+
+
+def _net_class():
+    """A rede que o IntentBrain usa: a do Keras (se houver TensorFlow) ou o IntentMLP de NumPy daqui.
+    As duas gravam o mesmo .npz, então trocar de uma para a outra não perde o treino."""
+    try:
+        from core import neural_backend as _B
+        if _B.usar_keras():
+            from core.keras_intent import KerasIntentMLP
+            return KerasIntentMLP
+    except Exception as e:
+        print(f"[IntentNet] Keras indisponível ({e}) — usando NumPy")
+    return IntentMLP
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -794,12 +818,24 @@ class IntentBrain:
         return h.hexdigest()[:16]
 
     def start(self, block: bool = False) -> None:
-        """Carrega do disco; se não houver modelo atualizado, treina em segundo plano."""
+        """Carrega do disco; se não houver modelo atualizado, treina em segundo plano.
+
+        Com o TensorFlow instalado a rede é a do Keras (core/keras_intent.py). O import dele
+        leva alguns segundos, então roda numa thread: a abertura do NEXUS não espera, e
+        até a rede ficar pronta tudo vai para o Gemini (igual a quando ela está treinando)."""
+        if not block and _keras_provavel():
+            self.status = "carregando…"
+            threading.Thread(target=self._carregar_ou_treinar, args=(True,), daemon=True,
+                             name="intent-load").start()
+            return
+        self._carregar_ou_treinar(block)
+
+    def _carregar_ou_treinar(self, block: bool) -> None:
         user_ex = _load_examples()
         fp = self._fingerprint(user_ex)
         try:
             if MODEL_FILE.exists():
-                net, meta = IntentMLP.load(MODEL_FILE)
+                net, meta = _net_class().load(MODEL_FILE)
                 if meta.get("fingerprint") == fp and net.sizes[-1] == len(INTENTS):
                     with self._lock:
                         self._net, self.meta = net, meta
@@ -832,7 +868,7 @@ class IntentBrain:
                 Xa = featurize(X)
                 Ya = np.array(Y, np.int64)
                 Wa = np.array(W, np.float32)
-                net = IntentMLP()
+                net = _net_class()()
                 acc = net.fit(Xa[tr], Ya[tr], Wa[tr], Xa[va], Ya[va], log=progress)
                 meta = {"fingerprint": self._fingerprint(user_ex), "val_acc": acc,
                         "samples": len(X), "user_examples": len(user_ex),
@@ -945,7 +981,8 @@ class IntentBrain:
         return {"status": self.status, "val_acc": self.meta.get("val_acc"),
                 "samples": self.meta.get("samples"), "user_examples": len(ex),
                 "trained_at": self.meta.get("trained_at"), "seconds": self.meta.get("seconds"),
-                "pending": self._new_since_train, "intents": len(INTENTS) - 1}
+                "pending": self._new_since_train, "intents": len(INTENTS) - 1,
+                "motor": "keras" if _keras_provavel() else "numpy"}
 
 
 # ══════════════════════════════════════════════════════════════════════════════

@@ -120,6 +120,10 @@ pynvml                       # system_monitor + the HUD's GPU meter (NVIDIA)
 #   pip install pydub        # file_processor: audio metadata and conversion
 #                            #   (also needs ffmpeg on PATH for most formats)
 #   pip install mediapipe    # pushup_counter: elbow-angle rep detection
+#   pip install "tensorflow>=2.16,<3"   # neural layer on Keras/TensorFlow (neural_core, intent_net,
+#                            #   anomaly, habits, voice-id, custom wake word). Without it the
+#                            #   NumPy engine runs exactly as before; models load in both.
+#                            #   Force one with NEXUS_NEURAL_BACKEND=auto|keras|numpy.
 
 # ── Optional: local wake word ("Hey Jarvis") ──────────────────────────────────
 # Deliberately NOT installed by default — it's opt-in. Enable it (and download

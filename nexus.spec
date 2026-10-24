@@ -113,6 +113,13 @@ if faltando:
     print("[nexus.spec] Não instalados (as funções que dependem deles ficam de fora):",
           ", ".join(sorted(set(faltando))))
 
+# O TensorFlow é opcional (core/neural_backend.py cai para o NumPy sem ele) e pesa GBs: fora do .exe,
+# a menos que se peça: NEXUS_EXE_COM_TF=1 antes de rodar o PyInstaller.
+import os as _os
+SEM_TF = [] if _os.environ.get("NEXUS_EXE_COM_TF") == "1" else [
+    "tensorflow", "keras", "tensorboard", "tf_keras", "ml_dtypes", "h5py", "core.keras_engine",
+    "core.keras_intent"]
+
 a = Analysis(
     ["nexus_exe.py"],
     pathex=[],
@@ -121,7 +128,7 @@ a = Analysis(
     hiddenimports=sorted(set(ocultos)),
     hookspath=[],
     runtime_hooks=[],
-    excludes=sorted(LOCAIS - {"nexus_exe"}) + ["tkinter.test", "test", "unittest.test"],
+    excludes=sorted(LOCAIS - {"nexus_exe"}) + ["tkinter.test", "test", "unittest.test"] + SEM_TF,
     noarchive=False,
 )
 pyz = PYZ(a.pure)
