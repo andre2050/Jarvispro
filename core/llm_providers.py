@@ -267,6 +267,37 @@ def ferramentas_claude(decls: list) -> list:
 #   {"role": "assistant", "content": str, "tool_calls": [{"id","name","args"}]}
 #   {"role": "tool", "tool_call_id": str, "name": str, "content": str}
 
+_TAGS_PENSAR = ("<think>", "<thinking>", "<reasoning>")
+
+
+class _Emissor:
+    """Repassa o texto do streaming sem o raciocínio interno de modelos como qwen3 / deepseek-r1
+    (<think>…</think>), e sem soltar um pedaço de tag ("<thi") que ainda pode se completar."""
+
+    def __init__(self, ao_texto):
+        self._cb = ao_texto
+        self.bruto = ""
+        self.emitido = 0
+
+    def _visivel(self) -> str:
+        t = _THINK.sub("", self.bruto)
+        t = _THINK_ABERTO.sub("", t)
+        i = t.rfind("<")
+        if i >= 0 and ">" not in t[i:]:
+            resto = t[i:].lower()
+            if any(tag.startswith(resto) for tag in _TAGS_PENSAR):
+                t = t[:i]                       # talvez seja o começo de uma tag: espera
+        return t
+
+    def feed(self, pedaco: str) -> None:
+        self.bruto += pedaco
+        t = self._visivel()
+        novo = t[self.emitido:]
+        if novo:
+            self.emitido = len(t)
+            self._cb(novo)
+
+
 @dataclass
 class Resposta:
     texto: str = ""
@@ -359,7 +390,7 @@ class CerebroLLM:
                             "name": m.get("name"), "content": m.get("content") or ""})
         return out
 
-    def _openai_chat(self, sistema, mensagens, ferramentas, max_tokens) -> Resposta:
+    def _openai_corpo(self, sistema, mensagens, ferramentas, max_tokens) -> dict:
         corpo = {"model": self._modelo(), "messages": self._openai_msgs(sistema, mensagens),
                  "max_tokens": max_tokens, "temperature": 0.6}
         if ferramentas:
@@ -369,6 +400,10 @@ class CerebroLLM:
             corpo.pop("max_tokens", None)
             corpo["max_completion_tokens"] = max_tokens
             corpo.pop("temperature", None)
+        return corpo
+
+    def _openai_chat(self, sistema, mensagens, ferramentas, max_tokens) -> Resposta:
+        corpo = self._openai_corpo(sistema, mensagens, ferramentas, max_tokens)
         try:
             r = self._http.post(f"{self.url}/chat/completions", headers=self._headers(),
                                 data=json.dumps(corpo, ensure_ascii=False).encode("utf-8"),
@@ -409,6 +444,108 @@ class CerebroLLM:
         if isinstance(texto, list):        # alguns servidores mandam partes
             texto = "".join(p.get("text", "") for p in texto if isinstance(p, dict))
         return Resposta(texto=limpar_pensamento(texto), chamadas=chamadas)
+
+    # ── streaming (2.4.6) ──
+    def conversar_stream(self, sistema: str, mensagens: list, ferramentas: list, ao_texto,
+                         max_tokens: int = 1024) -> Resposta:
+        """Como `conversar`, mas entrega o texto ENQUANTO o modelo escreve: `ao_texto(trecho)`
+        é chamado a cada pedaço (já sem o raciocínio interno). A `Resposta` final é a mesma.
+
+        Falhou antes de sair qualquer texto (servidor sem streaming, erro HTTP…)? Refaz a
+        chamada sem streaming. Falhou DEPOIS de já ter falado? Devolve o que saiu, sem repetir."""
+        emissor = _Emissor(ao_texto)
+        try:
+            if self.nativo_claude:
+                return self._claude_stream(sistema, mensagens, ferramentas, emissor, max_tokens)
+            return self._openai_stream(sistema, mensagens, ferramentas, emissor, max_tokens)
+        except Exception:
+            if emissor.emitido:
+                return Resposta(texto=limpar_pensamento(emissor.bruto), chamadas=[])
+            return self.conversar(sistema, mensagens, ferramentas, max_tokens)
+
+    def _openai_stream(self, sistema, mensagens, ferramentas, emissor, max_tokens) -> Resposta:
+        corpo = self._openai_corpo(sistema, mensagens, ferramentas, max_tokens)
+        corpo["stream"] = True
+        try:
+            r = self._http.post(f"{self.url}/chat/completions", headers=self._headers(),
+                                data=json.dumps(corpo, ensure_ascii=False).encode("utf-8"),
+                                timeout=self.timeout, stream=True)
+        except requests.exceptions.ConnectionError:
+            if self.local:
+                raise ErroLLM(f"o servidor local não respondeu em {self.url} — ele está aberto?")
+            raise
+        if r.status_code >= 400:
+            corpo_erro = r.text[:300]
+            r.close()
+            raise ErroLLM(f"{r.status_code}: {corpo_erro}")
+        texto: list[str] = []
+        acum: dict[int, dict] = {}
+        try:
+            # chunk_size pequeno: o padrão (512 bytes) seguraria os primeiros eventos até encher
+            for linha in r.iter_lines(chunk_size=128):
+                if not linha or not linha.startswith(b"data:"):
+                    continue
+                carga = linha[5:].strip()
+                if carga == b"[DONE]":
+                    break
+                try:
+                    ev = json.loads(carga.decode("utf-8"))
+                except Exception:
+                    continue
+                for ch in ev.get("choices") or []:
+                    d = ch.get("delta") or {}
+                    c = d.get("content")
+                    if isinstance(c, list):
+                        c = "".join(p.get("text", "") for p in c if isinstance(p, dict))
+                    if isinstance(c, str) and c:
+                        texto.append(c)
+                        emissor.feed(c)
+                    for tc in d.get("tool_calls") or []:
+                        slot = acum.setdefault(int(tc.get("index", len(acum))),
+                                               {"id": "", "name": "", "args": ""})
+                        if tc.get("id"):
+                            slot["id"] = tc["id"]
+                        fn = tc.get("function") or {}
+                        if fn.get("name") and not slot["name"]:
+                            slot["name"] = fn["name"]
+                        a = fn.get("arguments")
+                        if isinstance(a, dict):
+                            slot["args"] = a
+                        elif isinstance(a, str) and a and not isinstance(slot["args"], dict):
+                            slot["args"] += a
+        finally:
+            r.close()
+        chamadas = []
+        for i in sorted(acum):
+            s = acum[i]
+            args = s["args"]
+            if isinstance(args, str):
+                try:
+                    args = json.loads(args) if args.strip() else {}
+                except Exception:
+                    args = {}
+            if s["name"]:
+                chamadas.append({"id": s["id"] or f"call_{uuid.uuid4().hex[:12]}",
+                                 "name": s["name"], "args": args or {}})
+        return Resposta(texto=limpar_pensamento("".join(texto)), chamadas=chamadas)
+
+    def _claude_stream(self, sistema, mensagens, ferramentas, emissor, max_tokens) -> Resposta:
+        kw = {"model": self.modelo, "max_tokens": max_tokens, "system": sistema,
+              "messages": self._claude_msgs(mensagens)}
+        if ferramentas:
+            kw["tools"] = ferramentas_claude(ferramentas)
+        with self._claude.messages.stream(**kw) as fluxo:
+            for pedaco in fluxo.text_stream:
+                emissor.feed(pedaco)
+            final = fluxo.get_final_message()
+        texto, chamadas = [], []
+        for b in final.content:
+            tipo = getattr(b, "type", "")
+            if tipo == "text":
+                texto.append(getattr(b, "text", ""))
+            elif tipo == "tool_use":
+                chamadas.append({"id": b.id, "name": b.name, "args": dict(b.input or {})})
+        return Resposta(texto=limpar_pensamento("".join(texto)), chamadas=chamadas)
 
     # ── Claude ──
     def _claude_msgs(self, mensagens: list) -> list:

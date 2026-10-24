@@ -1,7 +1,7 @@
 # ✦ NEXUS Pro
 ### Assistente pessoal de voz para o seu computador — desenvolvido por André Luiz Lima Menezes
 
-Versão 2.4.5
+Versão 2.4.6
 
 NEXUS ouve, vê, fala e controla o computador em tempo real. Ele conversa por voz
 (Gemini Live), lembra de você entre uma conversa e outra, abre seus programas,

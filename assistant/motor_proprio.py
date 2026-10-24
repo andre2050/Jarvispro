@@ -157,6 +157,7 @@ class MotorProprioMixin:
             log(f"Motor próprio: o Whisper não abriu ({e}) — por enquanto só pela caixa de comando.")
 
         self._proprio_orcamento = (str(cfg.get("orcamento_ferramentas") or "auto").lower())
+        self._proprio_stream = bool(cfg.get("llm_streaming", True))      # 2.4.6
         desc = (f"{ouvido.descricao if ouvido else 'sem microfone'} + "
                 f"{self._proprio_cerebro.descricao()} + {getattr(voz, 'nome', 'voz')}")
         log(f"NEXUS online — motor próprio: {desc}.")
@@ -452,12 +453,37 @@ class MotorProprioMixin:
         sistema = self._proprio_sistema()
         ferramentas = self._proprio_ferramentas(texto)
 
+        # 2.4.6 — STREAMING: a voz começa na primeira frase, sem esperar o modelo terminar.
+        from core import voz_propria as V
+        voz, tocador = getattr(self, "_proprio_voz", None), self._proprio_tocador
+        streaming = (bool(getattr(self, "_proprio_stream", False)) and voz is not None
+                     and tocador is not None and hasattr(cerebro, "conversar_stream")
+                     and not self._ditado.ativo)
+        if streaming:
+            tocador.novo_turno()
+        fala_anterior = None
+
         for _ in range(_RODADAS):
             self.ui.set_state("THINKING")
+            fala = None
             try:
-                resp = await asyncio.to_thread(cerebro.conversar, sistema,
-                                               L.janela_historico(hist, 30), ferramentas)
+                if streaming:
+                    fala = V.FalaEmFluxo(
+                        voz, tocador, self._idioma_da_resposta(),
+                        ao_comecar=lambda: self.set_speaking(True),
+                        ao_terminar=lambda: (self.set_speaking(False), self.ui.set_audio_level(0.0)),
+                        ao_erro=lambda m: self.ui.write_log(f"SYS: {m}"),
+                        depois_de=fala_anterior)
+                    resp = await asyncio.to_thread(cerebro.conversar_stream, sistema,
+                                                   L.janela_historico(hist, 30), ferramentas,
+                                                   fala.alimentar)
+                    fala.fechar()
+                else:
+                    resp = await asyncio.to_thread(cerebro.conversar, sistema,
+                                                   L.janela_historico(hist, 30), ferramentas)
             except Exception as e:
+                if fala is not None:
+                    fala.cancelar()
                 if hist and hist[-1].get("images"):
                     # modelo sem visão: tenta de novo sem a imagem
                     hist[-1]["images"] = []
@@ -490,7 +516,10 @@ class MotorProprioMixin:
                         _isa.registrar("resposta", resp.texto, origem="motor próprio")
                     except Exception:
                         pass
-                    await self._proprio_falar(resp.texto)
+                    if fala is not None and fala.enfileirou:
+                        await asyncio.to_thread(fala.esperar)     # já falou em fluxo
+                    else:
+                        await self._proprio_falar(resp.texto)
                 return
 
             # ⚡ fala enquanto a ferramenta roda: a frase do modelo, ou uma curta daqui
@@ -502,7 +531,12 @@ class MotorProprioMixin:
             elif any(c["name"] not in _RAPIDAS for c in resp.chamadas):
                 lenta = next(c["name"] for c in resp.chamadas if c["name"] not in _RAPIDAS)
                 frase = _ja_vou(lenta, self._idioma_da_resposta())
-            fala_pendente = asyncio.create_task(self._proprio_falar(frase)) if frase else None
+            if fala is not None and fala.enfileirou:
+                # a frase do modelo já está sendo falada em fluxo, enquanto a ferramenta roda
+                fala_anterior = fala
+                fala_pendente = asyncio.create_task(asyncio.to_thread(fala.esperar))
+            else:
+                fala_pendente = asyncio.create_task(self._proprio_falar(frase)) if frase else None
 
             for c in resp.chamadas:
                 fc = _pytypes.SimpleNamespace(name=c["name"], args=c.get("args") or {}, id=c["id"])

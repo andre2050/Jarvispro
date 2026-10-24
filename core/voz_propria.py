@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import io
 import json
+import queue
 import re
 import threading
 import time
@@ -138,6 +139,150 @@ def frases(texto: str) -> list[str]:
     if buf:
         out.append(buf)
     return out
+
+
+class FalaEmFluxo:
+    """Fala o texto ENQUANTO o modelo o escreve (2.4.6).
+
+    `alimentar(trecho)` recebe os pedaços do streaming (de qualquer thread); cada frase completa
+    vai direto para a síntese, que roda em paralelo com a reprodução da anterior. `fechar()` solta
+    o que sobrou; `esperar()` bloqueia até a última frase terminar de tocar."""
+
+    _MIN = 25                                   # frases curtas se juntam (igual a frases())
+
+    def __init__(self, voz, tocador, idioma: str, ao_comecar=None, ao_terminar=None, ao_erro=None,
+                 depois_de: "FalaEmFluxo | None" = None):
+        self._voz, self._tocador, self._idioma = voz, tocador, idioma
+        self._ao_comecar, self._ao_terminar, self._ao_erro = ao_comecar, ao_terminar, ao_erro
+        self._depois_de = depois_de
+        self._buf = ""
+        self._pend = ""
+        self._frases: "queue.Queue" = queue.Queue()
+        self._pcm: "queue.Queue" = queue.Queue(maxsize=4)
+        self._cancelado = threading.Event()
+        self._lock = threading.Lock()
+        self._threads: list[threading.Thread] = []
+        self._fechada = False
+        self.enfileirou = False                 # alguma frase já foi para a voz?
+
+    # ── entrada ──
+    def alimentar(self, trecho: str) -> None:
+        if not trecho or self._cancelado.is_set() or self._tocador.interrompido:
+            return
+        with self._lock:
+            if self._fechada:
+                return
+            self._buf += trecho
+            partes = re.split(r"(?<=[.!?…;:])\s+|\n+", self._buf)
+            self._buf = partes.pop()            # a última pode estar incompleta
+            for p in partes:
+                self._juntar(p)
+
+    def _juntar(self, parte: str) -> None:
+        parte = parte.strip()
+        if not parte:
+            return
+        self._pend = f"{self._pend} {parte}".strip() if self._pend else parte
+        if len(self._pend) >= self._MIN:
+            self._enviar(self._pend)
+            self._pend = ""
+
+    def _enviar(self, frase: str) -> None:
+        limpa = falavel(frase)
+        if not limpa:
+            return
+        if not self._threads:
+            for alvo, nome in ((self._sintetizar, "nexus-fala-sintese"), (self._tocar, "nexus-fala-toca")):
+                th = threading.Thread(target=alvo, daemon=True, name=nome)
+                th.start()
+                self._threads.append(th)
+        self.enfileirou = True
+        self._frases.put(limpa)
+
+    def fechar(self) -> None:
+        """O texto acabou: fala o que sobrou."""
+        with self._lock:
+            if self._fechada:
+                return
+            self._fechada = True
+            if not self._cancelado.is_set():
+                resto = f"{self._pend} {self._buf}".strip() if self._pend else self._buf
+                self._buf = self._pend = ""
+                if resto.strip():
+                    self._enviar(resto)
+            if self._threads:
+                self._frases.put(None)
+
+    def cancelar(self) -> None:
+        """Descarta o que falta falar (erro, interrupção)."""
+        self._cancelado.set()
+        with self._lock:
+            self._fechada = True
+            self._buf = self._pend = ""
+            if self._threads:
+                self._frases.put(None)
+
+    def esperar(self, timeout: float | None = None) -> None:
+        for th in list(self._threads):
+            th.join(timeout)
+
+    # ── threads ──
+    def _parou(self) -> bool:
+        return self._cancelado.is_set() or self._tocador.interrompido
+
+    def _sintetizar(self) -> None:
+        def _p(item) -> bool:
+            while not self._cancelado.is_set():
+                try:
+                    self._pcm.put(item, timeout=0.2)
+                    return True
+                except queue.Full:
+                    pass
+            return False
+        try:
+            while True:
+                frase = self._frases.get()
+                if frase is None or self._parou():
+                    break
+                for pcm in self._voz.sintetizar(frase, self._idioma):
+                    if self._parou() or not _p(pcm):
+                        return
+        except Exception as e:
+            _p(e)
+            return
+        finally:
+            if not self._cancelado.is_set():
+                _p(None)
+
+    def _tocar(self) -> None:
+        comecou = False
+        try:
+            if self._depois_de is not None:
+                self._depois_de.esperar()       # as frases de rodadas diferentes não se misturam
+            while True:
+                try:
+                    item = self._pcm.get(timeout=0.2)
+                except queue.Empty:
+                    if self._cancelado.is_set():
+                        return
+                    continue
+                if item is None:
+                    return
+                if isinstance(item, Exception):
+                    if self._ao_erro:
+                        self._ao_erro(f"A voz falhou ({str(item)[:120]}).")
+                    return
+                if not comecou:
+                    comecou = True
+                    if self._ao_comecar:
+                        self._ao_comecar()
+                if not self._tocador.tocar(item):
+                    self._cancelado.set()       # interrompido: o resto é descartado
+                    return
+        finally:
+            self._cancelado.set()               # acabou (ou foi cortada): libera a síntese
+            if comecou and self._ao_terminar:
+                self._ao_terminar()
 
 
 def falavel(texto: str) -> str:

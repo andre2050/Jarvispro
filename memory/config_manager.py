@@ -475,6 +475,7 @@ MOTOR_PADRAO = {
     "elevenlabs_api_key": "",
     "elevenlabs_voice_id": "",
     "orcamento_ferramentas": "auto",  # auto (só modelos locais) | sempre | nunca
+    "llm_streaming": True,           # 2.4.6: fala enquanto o modelo escreve (False = espera a resposta inteira)
 }
 
 

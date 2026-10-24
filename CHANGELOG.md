@@ -2,6 +2,23 @@
 
 O histórico completo das versões anteriores fica em `memory/version.json` (é o que o botão ⬆ ATUALIZAR mostra).
 
+## 2.4.6 — 24/10/2026
+
+### Começa a falar antes de o modelo terminar (motor próprio)
+* **Streaming**: a resposta do modelo chega em pedaços e a voz começa na primeira frase completa, enquanto o resto
+  ainda é escrito. Antes o NEXUS esperava a resposta inteira (`core/llm_providers.py` › `conversar_stream`, nos dois
+  protocolos: o compatível com OpenAI — Gemini, OpenAI, Groq, DeepSeek, Mistral, xAI, OpenRouter, Ollama, LM Studio,
+  llama.cpp, vLLM — e o nativo do Claude).
+* **Fala em fluxo** (`core/voz_propria.py` › `FalaEmFluxo`): cada frase é sintetizada enquanto a anterior toca; frases
+  curtas se juntam para a entonação ficar natural; o botão de interromper corta o resto.
+* **Antes de uma ferramenta**: a frase que o modelo diz ("vou pesquisar…") já sai enquanto a ferramenta roda, e a
+  fala da rodada seguinte espera a anterior terminar (não se misturam).
+* **Reserva automática**: se o servidor não aceitar streaming, a chamada é refeita no modo de antes; se a conexão
+  cair no meio de uma fala, o que já foi dito não é repetido.
+* O raciocínio interno de modelos como qwen3/deepseek-r1 (`<think>…</think>`) nunca é falado.
+* Para desligar: `llm_streaming: false` na configuração do motor (padrão: ligado).
+* Testes novos: `tests/test_streaming.py` (servidor HTTP/SSE de verdade, ferramentas, queda de conexão, interrupção).
+
 ## 2.4.5 — 24/10/2026
 
 ### Mais rápido para responder (motor próprio)

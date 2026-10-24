@@ -1,8 +1,13 @@
 {
-  "version": "2.4.5",
+  "version": "2.4.6",
   "codename": "Nexus Pro",
   "released": "2026-10-24",
   "changelog": [
+    {
+      "version": "2.4.6",
+      "date": "2026-10-24",
+      "notes": "NEXUS PRO 2.4.6 — ele começa a falar antes de terminar de pensar. No MOTOR PRÓPRIO a resposta do modelo agora chega em streaming: a voz começa na primeira frase enquanto o resto ainda está sendo escrito (antes esperava a resposta inteira), e a frase que ele diz antes de usar uma ferramenta também sai enquanto a ferramenta roda. Funciona com Claude, Gemini, OpenAI, Groq, DeepSeek, Mistral, xAI, OpenRouter, Ollama, LM Studio, llama.cpp e vLLM; se o servidor não aceitar streaming, volta sozinho ao modo de antes. O raciocínio interno (<think>) nunca é falado. Para desligar: llm_streaming = false na configuração do motor."
+    },
     {
       "version": "2.4.5",
       "date": "2026-10-24",
