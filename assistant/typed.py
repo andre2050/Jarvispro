@@ -80,6 +80,8 @@ class TypedCommandsMixin:
         "volume_down":      ("computer_settings", {"action": "volume_down"}),
         "volume_mute":      ("computer_settings", {"action": "mute"}),
         "volume_set":       ("computer_settings", {"action": "volume_set"}),
+        "brightness_up":    ("computer_settings", {"action": "brightness_up"}),
+        "brightness_down":  ("computer_settings", {"action": "brightness_down"}),
         "media_play_pause": ("music_control", {"command": "play_pause"}),
         "media_next":       ("music_control", {"command": "next"}),
         "media_previous":   ("music_control", {"command": "previous"}),

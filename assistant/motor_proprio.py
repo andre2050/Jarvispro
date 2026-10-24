@@ -55,6 +55,7 @@ _JA_VOU = {
            "dev_agent": "Vou montar o projeto, isso leva alguns minutos.",
            "code_helper": "Vou cuidar do código.", "file_processor": "Vou ler o arquivo.",
            "agent_task": "Certo, vou cuidar disso passo a passo.",
+           "orchestrate": "Vou chamar a equipe de agentes, isso leva um minuto ou dois.",
            "send_message": "Enviando a mensagem.", "youtube_video": "Um instante, no YouTube.",
            "_": "Só um instante."},
     "en": {"web_search": "Let me look that up.", "weather_report": "Checking the forecast.",
@@ -63,6 +64,10 @@ _JA_VOU = {
            "agent_task": "On it, step by step.", "_": "One moment."},
     "es": {"web_search": "Voy a buscarlo.", "screen_process": "Déjame ver.", "_": "Un momento."},
 }
+
+
+def _nome_decl(d) -> str:
+    return str(d.get("name", "") if isinstance(d, dict) else getattr(d, "name", "") or "")
 
 
 def _ja_vou(nome: str, idioma: str) -> str:
@@ -158,6 +163,14 @@ class MotorProprioMixin:
 
         self._proprio_orcamento = (str(cfg.get("orcamento_ferramentas") or "auto").lower())
         self._proprio_stream = bool(cfg.get("llm_streaming", True))      # 2.4.6
+        self._proprio_cfg = cfg                                          # 2.5 — roteador de modelos
+        self._proprio_roteamento = bool(cfg.get("llm_roteamento", True))
+        if self._proprio_roteamento:
+            try:
+                from core import roteador_modelos as _RM
+                _RM.roteador.aquecer()          # treina em segundo plano (~0,6 s): o 1º pedido não espera
+            except Exception:
+                pass
         desc = (f"{ouvido.descricao if ouvido else 'sem microfone'} + "
                 f"{self._proprio_cerebro.descricao()} + {getattr(voz, 'nome', 'voz')}")
         log(f"NEXUS online — motor próprio: {desc}.")
@@ -426,6 +439,31 @@ class MotorProprioMixin:
             return L.orcamento_ferramentas(decls, pedido)
         return decls
 
+    def _proprio_decidir(self, texto: str, origem: str):
+        """A decisão da rede (None = roteamento desligado ou mensagem do próprio app)."""
+        if not getattr(self, "_proprio_roteamento", False) or origem == "app":
+            return None
+        try:
+            from core import roteador_modelos as _RM
+            d = _RM.roteador.decidir(texto)
+            try:
+                from core import isa as _isa
+                _isa.registrar("decisao", f"Roteador: {d.rota}", f"{d.motivo} · {d.confianca:.0%}",
+                               origem="roteador")
+            except Exception:
+                pass
+            return d
+        except Exception:
+            return None
+
+    @staticmethod
+    def _proprio_aprender(texto: str, rota: str) -> None:
+        try:
+            from core import roteador_modelos as _RM
+            _RM.roteador.aprender(texto, rota)
+        except Exception:
+            pass
+
     async def _proprio_turno(self, texto: str, origem: str, imagens=None) -> None:
         from core import llm_providers as L
         if origem == "voz":
@@ -444,6 +482,10 @@ class MotorProprioMixin:
         hist = self._proprio_hist
         hist.append({"role": "user", "content": texto, "images": imagens or []})
         cerebro = self._proprio_cerebro
+        decisao = self._proprio_decidir(texto, origem)           # 2.5 — rápido / forte / delegar
+        if decisao is not None:
+            from core import roteador_modelos as _RM
+            cerebro = _RM.cerebro_para(cerebro, getattr(self, "_proprio_cfg", {}) or {}, decisao.rota)
         fala_pendente = None
         t0 = time.monotonic()
         primeira = True
@@ -452,6 +494,11 @@ class MotorProprioMixin:
         # refeitos a cada rodada do mesmo pedido; agora são montados uma vez por pedido.
         sistema = self._proprio_sistema()
         ferramentas = self._proprio_ferramentas(texto)
+        if (decisao is not None and decisao.rota == "delegar"
+                and any(_nome_decl(d) == "orchestrate" for d in ferramentas)):
+            sistema += ("\n\n[ROTEADOR] This request looks like a multi-part goal. Prefer the `orchestrate` "
+                        "tool (a team of specialist agents working in parallel) over doing it step by step "
+                        "yourself, unless it is clearly a single action.")
 
         # 2.4.6 — STREAMING: a voz começa na primeira frase, sem esperar o modelo terminar.
         from core import voz_propria as V
@@ -489,6 +536,8 @@ class MotorProprioMixin:
                     hist[-1]["images"] = []
                     hist[-1]["content"] += "\n[the image could not be sent: this model has no vision]"
                     continue
+                if decisao is not None and decisao.rota == "rapido":
+                    self._proprio_aprender(texto, "forte")        # o modelo rápido falhou: o forte da próxima vez
                 self.ui.write_log(f"ERR: {cerebro.descricao()} — {str(e)[:200]}")
                 await self._proprio_falar("Não consegui falar com o modelo agora."
                                           if self._idioma_da_resposta() == "pt"
@@ -547,6 +596,10 @@ class MotorProprioMixin:
                     status = dados.get("status") if isinstance(dados, dict) else None
                 except Exception as e:
                     saida, status = f"Tool '{c['name']}' failed: {e}", "failed"
+                if c["name"] in ("orchestrate", "agent_task"):
+                    self._proprio_aprender(texto, "delegar")       # virou tarefa de vários passos: aprende
+                elif status == "failed" and decisao is not None and decisao.rota == "rapido":
+                    self._proprio_aprender(texto, "forte")
                 conteudo = str(saida)[:6000]
                 if status:
                     conteudo = f"[status: {status}] {conteudo}"

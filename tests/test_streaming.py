@@ -364,3 +364,75 @@ def test_turno_sem_streaming_continua_igual(motor, srv):
     app._proprio_falar = _falar
     asyncio.run(app._proprio_turno("oi", "digitado"))
     assert falou == ["resposta sem stream"] and voz.ditas == []
+
+
+# ── roteador de modelos no laço do motor próprio (2.5) ───────────────────────
+def _com_roteador(motor, srv, monkeypatch, tmp_path, **cfg):
+    from core import roteador_modelos as RM
+    r = RM.Roteador(arquivo=tmp_path / "ex.json")
+    r.treinar()
+    monkeypatch.setattr(RM, "roteador", r)
+    app = _app(motor, _cerebro(srv), _Voz(), _Toc(), stream=False)
+    app._proprio_roteamento, app._proprio_cfg = True, cfg
+    return app
+
+
+def test_turno_escolhe_o_modelo_pela_dificuldade(motor, srv, monkeypatch, tmp_path):
+    app = _com_roteador(motor, srv, monkeypatch, tmp_path,
+                        llm_model_rapido="mini", llm_model_forte="grande")
+
+    async def _falar(texto, idioma=None): pass
+    app._proprio_falar = _falar
+    asyncio.run(app._proprio_turno("que horas são", "digitado"))
+    asyncio.run(app._proprio_turno("explica em detalhes como funciona o juro composto e dá exemplos", "digitado"))
+    asyncio.run(app._proprio_turno("[LOCAL_DONE] já foi feito", "app"))           # mensagem do app: sem roteamento
+    assert [c["model"] for c in srv.chamadas] == ["mini", "grande", "modelo-x"]
+
+
+def test_turno_delegar_sugere_o_orquestrador_e_aprende(motor, srv, monkeypatch, tmp_path):
+    app = _com_roteador(motor, srv, monkeypatch, tmp_path)
+    app._proprio_ferramentas = lambda pedido: [{"name": "orchestrate", "description": "x",
+                                                "parameters": {"type": "OBJECT", "properties": {}}}]
+    aprendeu = []
+    app._proprio_aprender = lambda t, r: aprendeu.append((t, r))
+
+    async def _falar(texto, idioma=None): pass
+    app._proprio_falar = _falar
+    pedido = "pesquisa os melhores monitores, compara os preços e salva um relatório no computador"
+    asyncio.run(app._proprio_turno(pedido, "digitado"))
+    sistema = srv.chamadas[0]["messages"][0]["content"]
+    assert "[ROTEADOR]" in sistema and "orchestrate" in sistema
+    assert aprendeu == []                                     # não chamou agente nenhum: nada a aprender
+
+    # o modelo chama o orquestrador → a rede aprende que este pedido é "delegar"
+    app = _com_roteador(motor, srv, monkeypatch, tmp_path)
+    app._proprio_ferramentas = lambda pedido: []
+    app._proprio_falar = _falar
+    app._proprio_aprender = lambda t, r: aprendeu.append((t, r))
+    app._proprio_stream = True
+
+    async def _exec(fc):
+        return types.SimpleNamespace(response={"result": "equipe iniciada", "status": "done"})
+    app._execute_tool = _exec
+    srv.roteiro = [_delta(tool_calls=[{"index": 0, "id": "c1", "function": {"name": "orchestrate",
+                                                                           "arguments": '{"goal":"x"}'}}])]
+    asyncio.run(app._proprio_turno(pedido, "digitado"))
+    assert (pedido, "delegar") in aprendeu
+
+
+def test_turno_rapido_que_falha_ensina_forte(motor, srv, monkeypatch, tmp_path):
+    app = _com_roteador(motor, srv, monkeypatch, tmp_path)
+    aprendeu = []
+    app._proprio_aprender = lambda t, r: aprendeu.append((t, r))
+
+    async def _falar(texto, idioma=None): pass
+    app._proprio_falar = _falar
+
+    async def _exec(fc):
+        return types.SimpleNamespace(response={"result": "deu erro", "status": "failed"})
+    app._execute_tool = _exec
+    srv.roteiro = [_delta(tool_calls=[{"index": 0, "id": "c1", "function": {"name": "open_app",
+                                                                           "arguments": '{"app_name":"x"}'}}])]
+    app._proprio_stream = True
+    asyncio.run(app._proprio_turno("abre o spotify", "digitado"))
+    assert ("abre o spotify", "forte") in aprendeu

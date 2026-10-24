@@ -2,6 +2,36 @@
 
 O histórico completo das versões anteriores fica em `memory/version.json` (é o que o botão ⬆ ATUALIZAR mostra).
 
+## 2.5.0 — 24/10/2026
+
+### 🤝 Equipe de agentes (`actions/orquestrador.py`, função `orchestrate`)
+* Para objetivos grandes, o modelo forte **divide em até 6 subtarefas** e entrega cada uma a um especialista:
+  pesquisador · programador · arquivista · analista · escritor. As que não dependem uma da outra rodam **ao mesmo
+  tempo** (até 3); as que dependem esperam o resultado das anteriores. No fim, o modelo forte junta tudo numa
+  resposta falada e o relatório completo vai para Documentos\NEXUS Agente.
+* Cada especialista só enxerga **as ferramentas do seu ofício**, e vale tudo o que já valia no modo agente: não
+  apaga, move nem renomeia arquivos, não manda mensagens, não mexe no mouse e no teclado, não instala nada, não
+  chama outros agentes. O plano é validado (agentes que existem, dependências reais, sem ciclo); plano ruim cai
+  para um agente só. Limite de 5 min por orquestração.
+* Onde usar: `agent_task` continua para sequências simples; `orchestrate` para objetivos que se dividem.
+
+### 🧠 Cérebro de decisão (`core/roteador_modelos.py`)
+* Uma rede neural local (NumPy, ~0,6 s para treinar, milissegundos para decidir) lê cada pedido e escolhe:
+  **rápido** (modelo barato), **forte** (precisa raciocinar) ou **delegar** (equipe de agentes). Na dúvida entre
+  rápido e forte, usa o forte; delegar exige confiança ≥ 55 % e frase com corpo.
+* **Aprende com o seu uso** (`memory/roteador_exemplos.json`): se o modelo rápido falha num pedido, ele passa a
+  contar como "forte"; se o modelo chamou a equipe de agentes, passa a contar como "delegar".
+* No motor próprio escolhe o modelo por pedido: `llm_model_rapido` / `llm_model_forte` (mesmo provedor). Com o
+  **Claude** já vem pronto: Haiku 5.5 nos simples, Sonnet 5.5 nos difíceis. Sem configurar e com outro provedor,
+  nada muda. Desligar: `llm_roteamento: false`.
+* Nos pedidos "delegar", o modelo recebe a dica de preferir a equipe de agentes (ele ainda decide).
+* Os agentes usam a mesma rede para escolher o modelo de cada passo e **sobem de nível sozinhos** quando o rápido
+  não responde ou falha.
+
+### 🔌 Rede local de comandos
+* Novas intenções resolvidas sem internet: **aumentar / diminuir o brilho** da tela.
+* O I.S.A. não mudou.
+
 ## 2.4.6 — 24/10/2026
 
 ### Começa a falar antes de o modelo terminar (motor próprio)

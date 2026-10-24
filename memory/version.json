@@ -1,8 +1,13 @@
 {
-  "version": "2.4.6",
+  "version": "2.5.0",
   "codename": "Nexus Pro",
   "released": "2026-10-24",
   "changelog": [
+    {
+      "version": "2.5.0",
+      "date": "2026-10-24",
+      "notes": "NEXUS PRO 2.5 — equipe de agentes e cérebro de decisão. NOVO: a função 'orchestrate' monta uma EQUIPE de especialistas (pesquisador, programador, arquivista, analista, escritor) que divide um objetivo grande em partes, trabalha em paralelo e junta tudo numa resposta, com relatório salvo em Documentos\\NEXUS Agente — com as mesmas travas de segurança do modo agente (não apaga, não move, não manda mensagem). NOVO: uma rede neural local decide a cada pedido se ele é simples (modelo rápido), difícil (modelo forte) ou grande (equipe de agentes), e APRENDE com o seu uso — com o Claude já usa Haiku 5.5 nos simples e Sonnet 5.5 nos difíceis. A rede local de comandos ganhou aumentar/diminuir brilho da tela. O I.S.A. continua como estava."
+    },
     {
       "version": "2.4.6",
       "date": "2026-10-24",

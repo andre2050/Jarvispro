@@ -51,7 +51,7 @@ EXAMPLES_FILE = _BASE / "memory" / "intent_examples.json"
 SETTINGS_FILE = _BASE / "memory" / "intent_net_settings.json"
 
 DIM = 4096
-DATA_VERSION = 7          # mude ao editar os modelos de frase: força retreino (1.4.3)
+DATA_VERSION = 8          # mude ao editar os modelos de frase: força retreino (1.4.3)
 RETRAIN_EVERY = 8         # exemplos novos do usuário até retreinar
 
 INTENTS = [
@@ -60,6 +60,7 @@ INTENTS = [
     "media_play_pause", "media_next", "media_previous",
     "timer_start", "timer_status", "timer_cancel",
     "note_add", "note_list", "email_check", "system_status",
+    "brightness_up", "brightness_down",                    # 2.5 — brilho da tela
 ]
 
 DESCRICAO = {
@@ -72,6 +73,7 @@ DESCRICAO = {
     "timer_cancel": "cancelar timer", "note_add": "anotar",
     "note_list": "ler notas", "email_check": "verificar email",
     "system_status": "status do sistema", "none": "enviar ao Gemini",
+    "brightness_up": "aumentar brilho", "brightness_down": "diminuir brilho",
 }
 
 
@@ -445,6 +447,22 @@ T: dict[str, list[str]] = {
                   "o que eu anotei", "lista as notas", "ler notas", "read my notes",
                   "show my notes", "what are my notes", "what did i write down",
                   "quais notas eu tenho", "abre minhas notas"],
+    "brightness_up": ["aumenta o brilho", "mais brilho", "sobe o brilho", "brilho da tela mais alto",
+                      "deixa a tela mais clara", "aumentar o brilho da tela", "a tela ta escura aumenta o brilho",
+                      "ilumina mais a tela", "brilho maximo", "brilho pra cima", "increase the brightness",
+                      "brightness up", "make the screen brighter", "turn up the brightness", "raise brightness",
+                      "mais luz na tela", "clareia a tela", "ta escuro aumenta o brilho"]
+                     + [f"{v} {n}" for v in ("aumenta", "sobe", "aumentar", "levanta", "eleva", "da mais", "bota mais")
+                        for n in ("o brilho", "o brilho da tela", "o brilho do monitor", "o brilho ai", "brilho",
+                                  "a luz da tela")],
+    "brightness_down": ["diminui o brilho", "menos brilho", "abaixa o brilho", "brilho da tela mais baixo",
+                        "deixa a tela mais escura", "diminuir o brilho da tela", "a tela ta clara demais abaixa o brilho",
+                        "escurece a tela", "brilho minimo", "brilho pra baixo", "decrease the brightness",
+                        "brightness down", "make the screen dimmer", "turn down the brightness", "lower brightness",
+                        "ta claro demais diminui o brilho", "reduz o brilho", "tira um pouco do brilho"]
+                       + [f"{v} {n}" for v in ("diminui", "abaixa", "baixa", "diminuir", "reduz", "tira", "da menos")
+                          for n in ("o brilho", "o brilho da tela", "o brilho do monitor", "o brilho ai", "brilho",
+                                    "a luz da tela")],
     "email_check": [
                  "da uma olhada no meu gmail", "olha meu gmail", "ve meu outlook", "checa o hotmail", "tem algo no email", "chegou alguma coisa no email","verifica meu email", "verificar email", "checa meu email", "tenho email novo",
                     "tem email novo", "olha meu email", "ve meus emails", "chegou email",
@@ -484,7 +502,7 @@ _NONE = [
     "fala mais devagar", "fala em ingles", "repete o que voce disse", "esquece isso",
     "o que eu te pedi ontem", "voce lembra do meu nome", "meu nome e andre",
     "abre uma aba nova e pesquisa receitas", "fecha o chrome", "fecha essa janela",
-    "aumenta o brilho", "diminui o brilho da tela", "ativa o modo escuro",
+    "ativa o modo escuro", "coloca o brilho em 50", "deixa o brilho no maximo e o volume no minimo",
     "search for flights to lisbon", "open the downloads folder and find my resume",
     "send a message to maria", "what's the weather like", "remind me to buy bread tomorrow",
     "how many minutes in a day", "what is the volume of a sphere", "play despacito on youtube",
@@ -735,6 +753,8 @@ _GUARDS = {k: re.compile(v) for k, v in {
     "note_add": r"\bnot[ae]|anot|lembra|guarda|escreve|registra|esquecer|salva|write|note",
     "note_list": r"\bnotas?\b|anota|notes|escrevi|wrote|write",
     "email_check": r"mail|inbox|caixa de entrada|gmail|outlook|hotmail",
+    "brightness_up": r"brilho|brightness|\btela\b|screen|clar[ao]|escur[ao]|luz",
+    "brightness_down": r"brilho|brightness|\btela\b|screen|clar[ao]|escur[ao]|luz",
     "system_status": r"cpu|\bram\b|memoria|computador|\bpc\b|maquina|sistema|system|computer|processador|desempenho|temperatura|lento|pesado|memory",
 }.items()}
 
@@ -1001,7 +1021,8 @@ def intent_from_tool(name: str, args: dict) -> str | None:
         return "system_status"
     if name == "computer_settings":
         return {"volume_up": "volume_up", "volume_down": "volume_down",
-                "mute": "volume_mute", "volume_set": "volume_set"}.get(a.get("action", ""))
+                "mute": "volume_mute", "volume_set": "volume_set",
+                "brightness_up": "brightness_up", "brightness_down": "brightness_down"}.get(a.get("action", ""))
     if name == "music_control":
         return {"play_pause": "media_play_pause", "next": "media_next",
                 "previous": "media_previous", "mute": "volume_mute",

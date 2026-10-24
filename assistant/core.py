@@ -135,6 +135,12 @@ class NexusLive(WakeMixin, TypedCommandsMixin, AudioMixin, SessionMixin, ToolsMi
                 _agente.bind(self._action_registry)
         except Exception as e:
             print(f"[Agente] ⚠️ could not bind the action registry: {e}")
+        try:   # 2.5 — 🤝 o orquestrador de agentes usa as mesmas ferramentas
+            _orq = sys.modules.get("actions.orquestrador")
+            if _orq is not None:
+                _orq.bind(self._action_registry)
+        except Exception as e:
+            print(f"[Orquestrador] ⚠️ could not bind the action registry: {e}")
 
         # Local neural network for typed commands (core/intent_net.py). It
         # loads its saved model, or trains in the background on first run —

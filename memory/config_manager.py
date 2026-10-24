@@ -475,6 +475,9 @@ MOTOR_PADRAO = {
     "elevenlabs_api_key": "",
     "elevenlabs_voice_id": "",
     "orcamento_ferramentas": "auto",  # auto (só modelos locais) | sempre | nunca
+    "llm_roteamento": True,          # 2.5: a rede de decisão escolhe rápido/forte/delegar por pedido
+    "llm_model_rapido": "",          # modelo do MESMO provedor para pedidos simples (vazio = o de sempre)
+    "llm_model_forte": "",           # modelo do MESMO provedor para pedidos difíceis (vazio = o de sempre)
     "llm_streaming": True,           # 2.4.6: fala enquanto o modelo escreve (False = espera a resposta inteira)
 }
 

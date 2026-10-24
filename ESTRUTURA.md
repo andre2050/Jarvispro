@@ -74,6 +74,8 @@ Enquanto o ditado está ligado: `assistant/audio.py` manda a sua fala para o Blo
 | `assistant/session.py` › `_watch_connection` | Renova a conexão com o Gemini antes dos ~10 min (ou quando chega o GoAway), num momento calmo, mantendo a conversa; destrava pedido digitado sem resposta (15 s) |
 | `assistant/audio.py` | Lê o GoAway, marca quando a resposta chegou, conta as ferramentas rodando |
 | `core/gemini.py` | Escada FAST começa pelos modelos "lite" mais rápidos; cota diária descansa 1 h; clientes reaproveitados |
+| `actions/orquestrador.py` | Equipe de agentes especialistas (`orchestrate`): divide, roda em paralelo, junta |
+| `core/roteador_modelos.py` | Rede de decisão: pedido simples / difícil / delegar; escolhe o modelo e aprende com o uso |
 | `core/intent_net.py` | `exemplo_valido`: só aprende comando que ela mesma poderia executar |
 
 ## Motor próprio e novidades da 1.5

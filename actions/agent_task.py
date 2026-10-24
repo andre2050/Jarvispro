@@ -28,7 +28,7 @@ _MAX_PASSOS = 10
 _ativas: dict[str, threading.Thread] = {}
 
 # ferramentas que o agente NÃO usa (ou só em parte)
-_PROIBIDAS = {"agent_task", "dev_agent", "send_message", "computer_control", "game_updater",
+_PROIBIDAS = {"agent_task", "orchestrate", "dev_agent", "send_message", "computer_control", "game_updater",
               "system_update", "shortcut_manager", "price_alert", "email_reader",
               "routines", "desktop_control", "neural_core", "focus_mode", "notepad",
               "video_player", "youtube_video", "flight_finder"}
