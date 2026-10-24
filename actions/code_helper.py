@@ -41,26 +41,69 @@ def _get_gemini(tier: str = gemini.SMART):
 
 def _clean_code(text: str) -> str:
     text = text.strip()
-    text = re.sub(r"^```[a-zA-Z]*\n?", "", text)
+    text = re.sub(r"^```[^\n]*\n?", "", text)
     text = re.sub(r"\n?```$", "", text)
     return text.strip()
 
 
+# Linguagem -> extensão. Qualquer linguagem fora desta lista é resolvida pelo
+# Gemini (_ext_por_ia), então o NEXUS escreve scripts em qualquer linguagem.
+_EXT_MAP = {
+    "python": ".py", "py": ".py", "python3": ".py",
+    "javascript": ".js", "js": ".js", "node": ".js", "nodejs": ".js",
+    "typescript": ".ts", "ts": ".ts",
+    "html": ".html", "css": ".css", "scss": ".scss", "xml": ".xml",
+    "java": ".java", "kotlin": ".kt", "scala": ".scala", "groovy": ".groovy",
+    "c": ".c", "cpp": ".cpp", "c++": ".cpp", "csharp": ".cs", "c#": ".cs",
+    "objective-c": ".m", "swift": ".swift", "dart": ".dart",
+    "bash": ".sh", "shell": ".sh", "sh": ".sh", "zsh": ".sh",
+    "powershell": ".ps1", "ps1": ".ps1",
+    "batch": ".bat", "bat": ".bat", "cmd": ".bat",
+    "sql": ".sql", "json": ".json", "yaml": ".yml", "yml": ".yml",
+    "toml": ".toml", "markdown": ".md", "md": ".md",
+    "rust": ".rs", "go": ".go", "golang": ".go", "zig": ".zig",
+    "ruby": ".rb", "php": ".php", "perl": ".pl", "lua": ".lua",
+    "r": ".R", "julia": ".jl", "matlab": ".m", "octave": ".m",
+    "haskell": ".hs", "elixir": ".exs", "erlang": ".erl", "clojure": ".clj",
+    "fsharp": ".fs", "f#": ".fs", "ocaml": ".ml", "lisp": ".lisp", "scheme": ".scm",
+    "vba": ".bas", "vbscript": ".vbs", "autohotkey": ".ahk", "ahk": ".ahk",
+    "assembly": ".asm", "asm": ".asm", "fortran": ".f90", "cobol": ".cob",
+    "pascal": ".pas", "delphi": ".pas", "nim": ".nim", "crystal": ".cr",
+    "solidity": ".sol", "gdscript": ".gd", "glsl": ".glsl",
+    "dockerfile": ".dockerfile", "makefile": ".mk", "cmake": ".cmake",
+    "txt": ".txt", "text": ".txt",
+}
+
+
+def _ext_por_ia(lang: str) -> str:
+    """Pergunta ao Gemini a extensão de arquivo de uma linguagem fora do mapa."""
+    try:
+        ans = _get_gemini(gemini.FAST).generate_content(
+            f"What is the conventional source-file extension for the programming or scripting "
+            f"language '{lang}'? Reply with ONLY the extension including the dot (example: .py)."
+        ).text.strip().lower().strip("`'\". \n")
+        if re.fullmatch(r"\.[a-z0-9+#_-]{1,10}", ans):
+            return ans
+    except Exception as e:
+        print(f"[Code] Extension lookup failed ({e})")
+    return ".txt"
+
+
+def _ext_for(language: str) -> str:
+    lang = (language or "python").strip().lower()
+    ext = _EXT_MAP.get(lang)
+    if ext:
+        return ext
+    ext = _ext_por_ia(lang)
+    _EXT_MAP[lang] = ext          # lembra para os próximos pedidos
+    return ext
+
+
 def _resolve_save_path(output_path: str, language: str) -> Path:
-    ext_map = {
-        "python": ".py", "py": ".py",
-        "javascript": ".js", "js": ".js",
-        "typescript": ".ts", "ts": ".ts",
-        "html": ".html", "css": ".css",
-        "java": ".java", "cpp": ".cpp", "c": ".c",
-        "bash": ".sh", "shell": ".sh", "powershell": ".ps1",
-        "sql": ".sql", "json": ".json", "rust": ".rs", "go": ".go",
-    }
     if output_path:
         p = Path(output_path)
         return p if p.is_absolute() else DESKTOP / p
-    ext = ext_map.get((language or "python").lower(), ".py")
-    return DESKTOP / f"jarvis_code{ext}"
+    return DESKTOP / f"jarvis_code{_ext_for(language)}"
 
 
 def _read_file(file_path: str) -> tuple[str, str]:
@@ -169,11 +212,14 @@ def _write(description: str, language: str, output_path: str, player=None) -> tu
     model = _get_gemini()
 
     prompt = f"""You are an expert {lang} developer.
-Write clean, working, well-commented {lang} code for the description below.
+Write a complete, ready-to-run {lang} script/program for the description below.
+{lang} may be ANY language (general-purpose, shell, scripting, query or markup language) —
+follow that language's own idioms and file conventions.
 
 Rules:
 - Output ONLY the code. No explanation, no markdown, no backticks.
-- Add helpful inline comments.
+- The file must be complete and runnable as-is (imports, entry point, shebang if the language uses one).
+- Add helpful inline comments in the language's own comment syntax.
 - Handle errors and edge cases properly.
 - Use modern best practices.
 
@@ -217,10 +263,26 @@ def _run_file(path: Path, args: list, timeout: int) -> str:
         ".ps1": ["powershell", "-File"],
         ".rb":  ["ruby"],
         ".php": ["php"],
+        ".pl":  ["perl"],
+        ".lua": ["lua"],
+        ".R":   ["Rscript"],
+        ".jl":  ["julia"],
+        ".go":  ["go", "run"],
+        ".bat": ["cmd", "/c"],
+        ".vbs": ["cscript", "//nologo"],
+        ".ahk": ["AutoHotkey"],
+        ".dart": ["dart", "run"],
+        ".swift": ["swift"],
+        ".kt":  ["kotlin"],
+        ".exs": ["elixir"],
+        ".hs":  ["runghc"],
+        ".java": ["java"],          # Java 11+ roda o arquivo direto
+        ".sql": None,
     }
-    interp = interpreters.get(path.suffix.lower())
+    interp = interpreters.get(path.suffix.lower()) or interpreters.get(path.suffix)
     if not interp:
-        return f"No interpreter for {path.suffix}."
+        return (f"O arquivo {path.name} foi escrito, mas o NEXUS não sabe executar {path.suffix or 'esse tipo'} "
+                f"automaticamente. O código está salvo e pronto para você usar.")
 
     try:
         # 1.4.3 — stdin vazio: um input() no programa terminava em "Timed out
@@ -632,7 +694,7 @@ def code_helper(
 # ── Tool declaration (auto-discovered by core/action_loader.py) ──────────────
 TOOL = {
     "name": "code_helper",
-    "description": "Writes, edits, explains, runs, builds or syntax-checks code files (action=check validates syntax without running anything).",
+    "description": "Writes (action=write) a script or program in ANY programming language when the user asks to create one, and also edits, explains, runs, builds or syntax-checks code files (action=check validates syntax without running anything). Always pass the language the user asked for; the file is saved on the Desktop unless output_path says otherwise.",
     "parameters": {
         "type": "OBJECT",
         "properties": {
@@ -646,7 +708,7 @@ TOOL = {
             },
             "language": {
                 "type": "STRING",
-                "description": "Programming language (default: python)"
+                "description": "ANY programming or scripting language the user names (python, javascript, c#, rust, go, lua, bash, powershell, sql, ...). Default: python"
             },
             "output_path": {
                 "type": "STRING",

@@ -2,6 +2,18 @@
 
 O histórico completo das versões anteriores fica em `memory/version.json` (é o que o botão ⬆ ATUALIZAR mostra).
 
+## 2.5.1 — 24/10/2026
+
+### 💻 Scripts em qualquer linguagem (`actions/code_helper.py`)
+* Ao pedir "cria um script em ...", o NEXUS agora **escreve o código em qualquer linguagem** (antes só reconhecia
+  umas 15 e o resto virava `.py`). Mapa com mais de 60 linguagens; se a linguagem não estiver na lista
+  (ex.: Zig, Nim, Crystal), o modelo rápido descobre a extensão certa e o NEXUS lembra para os próximos pedidos.
+* O prompt de escrita pede arquivo completo e executável, com comentários na sintaxe da própria linguagem.
+* Cercas de código como ```` ```c++ ```` e ```` ```c# ```` agora são removidas corretamente.
+* Executar/construir: ganhou Perl, Lua, R, Julia, Go, Batch, VBScript, AutoHotkey, Dart, Swift, Kotlin, Elixir,
+  Haskell e Java. Linguagem sem executor conhecido: o código fica salvo e o NEXUS avisa, sem dar erro.
+* Testes novos em `tests/test_code_helper_linguagens.py`.
+
 ## 2.5.0 — 24/10/2026
 
 ### 🤝 Equipe de agentes (`actions/orquestrador.py`, função `orchestrate`)

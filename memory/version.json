@@ -1,8 +1,13 @@
 {
-  "version": "2.5.0",
+  "version": "2.5.1",
   "codename": "Nexus Pro",
   "released": "2026-10-24",
   "changelog": [
+    {
+      "version": "2.5.1",
+      "date": "2026-10-24",
+      "notes": "NEXUS PRO 2.5.1 — scripts em qualquer linguagem. Ao pedir para criar um script, o NEXUS escreve o código na linguagem pedida (mais de 60 conhecidas; as demais ele descobre sozinho) e salva com a extensão certa. Executar ganhou Perl, Lua, R, Julia, Go, Batch, VBScript, AutoHotkey, Dart, Swift, Kotlin, Elixir, Haskell e Java."
+    },
     {
       "version": "2.5.0",
       "date": "2026-10-24",
