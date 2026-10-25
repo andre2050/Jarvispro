@@ -42,7 +42,7 @@ _RODADAS = 8
 # Ferramentas rápidas: não precisam de "um instante…"
 _RAPIDAS = frozenset({"save_memory", "recall_memory", "undo", "system_status", "open_app",
                       "computer_settings", "music_control", "timer_action", "quick_notes",
-                      "close_camera", "isa_core", "explicar_ia", "unit_converter", "everyday_tools",
+                      "close_camera", "isa_core", "explicar_ia", "memoria_semanal", "unit_converter", "everyday_tools",
                       "memory_bank", "focus_mode", "tarefas", "compras", "rastreador_habitos",
                       "contatos", "texto_dev", "diario"})
 
@@ -489,6 +489,11 @@ class MotorProprioMixin:
         fala_pendente = None
         t0 = time.monotonic()
         primeira = True
+        try:                                                     # 3.2 — auto-avaliação do pedido
+            from core import autoavaliacao as _AV
+            aval = _AV.Turno(texto, decisao.rota if decisao is not None else None)
+        except Exception:
+            aval = None
 
         # 2.4.5 — o prompt (lê arquivos e a memória) e as declarações das ferramentas eram
         # refeitos a cada rodada do mesmo pedido; agora são montados uma vez por pedido.
@@ -538,6 +543,8 @@ class MotorProprioMixin:
                     continue
                 if decisao is not None and decisao.rota == "rapido":
                     self._proprio_aprender(texto, "forte")        # o modelo rápido falhou: o forte da próxima vez
+                if aval is not None:
+                    aval.fechar(False)
                 self.ui.write_log(f"ERR: {cerebro.descricao()} — {str(e)[:200]}")
                 await self._proprio_falar("Não consegui falar com o modelo agora."
                                           if self._idioma_da_resposta() == "pt"
@@ -555,6 +562,8 @@ class MotorProprioMixin:
             hist.append({"role": "assistant", "content": resp.texto, "tool_calls": resp.chamadas})
 
             if not resp.chamadas:
+                if aval is not None:
+                    aval.fechar(True)
                 if fala_pendente is not None:
                     await fala_pendente
                 if resp.texto:
@@ -596,6 +605,8 @@ class MotorProprioMixin:
                     status = dados.get("status") if isinstance(dados, dict) else None
                 except Exception as e:
                     saida, status = f"Tool '{c['name']}' failed: {e}", "failed"
+                if aval is not None:
+                    aval.ferramenta(falhou=(status == "failed"))
                 if c["name"] in ("orchestrate", "agent_task"):
                     self._proprio_aprender(texto, "delegar")       # virou tarefa de vários passos: aprende
                 elif status == "failed" and decisao is not None and decisao.rota == "rapido":
@@ -623,6 +634,8 @@ class MotorProprioMixin:
                         self.ui.stop_camera_stream()
                     asyncio.create_task(_fechar_cam())
 
+        if aval is not None:
+            aval.fechar(False)
         if fala_pendente is not None:
             await fala_pendente
         await self._proprio_falar("Não consegui terminar: foram passos demais."

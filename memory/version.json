@@ -1,8 +1,13 @@
 {
-  "version": "3.1.0",
+  "version": "3.2.0",
   "codename": "Nexus Ultra 2026",
   "released": "2026-10-25",
   "changelog": [
+    {
+      "version": "3.2.0",
+      "date": "2026-10-25",
+      "notes": "NEXUS ULTRA 2026 3.2 — MAIS CAPAZ DENTRO DA ANI. EQUIPE DE AGENTES: novo agente REVISOR; até 8 subtarefas e 4 em paralelo; um revisor independente confere o resultado de cada especialista e o que estiver errado volta UMA vez para ser refeito. AUTO-AVALIAÇÃO: o NEXUS mede cada pedido (rota, tempo, erro) e ajusta o roteador sozinho (pedido que falhou no modelo rápido passa a ir para o forte; pedido simples e lento no forte, duas vezes, passa a ir para o rápido); 'Nexus, como você está se saindo?'. MEMÓRIA SEMANAL: resumo toda semana do que ele viu da sua rotina e antecipação (ele sugere o hábito que combina com este dia e hora, e só faz com o seu sim); 'o que você aprendeu sobre mim?'. RACIOCÍNIO EM ETAPAS: o modo agente confere o resultado contra o objetivo antes de terminar e tenta de novo uma vez. Configurações com só 6 abas: Áudio, Status, APIs, Atuador, Backup e I.S.A."
+    },
     {
       "version": "3.1.0",
       "date": "2026-10-25",

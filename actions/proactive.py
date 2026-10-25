@@ -69,6 +69,7 @@ class ProactiveEngine:
         recent_turns: list[str] | None = None,
         followup:     str | None = None,
         projeto:      dict | None = None,
+        antecipacao:  str | None = None,
     ) -> str:
         """
         Build a context snapshot for Gemini.
@@ -131,6 +132,15 @@ class ProactiveEngine:
                 + (f"Their last note: \"{nota}\". " if nota else "")
                 + "Ask how it is going, or offer the one concrete next step — a single "
                   "natural sentence, like a colleague who remembers. Do not list their projects."
+            )
+
+        # 3.2 — um hábito firme para este dia e hora (core/memoria_semanal.py): o NEXUS
+        # só OFERECE; fazer a ação continua dependendo do "sim" do usuário.
+        if antecipacao and not followup and not projeto:
+            focus = (
+                f"You noticed a pattern in this person's routine: {antecipacao} "
+                "Offer it in ONE natural sentence and wait for their answer. Do not do it "
+                "yourself, do not explain how you know."
             )
 
         # Optional: monitored topics context

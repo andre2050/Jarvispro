@@ -21,13 +21,13 @@ class SettingsPanelOverlay(_HudOverlay):
     # apontavam para ela e saíram do painel.
     # A chave é o nome da aba; o rótulo do menu SETUP (MENU_LABELS) usa o texto completo.
     _TABS = [
-        ("audio", "ÁUDIO"), ("status", "STATUS"),
-        ("resetar", "RESETAR"), ("gerenciar", "GERENCIAR"),
-        ("sobre", "SOBRE"), ("apis", "APIs"),
-        ("comandos", "COMANDO"), ("lista", "LISTA"), ("avancado", "AVANÇADO"),
-        ("backup", "BACKUP"), ("agenda", "AGENDA"), ("atuador", "ATUADOR"),
-        ("barra", "BARRA"), ("atalhos", "ATALHOS"), ("isa", "I.S.A."),
+        ("audio", "ÁUDIO"), ("status", "STATUS"), ("apis", "APIs"),
+        ("atuador", "ATUADOR"), ("backup", "BACKUP"), ("isa", "I.S.A."),
     ]
+    # Telas que saíram da grade para ela não ficar bagunçada (o código das páginas continua aqui;
+    # para trazer uma de volta, é só incluí-la em _TABS): RESETAR, GERENCIAR, SOBRE, COMANDO, LISTA,
+    # AVANÇADO, AGENDA, BARRA, ATALHOS. Cada uma tem outro caminho: memória e log em STATUS, comandos
+    # no F1, notas na central própria, barra/atalhos no editor de cada um, atualizar no SETUP.
     # Menu SETUP enxuto: só o núcleo I.S.A. (o ATUALIZAR é adicionado em main_window).
     # As demais seções continuam em _TABS, só não aparecem mais no menu.
     MENU_LABELS = [

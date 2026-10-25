@@ -1,5 +1,34 @@
 # Mudanças
 
+## 3.2.0 — 25/10/2026
+
+### 🤝 Equipe de agentes mais forte (`actions/orquestrador.py`)
+* Novo especialista **revisor**; até **8** subtarefas e **4** em paralelo.
+* Depois dos especialistas, um revisor independente confere cada resultado contra o objetivo. O que estiver
+  errado, incompleto ou sem fonte volta **uma vez** ao mesmo especialista, com o motivo. Sem tempo (45 s) ou sem
+  resposta do modelo, a revisão é pulada e nunca trava a equipe. O relatório ganhou a seção "Revisão".
+
+### 📊 Auto-avaliação (`core/autoavaliacao.py`)
+* Cada pedido do motor próprio é medido (rota, tempo, erro, ferramentas que falharam) em `memory/autoavaliacao.json`.
+* Ajusta o roteador sozinho, só com regras conservadoras: falhou no modelo rápido → passa a ir para o forte;
+  pedido simples (até 6 palavras, sem ferramenta) e lento no forte **duas vezes** → passa a ir para o rápido.
+* Por voz: "Nexus, como você está se saindo?" (tempo típico, erros por modelo, ajustes feitos).
+
+### 🧠 Memória semanal (`core/memoria_semanal.py`, `actions/memoria_semanal.py`)
+* Toda semana resume, só com contagem, as ações que você mais repetiu, o horário típico, o dia mais ativo e os
+  pedidos repetidos (`memory/resumo_semanal.json`, até 12 semanas).
+* Antecipa: no check-in proativo, se um hábito se repete no mesmo dia da semana e hora em 3+ dias, o NEXUS
+  **oferece** a ação; fazer continua dependendo do seu "sim".
+* Por voz: "o que você aprendeu sobre mim esta semana?" / "o que eu costumo fazer agora?".
+
+### 🔁 Raciocínio em etapas (`actions/agent_task.py`)
+* O modo agente confere o resultado contra o objetivo antes de dar a tarefa por terminada e, se faltou algo
+  (ou o relatório diz mais do que os passos mostram), tenta de novo **uma vez**.
+
+### 🧹 Configurações enxutas
+* A grade de abas ficou com 6: **Áudio, Status, APIs, Atuador, Backup e I.S.A.** As outras telas continuam no
+  código e podem voltar incluindo a aba em `_TABS`.
+
 ## 3.1.0 — 25/10/2026
 
 ### 🧬 Como a IA funciona (`core/ia_status.py`, `ui/overlays/ia_painel.py`, `actions/explicar_ia.py`)

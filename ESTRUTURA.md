@@ -421,3 +421,12 @@ Veja `actions/focus_mode.py` como exemplo curto.
 | `core/ia_status.py` | O que é cada área e tipo de IA + o estado real dos módulos (só leitura) |
 | `ui/overlays/ia_painel.py` | O painel: abas ÁREAS DA IA e TIPOS DE IA (botão dentro do Núcleo I.S.A.) |
 | `actions/explicar_ia.py` | A voz: "o que é machine learning?", "que tipo de IA você é?", "como você aprende?" |
+
+## Mais capaz dentro da ANI (3.2)
+| Arquivo | O que faz |
+|---|---|
+| `core/autoavaliacao.py` | Mede cada pedido (rota, tempo, erro) e ajusta o roteador de modelos |
+| `core/memoria_semanal.py` | Resumo semanal da sua rotina e antecipação de hábitos (só sugere) |
+| `actions/memoria_semanal.py` | A voz: "o que você aprendeu sobre mim esta semana?" |
+| `actions/orquestrador.py` | Equipe de agentes com revisor e uma rodada de "refaz isso" |
+| `actions/agent_task.py` | Modo agente com conferência do resultado antes de terminar |

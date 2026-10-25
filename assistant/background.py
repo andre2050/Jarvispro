@@ -330,12 +330,20 @@ class BackgroundMixin:
                         projeto = await asyncio.to_thread(pick_projeto)
                     except Exception as e:
                         print(f"[Projetos] ⚠️ check-in de projeto indisponível: {e}")
+                antecipacao = None
+                if not followup and not projeto:
+                    try:
+                        from core.memoria_semanal import sugestao_texto
+                        antecipacao = await asyncio.to_thread(sugestao_texto) or None
+                    except Exception as e:
+                        print(f"[Semanal] ⚠️ antecipação indisponível: {e}")
                 prompt = self._proactive.build_prompt(
                     memory       = memory,
                     monitors     = monitors or None,
                     recent_turns = recent_turns or None,
                     followup     = followup,
                     projeto      = projeto,
+                    antecipacao  = antecipacao,
                 )
                 await self.session.send_client_content(
                     turns={"role": "user", "parts": [{"text": prompt}]},
@@ -376,6 +384,18 @@ class BackgroundMixin:
                 )
             except Exception as e:
                 print(f"[Battery] ⚠️ {e}")
+
+    async def _run_memoria_semanal(self) -> None:
+        """3.2 — uma vez por semana, resume o que aprendeu sobre o usuário (core/memoria_semanal.py)."""
+        while True:
+            try:
+                from core.memoria_semanal import garantir_semana
+                novo = await asyncio.to_thread(garantir_semana)
+                if novo:
+                    print(f"[Semanal] resumo da semana {novo['semana']} guardado.")
+            except Exception as e:
+                print(f"[Semanal] ⚠️ {e}")
+            await asyncio.sleep(6 * 3600)
 
     async def _run_anomaly_watch(self) -> None:
         """2.3 — uma medida do PC por minuto; treina o autoencoder sozinho e avisa quando o PC destoa."""

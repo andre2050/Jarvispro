@@ -141,6 +141,22 @@ def _ml() -> list[ItemIA]:
                             "pronto" if roteador.pronto else "treina no primeiro uso", bool(roteador.pronto)))
     except Exception:
         itens.append(ItemIA("Roteador de modelos", "indisponível", False))
+    try:
+        from core import autoavaliacao as AV
+        r = AV.relatorio()
+        if r["total"]:
+            itens.append(ItemIA("Auto-avaliação", f"{r['total']} pedidos medidos · {r['ajustes_total']} ajuste(s) no roteador", True))
+        else:
+            itens.append(ItemIA("Auto-avaliação", "mede os pedidos a partir do próximo uso", None))
+    except Exception:
+        itens.append(ItemIA("Auto-avaliação", "indisponível", False))
+    try:
+        from core import memoria_semanal as MS
+        u = MS.ultimo()
+        itens.append(ItemIA("Memória semanal", f"resumo da semana {u['semana']} guardado" if u
+                            else "o primeiro resumo sai nesta semana", True if u else None))
+    except Exception:
+        itens.append(ItemIA("Memória semanal", "indisponível", False))
     return itens
 
 

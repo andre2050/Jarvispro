@@ -15,6 +15,10 @@ def explicar_ia(parameters: dict, player=None) -> str:
     if acao == "learn":
         return st.como_aprendo()
 
+    if acao == "self":
+        from core import autoavaliacao
+        return autoavaliacao.resumo_texto()
+
     if acao == "types":
         return st.explicar_tipo(st.resolver_tipo(str(parameters.get("type") or parameters.get("area") or "")))
 
@@ -40,7 +44,8 @@ TOOL = {
                     "'o que é machine learning / aprendizado profundo / PLN / visão computacional', "
                     "'como você aprende?', 'que IA você usa?', 'você enxerga?', 'o que é IA estreita / AGI / superinteligência', 'que tipo de IA você é?'. action=explain (default; "
                     "set area to ml | dl | pln | visao, or leave empty for an overview of all four), "
-                    "learn (how NEXUS learns, with real numbers), types (kinds of AI: narrow/ANI, general/AGI, "
+                    "learn (how NEXUS learns, with real numbers), self (how NEXUS is doing: its own response times, "
+                    "errors per model and the adjustments it made to itself; for 'como você está se saindo?'), types (kinds of AI: narrow/ANI, general/AGI, "
                     "super/ASI, and reactive, limited-memory, theory-of-mind machines; set type to ani | agi | asi | "
                     "reativa | memoria | mente, or leave empty for the whole classification), "
                     "panel (open the on-screen AI panel). "
@@ -48,7 +53,7 @@ TOOL = {
     "parameters": {
         "type": "OBJECT",
         "properties": {
-            "action": {"type": "STRING", "description": "explain | learn | types | panel"},
+            "action": {"type": "STRING", "description": "explain | learn | self | types | panel"},
             "area": {"type": "STRING", "description": "ml | dl | pln | visao (empty = overview)"},
             "type": {"type": "STRING", "description": "for action=types: ani | agi | asi | reativa | memoria | mente"},
         },

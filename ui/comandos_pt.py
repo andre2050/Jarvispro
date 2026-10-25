@@ -66,6 +66,9 @@ COMANDOS = {
     "explicar_ia": ("Como a IA funciona", "O NEXUS explica machine learning, aprendizado profundo, linguagem natural, "
                     "visão computacional e os tipos de IA (ANI, AGI, ASI), e diz o que ele tem de cada um.",
                     "Nexus, o que é aprendizado profundo?"),
+    "memoria_semanal": ("Memória semanal", "O NEXUS conta o que aprendeu sobre a sua rotina na semana e sugere o hábito "
+                        "que combina com este dia e hora (ele só sugere; você decide).",
+                        "Nexus, o que você aprendeu sobre mim esta semana?"),
     "notepad": ("Bloco de Notas e ditado",
                 "Abre o Bloco de Notas, escreve textos, lê o que está nele e, no modo ditado, "
                 "escreve sozinho tudo o que você falar (diga “parar ditado” para terminar).",

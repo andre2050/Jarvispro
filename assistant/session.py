@@ -863,6 +863,7 @@ class SessionMixin:
                     tg.create_task(self._isolada(self._run_water_reminder))
                     tg.create_task(self._isolada(self._run_battery_watch))
                     tg.create_task(self._isolada(self._run_anomaly_watch))
+                    tg.create_task(self._isolada(self._run_memoria_semanal))
                     if self._dashboard:
                         tg.create_task(self._isolada(self._relay_phone_audio))
 
