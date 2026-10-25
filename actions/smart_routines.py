@@ -59,21 +59,97 @@ _DEFAULT_ROUTINES = {
                   {"tool": "open_app", "params": {"app_name": "YouTube"}}],
         "description": "Abre o Google Chrome e o YouTube",
     },
+    # 3.4 — abre o editor e PERGUNTA o que criar; a resposta vai direto para o agente de código
+    "modo programação": {
+        "steps": [{"tool": "open_app", "params": {"app_name": "Visual Studio Code"}}],
+        "description": "Abre o VS Code e pergunta qual aplicativo ou site criar",
+        "pergunta": {"texto": "Qual aplicativo ou site você quer que eu crie?",
+                     "ferramenta": "dev_agent", "parametro": "description", "extra": {"action": "create"}},
+    },
+    # 3.4 — um comando só: caixa de e-mail aberta, clima e as principais notícias
+    "bom dia": {
+        "steps": [{"tool": "bom_dia", "params": {}}],
+        "description": "Abre os e-mails, diz o clima e as principais notícias",
+    },
 }
+
+# 3.4 — rotinas novas que chegam UMA vez também para quem já tem routines.json. O nome entra em
+# routines_sementes.json; se você apagar a rotina depois, ela não volta sozinha.
+_SEMENTES = ("modo programação", "bom dia")
+
+# 3.4 — a pergunta da rotina de programação vale também para uma rotina "programação" que você
+# já tinha criado do seu jeito (sem pergunta própria).
+_PERGUNTA_PROGRAMACAO = _DEFAULT_ROUTINES["modo programação"]["pergunta"]
 
 
 def _load() -> dict:
+    sementes = _FILE.with_name("routines_sementes.json")
     if not _FILE.exists():
         try:
             _save(json.loads(json.dumps(_DEFAULT_ROUTINES)))
+            sementes.write_text(json.dumps(list(_SEMENTES), ensure_ascii=False), encoding="utf-8")
         except Exception as e:
             print(f"[Routines] could not write default routines: {e}")
             return json.loads(json.dumps(_DEFAULT_ROUTINES))
     try:
         data = json.loads(_FILE.read_text(encoding="utf-8"))
-        return data if isinstance(data, dict) else {}
+        data = data if isinstance(data, dict) else {}
     except Exception:
         return {}
+    return _semear(data, sementes)
+
+
+def _semear(data: dict, sementes: Path) -> dict:
+    """3.4 — entrega uma vez as rotinas novas a quem já tinha routines.json."""
+    try:
+        ja = set(json.loads(sementes.read_text(encoding="utf-8")))
+    except Exception:
+        ja = set()
+    faltam = [n for n in _SEMENTES if n not in ja]
+    if not faltam:
+        return data
+    for n in faltam:
+        if n in data:
+            continue
+        if n == "modo programação" and any(_tem_programacao(k) for k in data):
+            continue                     # você já tem a sua rotina de programação: ela ganha a pergunta
+        data[n] = json.loads(json.dumps(_DEFAULT_ROUTINES[n]))
+    try:
+        _save(data)
+        sementes.write_text(json.dumps(sorted(ja | set(faltam)), ensure_ascii=False), encoding="utf-8")
+    except Exception as e:
+        print(f"[Routines] could not add the new routines: {e}")
+    return data
+
+
+def _tem_programacao(nome: str) -> bool:
+    import unicodedata
+    n = "".join(c for c in unicodedata.normalize("NFKD", _norm(nome)) if not unicodedata.combining(c))
+    return "programacao" in n or "programar" in n
+
+
+def pergunta_de(key: str, r: dict) -> dict | None:
+    """A pergunta que a rotina faz ao terminar (3.4), ou None."""
+    p = r.get("pergunta")
+    if isinstance(p, dict) and str(p.get("texto") or "").strip():
+        return p
+    if isinstance(p, str) and p.strip():
+        return {"texto": p.strip()}
+    if p is None and _tem_programacao(key):
+        return dict(_PERGUNTA_PROGRAMACAO)
+    return None
+
+
+def instrucao_pergunta(p: dict) -> str:
+    """O que o modelo deve fazer com a pergunta: perguntar e, com a resposta, chamar a ferramenta."""
+    txt = f" [ASK_USER] Now ask the user, in their language: \"{p['texto']}\""
+    ferramenta = str(p.get("ferramenta") or "").strip()
+    if ferramenta:
+        extra = p.get("extra") or {}
+        extras = ", ".join(f"{k}={v}" for k, v in extra.items())
+        txt += (f" When they answer, call {ferramenta} with {p.get('parametro') or 'description'}=<their answer, "
+                f"with every detail they gave>" + (f" and {extras}" if extras else "") + ".")
+    return txt + " Do not invent the answer yourself."
 
 
 def _save(data: dict) -> None:
@@ -286,6 +362,9 @@ def run_routine(key: str, player=None, speak=None) -> str:
     _log(msg)
     if saidas:                           # 3.3 — o que as ferramentas responderam (ex.: o clima), para o NEXUS dizer
         msg += " Results (data): " + " | ".join(saidas)
+    pergunta = pergunta_de(key, r)       # 3.4 — "modo programação" pergunta o que criar
+    if pergunta:
+        msg += instrucao_pergunta(pergunta)
     return msg
 
 
@@ -321,6 +400,8 @@ def routines_action(parameters: dict, player=None, speak=None, session_memory=No
                 return "The routine limit is reached; delete one first."
             data[_norm(name)] = {"steps": steps,
                                  "description": str(parameters.get("description") or "")[:200]}
+            if str(parameters.get("ask") or "").strip():          # 3.4 — a rotina pergunta algo ao terminar
+                data[_norm(name)]["pergunta"] = {"texto": str(parameters["ask"]).strip()[:200]}
             _save(data)
         return f"Saved. {_describe(_norm(name), data[_norm(name)])}"
 
@@ -432,8 +513,10 @@ TOOL = {
         "it. Steps may only use: open_app, weather_report, morning_briefing, "
         "music_control, quick_notes, web_search, timer_action, unit_converter, "
         "everyday_tools, video_player, youtube_video, price_alert, "
-        "computer_settings, system_update, daily_planner. Do NOT use this for a "
-        "single action — call that tool directly."
+        "computer_settings, system_update, daily_planner, bom_dia, oraculo_bemestar. "
+        "'ask' (create) is a question the routine asks when it finishes. If a run "
+        "result contains [ASK_USER], ask that question and act on the answer. Do NOT "
+        "use this for a single action — call that tool directly."
     ),
     "parameters": {
         "type": "OBJECT",
@@ -442,6 +525,7 @@ TOOL = {
                        "description": "create | edit | run | list | delete | suggest | learn | forget_habits"},
             "name": {"type": "STRING", "description": "Routine name, e.g. 'modo trabalho' (create/edit/run/delete/learn)"},
             "description": {"type": "STRING", "description": "Optional one-line purpose"},
+            "ask": {"type": "STRING", "description": "create: optional question the routine asks when it finishes"},
             "apps": {
                 "type": "ARRAY",
                 "description": "create: apps to open all at once, by name or full path",

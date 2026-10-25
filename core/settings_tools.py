@@ -31,7 +31,7 @@ ACTUATOR_GROUPS: dict[str, tuple[str, tuple[str, ...]]] = {
     "arquivos":  ("Ler, criar e mover arquivos", ("file_controller", "file_processor")),
     "sistema":   ("Volume, Wi-Fi, energia e ajustes do sistema", ("computer_settings", "computer_control", "system_update")),
     "navegador": ("Controlar o navegador", ("browser_control",)),
-    "mensagens": ("Enviar mensagens", ("send_message",)),
+    "mensagens": ("Enviar mensagens e fazer ligações", ("send_message", "ligar_whatsapp")),
     # 2.1 — o agente que escreve e RODA programas passou a ter o seu interruptor
     "programacao": ("Criar e rodar programas (agente de código)", ("dev_agent", "code_helper")),
     "casa": ("Controlar a casa inteligente (luzes, cortinas, ar, fechaduras)", ("casa_inteligente",)),

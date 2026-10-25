@@ -49,6 +49,9 @@ EXCLUDE = [
     "memory/previsao_habitos.json", "memory/rostos.npz", "memory/modelos/*", "memory/cerebro_local/*",
     "uploads/*", ".ruff_cache/*", ".pytest_cache/*", "*.log.*",
     "memory/organizacao_desktop*.json",   # 1.4.2 — onde estavam os arquivos da sua área de trabalho
+    # 3.4 — bem-estar, vigias, tempo de projeto e o núcleo I.S.A.
+    "memory/bemestar.json", "memory/vigias.json", "memory/tempo_projetos.json", "memory/isa_series.json",
+    "memory/regeneracao.json", "memory/regeneracao_copias/*", "memory/routines_sementes.json",
     # o Nexus.exe gerado no seu PC (gerar_exe.bat) — grande demais para o GitHub
     "Nexus.exe", "_internal/*", "build/*", "dist/*",
     "*.log", "*.tmp", "*.part",

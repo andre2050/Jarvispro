@@ -39,6 +39,8 @@ SAFE_TOOLS = frozenset({
     "quick_notes", "web_search", "timer_action", "unit_converter",
     "everyday_tools", "video_player", "youtube_video", "price_alert",
     "computer_settings", "system_update", "daily_planner",
+    # 3.4 — só leem e mostram (e-mail aberto no navegador, clima, notícias, plano do dia)
+    "bom_dia", "oraculo_bemestar",
 })
 
 _DROP_KEYS = ("key", "token", "password", "secret", "message", "body", "contact")

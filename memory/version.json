@@ -1,8 +1,13 @@
 {
-  "version": "3.3.0",
+  "version": "3.4.0",
   "codename": "Nexus Ultra 2026",
   "released": "2026-10-25",
   "changelog": [
+    {
+      "version": "3.4.0",
+      "date": "2026-10-25",
+      "notes": "NEXUS ULTRA 2026 3.4 — ROTINAS QUE FAZEM TUDO E UM NÚCLEO QUE SE CUIDA. LIGAR PELO WHATSAPP: 'liga pro Marcos no WhatsApp' (voz ou vídeo) — mostra quem e qual número e liga depois do seu CONFIRMAR; só diz que ligou se a chamada começou. ROTINA PROGRAMAÇÃO: abre o VS Code e pergunta qual app ou site criar; a resposta vai direto para o agente de código. ROTINA BOM DIA: um comando abre os e-mails, diz o clima e as principais notícias. PESQUISA PROFUNDA: um tema vira várias buscas em paralelo e um resumo com fontes. VIGIAS: notícias e preços (de um produto ou de uma página) com alerta quando mudam. INICIAR PROJETO: pasta, editor, documentação, contagem de tempo e a pergunta do próximo passo. ANALISAR TRABALHO: formatação, sugestões de conteúdo e tradução de trechos (sempre num arquivo novo). ORÁCULO DE BEM-ESTAR: plano do dia com sono, energia, humor, hábitos, agenda, tela e clima, e avisos de prevenção — tudo só no PC, sem diagnóstico. I.S.A. PREDITIVA: prevê disco cheio, vazamento de memória, lentidão e funções falhando, e ajusta sozinha o ritmo do NEXUS (economia, equilibrado, desempenho). AUTO-REGENERAÇÃO: restaura cópias boas de arquivos estragados, pausa a função que falha sem parar, libera memória e limpa as sobras do NEXUS; instalar pacote só com o seu sim. APRENDIZADO COLABORATIVO (opcional): os NEXUS da sua rede trocam o placar de reparos, assinado com um código de grupo."
+    },
     {
       "version": "3.3.0",
       "date": "2026-10-25",

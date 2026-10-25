@@ -255,6 +255,9 @@ class ToolsMixin:
                 from core import cache_respostas as _cache
                 from core import perfis as _perfis
                 r = _perfis.bloqueada(name)                    # 3.3 — o perfil (Trabalho, Estudo, Jogo) desativa algumas
+                if r is None:                                  # 3.4 — disjuntor da auto-regeneração
+                    from core import autoregeneracao as _regen
+                    r = _regen.bloqueada(name)
                 if r is None:
                     r = _cache.obter(name, args)
                 _do_cache = r is not None and not str(r).startswith("[failed] O perfil")
@@ -329,6 +332,18 @@ class ToolsMixin:
         except Exception:
             pass
         _isa.concluir_acao(_isa_tok, result, ok=_status != "failed")
+        try:                                                 # 3.4 — auto-regeneração e desempenho da I.S.A.
+            from core import autoregeneracao as _regen
+            from core import isa_preditiva as _ip
+            _ip.marcar_uso()
+            if self._action_registry.has(name) and not str(result).startswith("[failed] A função"):
+                if _status == "failed" and str(result).startswith(("Tool '", "Action '")):
+                    if _regen.falha_de_funcao(name):
+                        self.ui.write_log(f"SYS: 🛠 A I.S.A. pausou '{name}' por 10 min: falhou várias vezes seguidas.")
+                elif _status != "failed":
+                    _regen.acerto_de_funcao(name)
+        except Exception:
+            pass
         print(f"[NEXUS] 📤 {name} [{_status}] → {str(result)[:80]}")
         from core.audit import record as _audit
         _em_segundo_plano(_audit, name, dict(args), f"[{_status}] {result}",

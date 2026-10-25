@@ -1,5 +1,54 @@
 # Mudanças
 
+## 3.4.0 — 25/10/2026
+
+### 📞 Ligar pelo WhatsApp (`core/whatsapp_ligacao.py`, `actions/ligar_whatsapp.py`)
+* "Liga pro Marcos no WhatsApp", "chamada de vídeo com a Maria", "liga no zap pro 11 98888-7777".
+* O nome vai para os seus contatos e vira número (DDI 55 entra sozinho); o WhatsApp Desktop abre a conversa CERTA
+  pelo link `whatsapp://send?phone=` e o botão de voz/vídeo é achado pelo nome, nunca por coordenada.
+* Antes de ligar aparece **CONFIRMAR** com quem e qual número. Só diz "liguei" se o botão de encerrar apareceu.
+* Entrou no grupo "Enviar mensagens e fazer ligações" das permissões do Atuador.
+
+### 💻 Rotina Programação pergunta o que criar (`actions/smart_routines.py`)
+* "Modo programação" abre o VS Code e pergunta **qual aplicativo ou site** criar; a resposta vai direto para o
+  agente de código (`dev_agent`). Uma rotina "programação" que você já tinha ganha a mesma pergunta.
+* Toda rotina pode ter a sua pergunta (`ask` ao criar).
+
+### ☀ Rotina Bom dia (`actions/bom_dia.py`)
+* Um comando: abre a caixa de e-mail no navegador (pelo seu e-mail salvo), o clima de hoje e as manchetes, ao mesmo
+  tempo. Chega pronta, uma vez, também para quem já tinha rotinas.
+
+### 🔎 Pesquisa profunda e 🔔 vigias (`core/pesquisa_profunda.py`, `core/vigias.py`)
+* "Pesquisa a fundo sobre…": várias buscas em paralelo e um resumo com pontos principais, divergências, o que não
+  foi confirmado e fontes; relatório em Documentos/NEXUS Agente.
+* "Fica de olho nas notícias sobre…", "me avisa quando o preço do… cair" (também de uma página): a 1ª olhada só
+  aprende; depois avisa o que é novo ou a mudança de preço acima do limite.
+
+### 🚀 Iniciar projeto (`core/inicio_projeto.py`)
+* Pasta com README, notas e .gitignore, VS Code, documentação oficial, contagem de tempo ("quanto tempo trabalhei
+  no projeto?") e a pergunta do próximo passo, já registrado na lista de projetos.
+
+### 📝 Analisar trabalho (`core/analise_trabalho.py`)
+* Formatação (com as linhas), sugestões de conteúdo e trechos em outro idioma com tradução oferecida. Corrigir e
+  traduzir sempre geram um arquivo NOVO; o original não muda.
+
+### 🌿 Oráculo de bem-estar (`core/oraculo_bemestar.py`)
+* Plano do dia com sono, energia, humor, hábitos, tarefas, lembretes, tempo de tela e clima: energia prevista, foco
+  no seu pico, pausas, movimento e hora de dormir. Prevenção para padrões que se repetem há dias.
+* Avisos ao longo do dia (pausa, água, dormir) com intervalo mínimo. Não é conselho médico; os dados não saem do PC.
+
+### 🔮 Núcleo I.S.A. avançado (`core/isa_preditiva.py`)
+* Prevê disco cheio, vazamento de memória do NEXUS, memória do PC no limite, respostas mais lentas e funções que
+  falham — antes de virar problema, com sugestão. "Otimiza o sistema" aplica o que é seguro.
+* Desempenho automático: economia (jogo, CPU alta, bateria baixa: prioridade do NEXUS mais baixa e laços 3× mais
+  calmos), equilibrado ou desempenho. Só o próprio NEXUS é ajustado.
+
+### 🛠 Auto-regeneração e aprendizado colaborativo (`core/autoregeneracao.py`, `core/rede_colaborativa.py`)
+* Restaura a cópia boa de um arquivo estragado, pausa por 10 min a função que falha sem parar (disjuntor), libera
+  memória e limpa sobras do NEXUS. Instalar um pacote que falta só do requirements.txt e só com o seu CONFIRMAR.
+* Aprende qual remédio funciona para cada falha. Opcional: os NEXUS da sua rede trocam esse placar (sem dados
+  pessoais), assinado com HMAC do código do grupo; o que chega só reordena remédios que já existem.
+
 ## 3.3.0 — 25/10/2026
 
 ### ⏱ Latência e resposta mais rápida (`core/latencia.py`, `core/cache_respostas.py`)

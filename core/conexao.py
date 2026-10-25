@@ -23,6 +23,8 @@ PRECISAM_DE_INTERNET = frozenset({
     "web_search", "weather_report", "noticias", "flight_finder", "youtube_video", "browser_control",
     "mapas", "email_reader", "email_checker", "system_update", "game_updater", "price_alert",
     "compras", "send_message", "dev_agent", "morning_briefing",
+    # 3.4
+    "ligar_whatsapp", "bom_dia", "pesquisa_profunda",
 })
 FUNCIONA_OFFLINE = (
     "rotinas e modos (como o modo trabalho)", "notas rápidas, lembretes e tarefas", "diário e hábitos",

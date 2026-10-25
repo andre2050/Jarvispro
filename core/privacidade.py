@@ -45,6 +45,12 @@ CATALOGO: tuple[Item, ...] = (
     Item("registros", "Registros do app", (MEM / "activity.log", MEM / "audit.log", MEM / "falhas.log",
                                            MEM / "queda_nativa.log", MEM / "reconexoes.log"), "logs de atividade, auditoria e erros"),
     Item("perfil", "Perfil de uso", (MEM / "perfil.json",), "o perfil ligado (Trabalho, Estudo, Jogo)"),
+    # 3.4
+    Item("bemestar", "Bem-estar", (MEM / "bemestar.json",), "sono, energia, humor e o que você contou para o plano do dia"),
+    Item("vigias", "Vigias e tempo de projeto", (MEM / "vigias.json", MEM / "tempo_projetos.json"),
+         "os assuntos e preços vigiados e o tempo contado em cada projeto"),
+    Item("nucleo", "Núcleo I.S.A.", (MEM / "isa_series.json", MEM / "regeneracao.json", MEM / "regeneracao_copias"),
+         "medidas do sistema, reparos feitos e as cópias boas dos seus arquivos de dados"),
 )
 
 SAI_DO_PC = (
@@ -55,7 +61,11 @@ SAI_DO_PC = (
     ("Pesquisa, clima e notícias", "O texto da consulta vai para o serviço que responde (busca, previsão, notícias)."),
     ("E-mail, GitHub e atualização", "Só quando você pede: o NEXUS fala com a sua conta de e-mail e com o GitHub "
      "para verificar atualizações."),
-    ("Tudo o mais", "Diário, anotações, tarefas, finanças, contatos, hábitos e métricas ficam só no seu PC."),
+    ("Rede colaborativa (desligada por padrão)", "Se você ligar, os NEXUS da SUA rede local trocam só o placar de "
+     "reparos (tipo de falha → remédio que funcionou), assinado com o código do grupo. Nada pessoal."),
+    ("Análise de trabalho e pesquisa profunda", "O texto dos arquivos analisados e as perguntas da pesquisa vão para o "
+     "modelo que você usa (Gemini/Claude, ou o modelo local). Os dados de bem-estar NUNCA saem do PC."),
+    ("Tudo o mais", "Diário, anotações, tarefas, finanças, contatos, hábitos, bem-estar e métricas ficam só no seu PC."),
 )
 
 
@@ -75,13 +85,14 @@ def estado(catalogo=CATALOGO) -> list[dict]:
     for it in catalogo:
         total, ultimo, achou = 0, 0.0, False
         for a in it.arquivos:
-            try:
-                st = a.stat()
-                total += st.st_size
-                ultimo = max(ultimo, st.st_mtime)
-                achou = True
-            except OSError:
-                continue
+            for f in (sorted(a.rglob("*")) if a.is_dir() else [a]):      # 3.4 — pasta de cópias conta inteira
+                try:
+                    st = f.stat()
+                    total += st.st_size if f.is_file() else 0
+                    ultimo = max(ultimo, st.st_mtime)
+                    achou = True
+                except OSError:
+                    continue
         out.append({"chave": it.chave, "nome": it.nome, "o_que": it.o_que, "existe": achou, "bytes": total,
                     "tamanho": _tam(total) if achou else "—",
                     "mudou": time.strftime("%d/%m/%Y", time.localtime(ultimo)) if achou else "—"})
@@ -97,7 +108,9 @@ def resolver(texto: str, catalogo=CATALOGO) -> Item | None:
                  "lembretes": ("lembrete",), "habitos": ("habito", "rotina"),
                  "autoavaliacao": ("avaliac", "latencia", "metrica", "roteador"),
                  "financas": ("financ", "gasto", "compra"), "contatos": ("contato",),
-                 "casa": ("casa", "foco"), "registros": ("registro", "log", "auditoria"), "perfil": ("perfil",)}
+                 "casa": ("casa", "foco"), "registros": ("registro", "log", "auditoria"), "perfil": ("perfil",),
+                 "bemestar": ("bem-estar", "bem estar", "sono", "saude"), "vigias": ("vigia", "tempo de projeto"),
+                 "nucleo": ("nucleo", "isa", "regenera", "copias")}
     for it in catalogo:
         if it.chave in t or _sem_acento(it.nome) in t or any(s in t for s in sinonimos.get(it.chave, ())):
             return it
@@ -130,12 +143,17 @@ def apagar(alvo: str, confirmar: bool = False, catalogo=CATALOGO) -> str:
     if not arqs:
         return f"Não há nada guardado em “{nome}”."
     if not confirmar:
-        return (f"Isso apaga {nome} ({len(arqs)} arquivo(s), {_tam(sum(a.stat().st_size for a in arqs))}) e não dá "
+        tamanho = sum(f.stat().st_size for a in arqs for f in (a.rglob("*") if a.is_dir() else [a]) if f.is_file())
+        return (f"Isso apaga {nome} ({len(arqs)} arquivo(s), {_tam(tamanho)}) e não dá "
                 "para desfazer. Pergunte ao usuário se quer mesmo apagar e só então repita o pedido com a confirmação.")
     apagados = 0
     for a in arqs:
         try:
-            a.unlink()
+            if a.is_dir():
+                import shutil
+                shutil.rmtree(a)
+            else:
+                a.unlink()
             apagados += 1
         except OSError:
             continue

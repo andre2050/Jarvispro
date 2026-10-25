@@ -38,6 +38,15 @@ def cacheavel(ferramenta: str, args: dict | None = None) -> bool:
     return ferramenta in TTL_S and not bool((args or {}).get("refresh") or (args or {}).get("force"))
 
 
+def _fator_ttl() -> float:
+    """3.4 — no modo economia da I.S.A. as respostas valem mais tempo (menos rede e CPU)."""
+    try:
+        from core import isa_preditiva
+        return isa_preditiva.fator()
+    except Exception:
+        return 1.0
+
+
 def obter(ferramenta: str, args: dict | None = None, agora: float | None = None) -> str | None:
     """A resposta guardada (ainda válida) ou None."""
     try:
@@ -46,7 +55,7 @@ def obter(ferramenta: str, args: dict | None = None, agora: float | None = None)
         agora = agora if agora is not None else time.monotonic()
         with _trava:
             item = _dados.get(_chave(ferramenta, args or {}))
-            if item and agora - item[0] <= TTL_S[ferramenta]:
+            if item and agora - item[0] <= TTL_S[ferramenta] * _fator_ttl():
                 _stats["acertos"] += 1
                 return item[1]
             _stats["faltas"] += 1

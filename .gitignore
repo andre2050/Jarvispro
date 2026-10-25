@@ -33,6 +33,14 @@ memory/habits.json
 memory/projetos.json
 memory/update_state.json
 memory/price_alerts.json
+# 3.4 — bem-estar, vigias, tempo de projeto, núcleo I.S.A. (medidas, reparos e cópias boas)
+memory/bemestar.json
+memory/vigias.json
+memory/tempo_projetos.json
+memory/isa_series.json
+memory/regeneracao.json
+memory/regeneracao_copias/
+memory/routines_sementes.json
 config/quick_notes.json
 config/focus_state.json
 config/email_account.json

@@ -442,5 +442,21 @@ Veja `actions/focus_mode.py` como exemplo curto.
 | `actions/privacidade.py` | A voz: "o que você guarda sobre mim?" |
 | `ui/overlays/latencia_painel.py` | Painel ⏱ Latência |
 | `ui/overlays/privacidade_painel.py` | Painel 🔒 Privacidade |
+| `core/whatsapp_ligacao.py` | 3.4 — ligações de voz e vídeo pelo WhatsApp Desktop, conferidas na tela |
+| `actions/ligar_whatsapp.py` | A voz: "liga pro Marcos no WhatsApp" (com CONFIRMAR) |
+| `actions/bom_dia.py` | Rotina Bom dia: e-mail, clima e notícias num comando |
+| `core/pesquisa_profunda.py` | Várias buscas em paralelo e um resumo com fontes |
+| `actions/pesquisa_profunda.py` | A voz: "pesquisa a fundo sobre…" |
+| `core/vigias.py` | Vigias de notícias e preços com alerta de mudança |
+| `actions/vigiar.py` | A voz: "me avisa quando o preço do… cair" |
+| `core/inicio_projeto.py` | Pasta, editor, documentação e tempo de um projeto |
+| `actions/iniciar_projeto.py` | A voz: "inicia o projeto…" |
+| `core/analise_trabalho.py` | Formatação, sugestões de conteúdo e tradução de trechos |
+| `actions/analisar_trabalho.py` | A voz: "analisar trabalho" |
+| `core/oraculo_bemestar.py` | Plano do dia e prevenção a partir dos seus dados (só no PC) |
+| `actions/oraculo_bemestar.py` | A voz: "monta meu plano do dia" |
+| `core/isa_preditiva.py` | I.S.A. preditiva: tendências, previsões e modo de desempenho automático |
+| `core/autoregeneracao.py` | Auto-regeneração: cópias boas, disjuntor, limpeza e placar de remédios |
+| `core/rede_colaborativa.py` | Troca do placar de reparos com outros NEXUS da rede (opcional, assinada) |
 | `actions/orquestrador.py` | Equipe de agentes com revisor e uma rodada de "refaz isso" |
 | `actions/agent_task.py` | Modo agente com conferência do resultado antes de terminar |

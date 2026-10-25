@@ -70,6 +70,15 @@ DEFAULTS = {
     "mic_sensitivity": 1.0,        # modo Claude: multiplica o limiar de ruído (0.6 = capta voz baixa, 1.6 = ignora barulho)
     "wake_sensitivity": 0.5,       # palavra de ativação: confiança mínima (0.35 = acorda fácil, 0.7 = menos alarme falso)
     "wake_engine": "auto",         # 1.5: "auto" | "nexus" (Whisper, "Hey Nexus") | "jarvis" (openWakeWord, "Hey Jarvis") | "treinada" (2.3: rede neural treinada na sua voz)
+    # 3.4 — ligações, bom dia, bem-estar e o núcleo I.S.A. que se cuida sozinho
+    "whatsapp_ddi": "55",          # DDI que entra quando você fala só DDD + número
+    "whatsapp_ligar_confirmar": True,  # mostrar CONFIRMAR antes de ligar (falso = liga direto para contato salvo com nome exato)
+    "email_webmail": "",           # endereço da caixa de entrada que o "bom dia" abre (vazio = pelo seu e-mail salvo)
+    "bemestar_vigia": True,        # oráculo de bem-estar: avisos de pausa, água e sono ao longo do dia
+    "desempenho_auto": True,       # I.S.A. ajusta o próprio ritmo do NEXUS conforme o uso do PC
+    "autoregeneracao": True,       # I.S.A. corrige sozinha as falhas conhecidas (só remédios seguros)
+    "rede_colaborativa": False,    # trocar aprendizados de reparo com outros NEXUS da sua rede local
+    "rede_colaborativa_codigo": "",  # código do grupo: só NEXUS com o mesmo código se entendem
 }
 
 PROFILES = {

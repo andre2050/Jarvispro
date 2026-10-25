@@ -873,6 +873,9 @@ class SessionMixin:
                     tg.create_task(self._isolada(self._run_memoria_semanal))
                     tg.create_task(self._isolada(self._run_conexao_watch))
                     tg.create_task(self._isolada(self._run_rotinas_agendadas))
+                    tg.create_task(self._isolada(self._run_vigias))          # 3.4
+                    tg.create_task(self._isolada(self._run_bemestar))        # 3.4
+                    tg.create_task(self._isolada(self._run_isa_nucleo))      # 3.4
                     if self._dashboard:
                         tg.create_task(self._isolada(self._relay_phone_audio))
 
