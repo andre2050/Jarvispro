@@ -1,4 +1,4 @@
-"""core/armazem.py — guardar listas pessoais em JSON sem corromper (NEXUS Pro 2.2).
+"""core/armazem.py — guardar listas pessoais em JSON sem corromper (NEXUS Ultra 2026 2.2).
 
 Usado pelas funções novas (compras, hábitos, contatos, diário). Escreve num arquivo
 temporário e troca de uma vez, então uma queda de energia no meio nunca deixa o

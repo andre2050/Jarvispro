@@ -1,5 +1,5 @@
 """
-dev_agent — o NEXUS programa por você (NEXUS Pro 2.1).
+dev_agent — o NEXUS programa por você (NEXUS Ultra 2026 2.1).
 
     "Nexus, cria um site de portfólio para um fotógrafo"
     "faz um jogo da cobrinha"
@@ -1012,7 +1012,7 @@ _NOMES_DO_PROPRIO_NEXUS = {"voce", "vocemesmo", "voceproprio", "oassistente", "t
 
 
 def _e_o_proprio_nexus(nome: str) -> bool:
-    """'Nexus Pro', 'o Nexus', 'Jarvis', 'você mesmo'… — o próprio assistente."""
+    """'Nexus Ultra 2026', 'o Nexus', 'Jarvis', 'você mesmo'… — o próprio assistente."""
     n = DP._normalizar(nome)
     n = n[1:] if n.startswith(("o", "a")) and n[1:].startswith(("nexus", "jarvis")) else n
     return n.startswith(("nexus", "jarvis", "orion")) or n in _NOMES_DO_PROPRIO_NEXUS

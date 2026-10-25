@@ -12,7 +12,7 @@ O que ele faz:
      sem certificados, sem suas memórias, notas e logs.
   3. Procura em todos os arquivos da cópia qualquer coisa que pareça chave
      ou senha. Se achar, PARA, apaga a cópia e mostra onde estava.
-  4. Gera o zip "Nexus-Pro-Ultra-vX.zip" pronto para anexar na release.
+  4. Gera o zip "Nexus-Ultra-2026-vX.zip" pronto para anexar na release.
 
 A sua pasta original não é alterada (só o memory/version.json).
 """

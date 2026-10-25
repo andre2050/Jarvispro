@@ -1,5 +1,5 @@
 """
-core/volume_dispositivo.py — 🎚️ volume POR DISPOSITIVO (NEXUS Pro 1.5).
+core/volume_dispositivo.py — 🎚️ volume POR DISPOSITIVO (NEXUS Ultra 2026 1.5).
 
 O controle de volume da janela de áudio pertence ao alto-falante que você
 escolheu para o NEXUS — não ao que o Windows chama de "padrão" naquele momento.

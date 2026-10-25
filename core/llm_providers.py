@@ -1,5 +1,5 @@
 """
-core/llm_providers.py — o "cérebro" do MOTOR PRÓPRIO (NEXUS Pro 1.5).
+core/llm_providers.py — o "cérebro" do MOTOR PRÓPRIO (NEXUS Ultra 2026 1.5).
 
 Um único jeito de conversar com qualquer modelo de texto que saiba chamar
 ferramentas:
@@ -349,8 +349,8 @@ class CerebroLLM:
         if self.chave:
             h["Authorization"] = f"Bearer {self.chave}"
         if self.provedor == "openrouter":
-            h["HTTP-Referer"] = "https://github.com/andre2050/Jarvispro"
-            h["X-Title"] = "NEXUS Pro"
+            h["HTTP-Referer"] = "https://github.com/andre2050/Nexus-Ultra-2026"
+            h["X-Title"] = "NEXUS Ultra 2026"
         return h
 
     def descricao(self) -> str:

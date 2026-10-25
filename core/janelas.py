@@ -1,5 +1,5 @@
 """
-core/janelas.py — janelas e processos do Windows, com educação (NEXUS Pro 1.5).
+core/janelas.py — janelas e processos do Windows, com educação (NEXUS Ultra 2026 1.5).
 
     fechar_app("chrome")      🚪 fecha um aplicativo PELO NOME: compara com o que
                               está rodando, pede para fechar (WM_CLOSE, como o X

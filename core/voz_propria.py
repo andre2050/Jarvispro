@@ -1,5 +1,5 @@
 """
-core/voz_propria.py — ouvido e voz do MOTOR PRÓPRIO (NEXUS Pro 1.5).
+core/voz_propria.py — ouvido e voz do MOTOR PRÓPRIO (NEXUS Ultra 2026 1.5).
 
 OUVIDO
     Whisper (faster-whisper) no seu processador: ouve, transcreve e diz em que

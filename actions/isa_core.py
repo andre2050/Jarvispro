@@ -1,4 +1,4 @@
-"""I.S.A. por voz (NEXUS Pro 1.3).
+"""I.S.A. por voz (NEXUS Ultra 2026 1.3).
 
 "Nexus, relatório da I.S.A." / "o que você fez agora há pouco?" /
 "como está o seu núcleo?" — o NEXUS lê o próprio fluxo de decisões

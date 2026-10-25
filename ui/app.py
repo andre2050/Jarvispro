@@ -76,6 +76,10 @@ class NexusUI:
         """Thread-safe: reinicia o NEXUS (1.4.1, para terminar uma atualização)."""
         self._win._restart_sig.emit()
 
+    def abrir_painel_ia(self, aba: str = "areas") -> None:
+        """Thread-safe: abre o painel "Como a IA do NEXUS funciona" (aba "areas" ou "tipos")."""
+        self._win._ia_painel_sig.emit(str(aba or "areas"))
+
     def set_ditado(self, ligado: bool) -> None:
         """Thread-safe: mostra/esconde o aviso "ditando no Bloco de Notas"."""
         self._win._ditado_sig.emit(bool(ligado))

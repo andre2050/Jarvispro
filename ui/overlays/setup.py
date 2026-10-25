@@ -39,7 +39,7 @@ class SetupOverlay(QWidget):
             return w
 
         layout.addWidget(_lbl("◈  VAMOS COMEÇAR", 13, True))
-        layout.addWidget(_lbl("Configure o NEXUS Pro antes do primeiro uso.", 9, color=C.PRI_DIM))
+        layout.addWidget(_lbl("Configure o NEXUS Ultra 2026 antes do primeiro uso.", 9, color=C.PRI_DIM))
         layout.addSpacing(6)
 
         sep = QFrame(); sep.setFrameShape(QFrame.Shape.HLine)

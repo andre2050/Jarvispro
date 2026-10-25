@@ -24,7 +24,7 @@ class NexusLive(WakeMixin, TypedCommandsMixin, AudioMixin, SessionMixin, ToolsMi
         try:
             from actions.system_update import current_version, startup_check
             _ver = current_version().get("version", "?")
-            ui.write_log(f"SYS: NEXUS Pro v{_ver} — desenvolvido por André Luiz Lima Menezes. "
+            ui.write_log(f"SYS: NEXUS Ultra 2026 v{_ver} — desenvolvido por André Luiz Lima Menezes. "
                          f"Verificação de atualizações ligada.")
             _upd = startup_check()
             if _upd:

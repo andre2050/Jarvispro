@@ -1,4 +1,4 @@
-"""Diário e humor — o NEXUS Pro 2.2 guarda o seu dia (só no seu PC).
+"""Diário e humor — o NEXUS Ultra 2026 2.2 guarda o seu dia (só no seu PC).
 
 Por voz:  "escreve no diário: hoje terminei a prova e me senti aliviado"       "humor 4"
           "o que escrevi ontem?"     "procura no diário: viagem"      "como tem sido meu humor?"

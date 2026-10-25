@@ -1,4 +1,4 @@
-"""Previsão de hábitos — NEXUS Pro 2.3.
+"""Previsão de hábitos — NEXUS Ultra 2026 2.3.
 
 Uma rede neural pequena (motor de core/neural_backend.py: Keras se houver TensorFlow, senão NumPy) aprende, com o histórico de memory/habits.json,
 "o que você costuma pedir a esta hora, neste dia da semana, depois de pedir tal coisa" e estima o que

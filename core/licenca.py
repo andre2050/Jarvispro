@@ -1,5 +1,5 @@
 """
-core/licenca.py — 🔑 chave de licença do NEXUS Pro (offline, assinada).
+core/licenca.py — 🔑 chave de licença do NEXUS Ultra 2026 (offline, assinada).
 
 Como funciona
   • Quem gera as chaves é só o desenvolvedor (André), com a CHAVE PRIVADA, que

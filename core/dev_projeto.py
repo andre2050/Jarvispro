@@ -1,5 +1,5 @@
 """
-core/dev_projeto.py — as partes do agente de programação que não precisam de IA (NEXUS Pro 2.1).
+core/dev_projeto.py — as partes do agente de programação que não precisam de IA (NEXUS Ultra 2026 2.1).
 
 O agente (actions/dev_agent.py) pede à IA um plano e o código de cada arquivo. Tudo o que a IA
 devolve é TEXTO NÃO CONFIÁVEL: um caminho como "../../Startup/x.bat", uma dependência como
@@ -641,5 +641,5 @@ def leia_me(nome: str, descricao: str, comando: str, arquivos: list[str], web: b
     if pasta_python:
         linhas += ["", "As bibliotecas deste projeto ficam na pasta .venv (não mexem no Python do NEXUS).",
                    "Para rodar fora do NEXUS use o python que está em .venv\\Scripts\\ (Windows)."]
-    linhas += ["", "Arquivos:"] + [f"  - {a}" for a in arquivos] + ["", "Criado pelo NEXUS Pro (André Luiz Lima Menezes)."]
+    linhas += ["", "Arquivos:"] + [f"  - {a}" for a in arquivos] + ["", "Criado pelo NEXUS Ultra 2026 (André Luiz Lima Menezes)."]
     return "\n".join(linhas) + "\n"

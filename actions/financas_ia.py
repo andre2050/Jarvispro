@@ -1,4 +1,4 @@
-"""Finanças com IA — NEXUS Pro 2.3. Veja core/financas_ia.py.
+"""Finanças com IA — NEXUS Ultra 2026 2.3. Veja core/financas_ia.py.
 
 Por voz: "em que categoria cai 'ifood'?"   "quanto vou fechar o mês gastando?"   "o quanto essa previsão costuma errar?"
 """

@@ -1,4 +1,4 @@
-"""Diagnóstico do próprio NEXUS (NEXUS Pro 2.1).
+"""Diagnóstico do próprio NEXUS (NEXUS Ultra 2026 2.1).
 
     "o que deu errado hoje?"          → falhas do dia, agrupadas
     "como foi o NEXUS essa semana?"   → resumo: quantas ações, quantas deram certo, o que mais usei

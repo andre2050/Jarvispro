@@ -1,4 +1,4 @@
-"""Tarefas — a lista de afazeres do NEXUS (Produtividade, NEXUS Pro 2.0).
+"""Tarefas — a lista de afazeres do NEXUS (Produtividade, NEXUS Ultra 2026 2.0).
 
 Por voz:   "anota a tarefa: enviar a proposta, alta prioridade, para amanhã"
            "o que tenho para fazer hoje?"    "marca a 2 como feita"

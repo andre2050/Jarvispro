@@ -1,4 +1,4 @@
-"""core/aviso_voz.py — avisos falados que não dependem do Gemini (NEXUS Pro 2.2).
+"""core/aviso_voz.py — avisos falados que não dependem do Gemini (NEXUS Ultra 2026 2.2).
 
 Quando a chave do Gemini é recusada, a conversa por voz nem chega a abrir, então o NEXUS
 não tem como falar pelo Gemini. Este módulo fala pela voz do próprio sistema (pyttsx3,

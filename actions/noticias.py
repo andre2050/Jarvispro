@@ -1,4 +1,4 @@
-"""Notícias sob demanda (NEXUS Pro 2.0).
+"""Notícias sob demanda (NEXUS Ultra 2026 2.0).
 
     "quais as notícias de hoje?"        → manchetes principais do Brasil
     "notícias sobre tecnologia"         → tema livre

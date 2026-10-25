@@ -1,4 +1,4 @@
-"""Ponto de partida do Nexus.exe (NEXUS Pro — André Luiz Lima Menezes).
+"""Ponto de partida do Nexus.exe (NEXUS Ultra 2026 — André Luiz Lima Menezes).
 
 Como funciona
 -------------
@@ -95,7 +95,7 @@ def principal() -> None:
 
     main_py = PASTA / "main.py"
     if not main_py.exists():
-        _avisar("NEXUS Pro",
+        _avisar("NEXUS Ultra 2026",
                 "O Nexus.exe precisa ficar na pasta do Nexus, junto do main.py.\n\n"
                 f"Pasta atual: {PASTA}")
         sys.exit(1)
@@ -114,7 +114,7 @@ def principal() -> None:
                 f.write(detalhe + "\n")
         except Exception:
             log = None
-        _avisar("NEXUS Pro — erro ao abrir",
+        _avisar("NEXUS Ultra 2026 — erro ao abrir",
                 "O NEXUS não conseguiu abrir.\n\n"
                 + detalhe.strip().splitlines()[-1][:300]
                 + (f"\n\nDetalhes em: {log}" if log else ""))

@@ -1,4 +1,4 @@
-"""Anomalias do PC — NEXUS Pro 2.3. Veja core/anomalia.py.
+"""Anomalias do PC — NEXUS Ultra 2026 2.3. Veja core/anomalia.py.
 
 Por voz: "o meu PC está estranho?"   "treina o detector de anomalias"   "como está o detector do PC?"
 """

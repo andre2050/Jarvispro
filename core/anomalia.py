@@ -1,4 +1,4 @@
-"""Detector de anomalias do PC — NEXUS Pro 2.3.
+"""Detector de anomalias do PC — NEXUS Ultra 2026 2.3.
 
 Um autoencoder (rede neural que aprende a "reconstruir" o seu PC normal) olha CPU, memória, disco, rede
 e processos a cada minuto. Se o PC passa a se comportar de um jeito que a rede nunca viu no seu uso

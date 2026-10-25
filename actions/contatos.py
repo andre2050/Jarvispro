@@ -1,4 +1,4 @@
-"""Contatos e aniversários — o NEXUS Pro 2.2 lembra de quem importa para você.
+"""Contatos e aniversários — o NEXUS Ultra 2026 2.2 lembra de quem importa para você.
 
 Por voz:  "salva o contato Marcos, telefone 11 98888-7777, aniversário 12 de março"
           "qual o telefone da Maria?"          "quem faz aniversário essa semana?"

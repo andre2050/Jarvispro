@@ -1,5 +1,5 @@
 """
-core/audio_feat.py — características de áudio em NumPy puro (NEXUS Pro 2.3).
+core/audio_feat.py — características de áudio em NumPy puro (NEXUS Ultra 2026 2.3).
 
 Base da voz do dono (core/voz_id.py) e da palavra "Nexus" treinada na sua voz
 (core/wake_custom.py): espectro em escala mel, MFCC, tom da voz (f0) e corte da fala.

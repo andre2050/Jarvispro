@@ -1,5 +1,5 @@
 """
-I.S.A. HUD (estilo "isa") — o núcleo do NEXUS Pro desenhado: 🧠 + ⚙.
+I.S.A. HUD (estilo "isa") — o núcleo do NEXUS Ultra 2026 desenhado: 🧠 + ⚙.
 
 Metade esquerda, COGNIÇÃO: um hemisfério cerebral com neurônios ligados por
 sinapses. Pulsos de luz correm pelas sinapses — devagar em repouso, rápido

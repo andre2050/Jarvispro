@@ -1,5 +1,5 @@
 """
-core/embeddings.py — transformar texto em vetores para comparar SENTIDO (NEXUS Pro 2.3).
+core/embeddings.py — transformar texto em vetores para comparar SENTIDO (NEXUS Ultra 2026 2.3).
 
 Dois motores, mesma interface (``embed(lista_de_textos) -> matriz float32 normalizada``):
 

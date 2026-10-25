@@ -1,6 +1,41 @@
 # Mudanças
 
+## 3.1.0 — 25/10/2026
+
+### 🧬 Como a IA funciona (`core/ia_status.py`, `ui/overlays/ia_painel.py`, `actions/explicar_ia.py`)
+* Novo painel (botão **🧬 Como a IA funciona** dentro do Núcleo I.S.A., Ctrl+I) com duas abas:
+  **Áreas da IA** (machine learning, aprendizado profundo, linguagem natural, visão computacional) e
+  **Tipos de IA** (ANI, AGI, ASI; máquinas reativas, memória limitada, teoria da mente).
+* Cada área mostra o que é e o que o NEXUS tem **de verdade** no PC agora (hábitos, anomalias, roteador,
+  motor Keras/NumPy, rede de intenções, busca pelo sentido, OCR, Ollama). Só lê o estado: não treina nem baixa nada.
+* Cada tipo diz se existe hoje e onde o NEXUS se encaixa (ANI, de memória limitada, com partes reativas).
+* Por voz: "o que é machine learning?", "que tipo de IA você é?", "como você aprende?", "abre o painel da IA".
+* Testes em `tests/test_ia_status.py`.
+
+### 🧹 Menu SETUP enxuto
+* O SETUP mostra só **NÚCLEO I.S.A.** e **ATUALIZAR**. As outras telas continuam no código, só saíram do menu.
+
 O histórico completo das versões anteriores fica em `memory/version.json` (é o que o botão ⬆ ATUALIZAR mostra).
+
+## 3.0.0 — 25/10/2026 · NEXUS Ultra 2026
+
+Projeto novo, criado por **André Luiz Lima Menezes** sobre a base da versão 2.5.1.
+
+### 🎨 Interface 2026
+* Nova paleta **Ultra 2026** como padrão: grafite profundo, bordas de vidro fosco e degradê violeta → ciano → magenta.
+* Tema pronto **Ultra 2026** em Personalizar › Temas prontos (os antigos continuam).
+* Quem já tinha escolhido uma cor própria continua com ela.
+
+### 🌌 Dez visuais novos para o hub (`ui/hud_ultra.py`)
+* **Nebulosa** (nuvens de luz e estrelas) · **Giroscópio** (três anéis 3D) · **Hélice** (dupla hélice) ·
+  **Sonar** (ondas que saem do núcleo) · **Espectro** (equalizador espelhado com picos) · **Colmeia** (favo de
+  hexágonos) · **Átomo** (elétrons com rastro) · **Plasma** (esfera com raios) · **Constelação** (estrelas ligadas
+  por linhas) · **Túnel** (viagem em dobra).
+* O botão **VISUAL DO HUB** passou de 9 para **19** visuais; os novos ficam numa seção própria da lista.
+* Todos seguem a voz (microfone e fala do NEXUS), quase não se mexem no modo mudo e usam só QPainter.
+  Se um visual falhar ao desenhar, o HUD volta ao orbe sozinho em vez de fechar a janela.
+* Para criar o seu: uma função em `ui/hud_ultra.py` + a chave em `HUD_STYLES` (`memory/config_manager.py`).
+* Testes novos em `tests/test_hud_ultra.py`.
 
 ## 2.5.1 — 24/10/2026
 
@@ -109,7 +144,7 @@ O histórico completo das versões anteriores fica em `memory/version.json` (é 
   privacidade do Windows (`CapabilityAccessManager\ConsentStore\webcam`: início marcado e fim zerado = em uso) ou,
   quando o app não aparece lá (o Camera HD não aparece), pelos apps de câmera abertos — e pede para fechar a câmera
   ou a chamada nele (`actions/computer_vision.py`). Testado com o Camera HD segurando a câmera.
-* **"O projeto Nexus Pro não está sendo encontrado"**: o agente de código (`dev_agent`) só altera projetos que ele
+* **"O projeto Nexus Ultra 2026 não está sendo encontrado"**: o agente de código (`dev_agent`) só altera projetos que ele
   criou em `Desktop\NexusProjects`; "Meus projetos" (`projetos`) é outra função, uma lista de tarefas. O "não achei"
   chegava minutos depois e o Gemini mandava registrar em "Meus projetos" e tentar de novo, em círculo. Agora o
   agente confere antes de ir para o segundo plano: pedido para mudar o próprio NEXUS é explicado na hora (as

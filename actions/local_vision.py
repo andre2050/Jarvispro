@@ -1,4 +1,4 @@
-"""Visão local por voz (NEXUS Pro 1.4) — tudo roda no seu PC, sem internet.
+"""Visão local por voz (NEXUS Ultra 2026 1.4) — tudo roda no seu PC, sem internet.
 
   "lê o texto da minha tela"                   → action=read_text, angle=screen
   "copia o texto dessa janela"                  → action=read_text, angle=window, copy=true

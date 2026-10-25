@@ -1,13 +1,13 @@
-# ✦ NEXUS Pro
+# ✦ NEXUS Ultra 2026
 ### Assistente pessoal de voz para o seu computador — desenvolvido por André Luiz Lima Menezes
 
-Versão 2.5.1
+Versão 3.0.0 — interface 2026
 
 NEXUS ouve, vê, fala e controla o computador em tempo real. Ele conversa por voz
 (Gemini Live), lembra de você entre uma conversa e outra, abre seus programas,
 lê seus e-mails, cuida do seu foco e aprende com o seu jeito de usar.
 
-> Desenvolvido por **André Luiz Lima Menezes**. Veja a licença em `LICENSE`.
+> Desenvolvido por **André Luiz Lima Menezes**. Baseado em MARK LV — JARVIS (© FatihMakes, CC BY-NC 4.0): veja `LICENSE` e `NOTICE.md` — uso não comercial.
 
 ---
 
@@ -15,6 +15,7 @@ lê seus e-mails, cuida do seu foco e aprende com o seu jeito de usar.
 
 | Área | Funções |
 |---|---|
+| Visual do hub | (Ultra 2026) 19 visuais para escolher no botão VISUAL DO HUB — orbe, aurora, holograma, globo, Matrix e os dez novos: Nebulosa, Giroscópio, Hélice, Sonar, Espectro, Colmeia, Átomo, Plasma, Constelação e Túnel |
 | Conversa | Voz em tempo real, em português; histórico longo; responde por texto também |
 | Memória | Lembra fatos sobre você, das últimas conversas e do que ficou em aberto ("fios de conversa") |
 | Rotinas | "modo trabalho" abre vários apps de uma vez; você cria as suas por voz |
@@ -130,7 +131,7 @@ analisada, com as marcações, e o texto para copiar ou abrir o link.
 ### Atualizar pelo GitHub (1.4.1)
 Clique em **⬆ ATUALIZAR** (menu ⚙ SETUP ou Configurações › Atualizar sistema), ou diga
 "atualiza o Nexus". Ele confere o repositório do `config/update.json`
-(andre2050/Jarvispro), mostra a versão nova e o que mudou e, com um clique, baixa e
+(preencha `github_repo` quando publicar o projeto), mostra a versão nova e o que mudou e, com um clique, baixa e
 instala. Chaves, memória, notas e configurações ficam como estão; cada arquivo trocado
 vai antes para `backups/` ("Desfazer a última" volta tudo). No fim: **REINICIAR AGORA**.
 Se a versão nova pede bibliotecas novas, ele avisa (e instala, quando roda pelo Python).

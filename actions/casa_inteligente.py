@@ -1,4 +1,4 @@
-"""Casa inteligente — o NEXUS liga luz, abre cortina, ajusta o ar e muito mais (NEXUS Pro 2.1).
+"""Casa inteligente — o NEXUS liga luz, abre cortina, ajusta o ar e muito mais (NEXUS Ultra 2026 2.1).
 
     "acende a luz da sala"            "apaga todas as luzes"        "abre a cortina do quarto"
     "põe o ar em 22 graus"            "luz da sala em 40 por cento" "a porta está trancada?"

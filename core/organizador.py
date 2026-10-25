@@ -1,4 +1,4 @@
-"""Organizar a área de trabalho (NEXUS Pro 1.4.2).
+"""Organizar a área de trabalho (NEXUS Ultra 2026 1.4.2).
 
 "Nexus, organiza a área de trabalho" → os arquivos soltos na Área de Trabalho
 vão para pastas por tipo, ali mesmo na Área de Trabalho:

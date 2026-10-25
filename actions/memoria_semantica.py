@@ -1,4 +1,4 @@
-"""Memória semântica — o NEXUS acha o que você disse pelo SENTIDO (NEXUS Pro 2.3).
+"""Memória semântica — o NEXUS acha o que você disse pelo SENTIDO (NEXUS Ultra 2026 2.3).
 
 Por voz:  "o que eu falei sobre a viagem?"        "procura nas minhas coisas algo sobre dinheiro"
           "o que anotei sobre o projeto da loja?"   "atualiza a memória semântica"

@@ -1,4 +1,4 @@
-"""Painel do núcleo I.S.A. (NEXUS Pro 1.3) — Ctrl+I.
+"""Painel do núcleo I.S.A. (NEXUS Ultra 2026 1.3) — Ctrl+I.
 
 O "centro de processamento de dados e tomada de decisões" do NEXUS, ao vivo:
   • indicadores: decisões, ações, tempo médio, há quanto tempo está ativo
@@ -95,10 +95,11 @@ class IsaOverlay(_HudOverlay):
     _OH = 640
     _novo_evento = pyqtSignal(object)
 
-    def __init__(self, parent=None, estado=None, abrir_atuador=None):
+    def __init__(self, parent=None, estado=None, abrir_atuador=None, abrir_ia=None):
         super().__init__(parent)
         self._estado_fn = estado or (lambda: ("LISTENING", False))
         self._abrir_atuador = abrir_atuador
+        self._abrir_ia = abrir_ia
         self._filtro: set[str] | None = None
         self._linhas: list[QWidget] = []
         self.setObjectName("Isa")
@@ -150,6 +151,15 @@ class IsaOverlay(_HudOverlay):
         tit.addWidget(sub)
         tit.addStretch(1)
         topo.addLayout(tit, 1)
+        if self._abrir_ia:
+            ia = QPushButton("🧬  Como a IA funciona")
+            ia.setObjectName("sec")
+            ia.setFixedHeight(28)
+            ia.setFont(_f(8.4, True))
+            ia.setCursor(Qt.CursorShape.PointingHandCursor)
+            ia.setToolTip("Machine learning, aprendizado profundo, linguagem natural, visão e tipos de IA")
+            ia.clicked.connect(self._abrir_ia)
+            topo.addWidget(ia, 0, Qt.AlignmentFlag.AlignTop)
         x = QPushButton("✕")
         x.setObjectName("x")
         x.setFixedSize(28, 28)

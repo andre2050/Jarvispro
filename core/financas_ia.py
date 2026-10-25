@@ -1,4 +1,4 @@
-"""Finanças com IA — NEXUS Pro 2.3.
+"""Finanças com IA — NEXUS Ultra 2026 2.3.
 
   1) CATEGORIA AUTOMÁTICA: "gastei 42 no ifood" → Alimentação. Compara a descrição com o que você já
      lançou (e com um vocabulário-base) usando os embeddings de sentido (core/embeddings.py) e vota

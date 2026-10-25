@@ -63,6 +63,9 @@ COMANDOS = {
     "web_search": ("Pesquisa na internet", "Procura na internet e resume.", "Quem ganhou o jogo do Flamengo?"),
     "youtube_video": ("YouTube", "Procura, abre e resume vídeos do YouTube.", "Resume esse vídeo do YouTube"),
     "isa_core": ("Núcleo I.S.A.", "O NEXUS conta o que decidiu e fez, e como estão os módulos dele.", "Nexus, relatório da I.S.A."),
+    "explicar_ia": ("Como a IA funciona", "O NEXUS explica machine learning, aprendizado profundo, linguagem natural, "
+                    "visão computacional e os tipos de IA (ANI, AGI, ASI), e diz o que ele tem de cada um.",
+                    "Nexus, o que é aprendizado profundo?"),
     "notepad": ("Bloco de Notas e ditado",
                 "Abre o Bloco de Notas, escreve textos, lê o que está nele e, no modo ditado, "
                 "escreve sozinho tudo o que você falar (diga “parar ditado” para terminar).",

@@ -1,4 +1,4 @@
-"""Modo ditado (NEXUS Pro 1.4): a ponte entre a voz e o Bloco de Notas.
+"""Modo ditado (NEXUS Ultra 2026 1.4): a ponte entre a voz e o Bloco de Notas.
 
 Mixin of NexusLive (assistant/core.py). A lógica do ditado em si fica em
 core/bloco_de_notas.py; aqui só se liga o ditado ao Gemini e à janela:

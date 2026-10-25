@@ -1,4 +1,4 @@
-"""Cadastro da sua voz e da palavra "Nexus" — NEXUS Pro 2.3.
+"""Cadastro da sua voz e da palavra "Nexus" — NEXUS Ultra 2026 2.3.
 
 Por voz:  "cadastra a minha voz"                      → owner_enroll (você fala ~8 frases)
           "testa se reconhece minha voz"              → owner_test

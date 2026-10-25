@@ -1,4 +1,4 @@
-"""Mapas e rotas (NEXUS Pro 2.0).
+"""Mapas e rotas (NEXUS Ultra 2026 2.0).
 
     "como chego no aeroshopping de carro?"      → abre a rota no Google Maps (saída = onde você está)
     "quanto tempo de casa até o trabalho?"      → fala distância e tempo (se der para calcular)
@@ -44,7 +44,7 @@ def _geocodificar(lugar: str) -> tuple[float, float] | None:
     import requests
     r = requests.get("https://nominatim.openstreetmap.org/search",
                      params={"q": lugar, "format": "json", "limit": 1},
-                     headers={"User-Agent": "NEXUS-Pro-assistente/2.0"}, timeout=8)
+                     headers={"User-Agent": "NEXUS-Ultra-2026-assistente/2.0"}, timeout=8)
     r.raise_for_status()
     d = r.json()
     return (float(d[0]["lat"]), float(d[0]["lon"])) if d else None

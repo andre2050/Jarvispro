@@ -1,4 +1,4 @@
-"""2.4.3 — o agente de código e o 'Nexus Pro': resposta na hora, sem círculo."""
+"""2.4.3 — o agente de código e o 'Nexus Ultra 2026': resposta na hora, sem círculo."""
 import pytest
 
 from actions import dev_agent as DA
@@ -10,7 +10,7 @@ def raiz(tmp_path, monkeypatch):
     return tmp_path
 
 
-@pytest.mark.parametrize("nome", ["Nexus Pro", "o Nexus", "nexus", "Jarvis", "você mesmo", "Nexus-Pro"])
+@pytest.mark.parametrize("nome", ["Nexus Ultra 2026", "o Nexus", "nexus", "Jarvis", "você mesmo", "Nexus-Ultra-2026"])
 def test_pedido_para_mudar_o_proprio_nexus_e_explicado(raiz, nome):
     r = DA.dev_agent({"action": "modify", "project_name": nome, "description": "adicionar OpenCV"},
                      speak=lambda *_: pytest.fail("não devia ir para o segundo plano"))

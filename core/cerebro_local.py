@@ -1,4 +1,4 @@
-"""CÉREBRO LOCAL — NEXUS Pro 2.3.
+"""CÉREBRO LOCAL — NEXUS Ultra 2026 2.3.
 
 Prepara um modelo de linguagem PEQUENO, rodando no seu PC (Ollama), que transforma o que você fala em
 uma chamada de função do NEXUS — sem internet e sem Gemini — e passa adiante ("[ENCAMINHAR]") tudo o

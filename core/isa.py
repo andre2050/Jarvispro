@@ -1,4 +1,4 @@
-"""I.S.A. — Intelligent Systems Architecture: o núcleo de decisões do NEXUS Pro.
+"""I.S.A. — Intelligent Systems Architecture: o núcleo de decisões do NEXUS Ultra 2026.
 
 A I.S.A. junta as duas metades do assistente num lugar só:
 
@@ -77,7 +77,7 @@ _NOMES_INTERNOS = {
     "save_memory": "Guardar na memória", "recall_memory": "Lembrar da memória",
     "undo": "Desfazer", "screen_process": "Olhar a tela / câmera", "close_camera": "Fechar a câmera",
     "system_status": "Estado do sistema", "manage_monitor": "Monitorar assunto",
-    "shutdown_jarvis": "Desligar o NEXUS", "isa_core": "Relatório da I.S.A.",
+    "shutdown_jarvis": "Desligar o NEXUS", "isa_core": "Relatório da I.S.A.", "explicar_ia": "Explicar a IA",
 }
 
 

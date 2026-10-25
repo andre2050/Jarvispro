@@ -1,4 +1,4 @@
-"""Visão local com IA — NEXUS Pro 2.3: objetos e rostos, 100% no seu PC.
+"""Visão local com IA — NEXUS Ultra 2026 2.3: objetos e rostos, 100% no seu PC.
 
   • Objetos / pessoas: YOLOX (80 classes comuns: pessoa, celular, copo, cadeira, cachorro…).
   • Rostos: YuNet (acha o rosto) + SFace (transforma o rosto em 128 números). Reconhecer = comparar esses

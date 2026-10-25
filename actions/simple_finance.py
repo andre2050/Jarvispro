@@ -1,4 +1,4 @@
-"""Finanças simples — o NEXUS anota seus gastos e te avisa do orçamento (NEXUS Pro 2.1).
+"""Finanças simples — o NEXUS anota seus gastos e te avisa do orçamento (NEXUS Ultra 2026 2.1).
 
     "gastei 35 reais no mercado"                     → anota (categoria: mercado)
     "recebi 3000 de salário"                         → receita

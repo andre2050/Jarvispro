@@ -1,4 +1,4 @@
-"""Visão com IA no PC — NEXUS Pro 2.3. Objetos (YOLOX) e rostos (YuNet+SFace), sem enviar imagem a ninguém.
+"""Visão com IA no PC — NEXUS Ultra 2026 2.3. Objetos (YOLOX) e rostos (YuNet+SFace), sem enviar imagem a ninguém.
 
 Por voz: "instala a visão de rostos"   "o que tem na minha frente?" (câmera)   "quantas pessoas tem na sala?"
          "quem está na câmera?"   "cadastra o rosto da Ana"   "esquece o rosto da Ana"   "quais rostos você conhece?"

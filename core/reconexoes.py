@@ -1,5 +1,5 @@
 """
-core/reconexoes.py — o diário das quedas de conexão com o Gemini (NEXUS Pro 2.3).
+core/reconexoes.py — o diário das quedas de conexão com o Gemini (NEXUS Ultra 2026 2.3).
 
 "Ele fala normal, desconecta e conecta sozinho": para achar a causa de verdade é preciso saber
 QUANDO caiu, depois de QUANTO TEMPO conectado, POR QUÊ e se a conversa foi mantida. Cada queda

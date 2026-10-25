@@ -1,6 +1,6 @@
 @echo off
 rem ==========================================================
-rem  NEXUS Pro - Andre Luiz Lima Menezes
+rem  NEXUS Ultra 2026 - Andre Luiz Lima Menezes
 rem  Gera o Nexus.exe nesta pasta (rode uma vez; leva alguns minutos).
 rem ==========================================================
 chcp 65001 >nul

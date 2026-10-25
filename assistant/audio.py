@@ -9,7 +9,7 @@ from .common import CHANNELS, CHUNK_SIZE, RECEIVE_SAMPLE_RATE, SEND_SAMPLE_RATE,
 # 1.4 — ferramentas que podem rodar juntas quando o Gemini pede várias de uma
 # vez: não mexem no teclado/mouse e não gravam no mesmo arquivo.
 _PARALELAS = frozenset({"open_app", "web_search", "weather_report", "recall_memory",
-                        "system_status", "unit_converter", "isa_core"})
+                        "system_status", "unit_converter", "isa_core", "explicar_ia"})
 
 
 import re as _re

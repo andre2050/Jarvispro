@@ -1,4 +1,4 @@
-"""Proteção contra fechamento sozinho — NEXUS Pro 2.3.
+"""Proteção contra fechamento sozinho — NEXUS Ultra 2026 2.3.
 
 Por que o NEXUS fechava sozinho: no PyQt6, um erro Python que escapa de um botão, timer ou sinal da
 janela derruba o programa inteiro (o Qt chama abort) — sem janela de erro e sem rastro. O mesmo vale

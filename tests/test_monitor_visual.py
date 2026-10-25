@@ -56,10 +56,10 @@ def test_lista_de_processos_ordena_por_cpu_e_por_ram():
     assert [r[0] for r in w._sorted()][0] == "c"
 
 
-def test_setup_tem_uma_so_configuracao_do_usuario():
+def test_setup_so_tem_isa_e_atualizar():
     from ui.overlays.settings import SettingsPanelOverlay as S
     menu = [rotulo for _, rotulo in S.MENU_LABELS]
-    assert sum("USUÁRIO" in r for r in menu) == 1
+    assert menu == ["NÚCLEO I.S.A."]   # o ATUALIZAR entra em main_window
     chaves_menu = [k for k, _ in S.MENU_LABELS]
     assert "skin" not in chaves_menu and "notif" not in chaves_menu
     assert "usuario" not in [k for k, _ in S._TABS]   # o menu abre a janela direto

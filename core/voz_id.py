@@ -1,5 +1,5 @@
 """
-core/voz_id.py — o NEXUS reconhece a SUA voz (NEXUS Pro 2.3).
+core/voz_id.py — o NEXUS reconhece a SUA voz (NEXUS Ultra 2026 2.3).
 
 PARA QUE SERVE
     Uma camada extra para ações sensíveis (mandar mensagem/e-mail, destrancar a casa, apagar

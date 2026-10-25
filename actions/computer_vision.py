@@ -1,4 +1,4 @@
-"""Visão do computador — análise local com OpenCV (NEXUS Pro 1.4.2).
+"""Visão do computador — análise local com OpenCV (NEXUS Ultra 2026 1.4.2).
 
 O screen_process manda a imagem para o Gemini (visão por IA). Este arquivo é a
 outra visão: OpenCV rodando no próprio PC, sem internet —
@@ -693,7 +693,7 @@ class _Vigia:
                + (f" — foto salva em {foto}" if foto else "") + ".")
         self._avisar(msg)
         _som()
-        _notificacao("NEXUS Pro — Vigia de movimento",
+        _notificacao("NEXUS Ultra 2026 — Vigia de movimento",
                      f"Algo se mexeu na frente da câmera às {hora:%H:%M:%S}.")
         try:
             from core import isa

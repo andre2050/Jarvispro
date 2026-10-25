@@ -1,4 +1,4 @@
-"""Hábitos e metas diárias — o NEXUS Pro 2.2 acompanha o que você quer manter.
+"""Hábitos e metas diárias — o NEXUS Ultra 2026 2.2 acompanha o que você quer manter.
 
 Por voz:  "cria o hábito beber água, meta 8 copos"       "bebi 2 copos de água"
           "fiz exercício hoje"                           "como estão meus hábitos?"

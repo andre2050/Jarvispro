@@ -1,4 +1,4 @@
-"""Tela de ativação da licença (NEXUS Pro 1.5).
+"""Tela de ativação da licença (NEXUS Ultra 2026 1.5).
 
 Aparece na abertura quando não há licença válida. Mostra o ID deste
 computador (para o cliente mandar ao desenvolvedor) e recebe a chave."""
@@ -40,7 +40,7 @@ class LicencaOverlay(QWidget):
             w.setStyleSheet(f"color: {color}; background: transparent;")
             return w
 
-        lay.addWidget(_lbl("◈  ATIVAR O NEXUS PRO", 13, True))
+        lay.addWidget(_lbl("◈  ATIVAR O NEXUS ULTRA 2026", 13, True))
         lay.addWidget(_lbl("Digite a chave de licença que você recebeu.", 9,
                            color=C.PRI_DIM))
         if motivo and "Nenhuma" not in motivo:

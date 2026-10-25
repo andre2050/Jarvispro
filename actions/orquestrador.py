@@ -1,4 +1,4 @@
-"""🤝 ORQUESTRADOR DE AGENTES — vários especialistas trabalhando juntos (NEXUS Pro 2.5).
+"""🤝 ORQUESTRADOR DE AGENTES — vários especialistas trabalhando juntos (NEXUS Ultra 2026 2.5).
 
 Para objetivos grandes ("pesquisa os 3 melhores notebooks, compara com o meu orçamento e salva um
 relatório"), o `agent_task` faz tudo sozinho, um passo de cada vez. O orquestrador divide:

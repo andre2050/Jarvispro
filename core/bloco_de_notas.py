@@ -1,4 +1,4 @@
-"""Bloco de Notas do Windows + modo ditado (NEXUS Pro 1.4).
+"""Bloco de Notas do Windows + modo ditado (NEXUS Ultra 2026 1.4).
 
 DUAS PARTES
 

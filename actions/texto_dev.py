@@ -1,4 +1,4 @@
-"""Texto e ferramentas de programador — tudo offline (NEXUS Pro 2.2).
+"""Texto e ferramentas de programador — tudo offline (NEXUS Ultra 2026 2.2).
 
 Por voz:  "conta as palavras desse texto"      "transforma em maiúsculas"       "gera um UUID"
           "faz o hash SHA-256 de 'senha123'"    "codifica em base64: olá"        "formata esse JSON"

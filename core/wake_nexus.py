@@ -1,5 +1,5 @@
 """
-core/wake_nexus.py — palavra de ativação "NEXUS" (offline, NEXUS Pro 1.5).
+core/wake_nexus.py — palavra de ativação "NEXUS" (offline, NEXUS Ultra 2026 1.5).
 
 O modelo pronto do openWakeWord só conhece "Hey Jarvis". Este detector entende
 "Nexus", "Hey Nexus", "Ei Nexus", "Oi Nexus", "Ok Nexus"… usando o Whisper

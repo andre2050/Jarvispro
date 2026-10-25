@@ -28,14 +28,10 @@ class SettingsPanelOverlay(_HudOverlay):
         ("backup", "BACKUP"), ("agenda", "AGENDA"), ("atuador", "ATUADOR"),
         ("barra", "BARRA"), ("atalhos", "ATALHOS"), ("isa", "I.S.A."),
     ]
+    # Menu SETUP enxuto: só o núcleo I.S.A. (o ATUALIZAR é adicionado em main_window).
+    # As demais seções continuam em _TABS, só não aparecem mais no menu.
     MENU_LABELS = [
-        ("usuario", "CONFIGURAÇÃO DO USUÁRIO"), ("audio", "ÁUDIO / AJUSTE DE ÁUDIO"),
-        ("status", "STATUS"),
-        ("resetar", "RESETAR"), ("gerenciar", "GERENCIAR"),
-        ("sobre", "SOBRE"), ("apis", "PACOTES/APIs"), ("comandos", "COMANDO"),
-        ("lista", "LISTA"), ("avancado", "AVANÇADO"),
-        ("backup", "RESTAURA/BACKUP"), ("agenda", "NOTAS E LEMBRETES"), ("atuador", "ATUADOR"),
-        ("barra", "BARRA RÁPIDA"), ("atalhos", "ATALHOS DE TECLADO"), ("isa", "NÚCLEO I.S.A."),
+        ("isa", "NÚCLEO I.S.A."),
     ]
     _DAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
     _test_done = pyqtSignal(str)   # resultado de "testar chave", vindo de outra thread
@@ -507,7 +503,7 @@ class SettingsPanelOverlay(_HudOverlay):
             row.addWidget(val)
             lay.addLayout(row)
         lay.addWidget(self._label(
-            "NEXUS Pro foi desenvolvido por André Luiz Lima Menezes.", 7, C.TEXT_DIM))
+            "NEXUS Ultra 2026 foi desenvolvido por André Luiz Lima Menezes.", 7, C.TEXT_DIM))
         lay.addStretch()
         lay.addWidget(self._button("📋  Copiar diagnóstico", self._copy_diagnostics))
 

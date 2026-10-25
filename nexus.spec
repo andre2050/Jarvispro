@@ -1,5 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
-# Receita do Nexus.exe (NEXUS Pro — André Luiz Lima Menezes).
+# Receita do Nexus.exe (NEXUS Ultra 2026 — André Luiz Lima Menezes).
 #
 # Não precisa abrir este arquivo: dê dois cliques em gerar_exe.bat.
 # (Ou, no terminal, dentro da pasta do Nexus:  python -m PyInstaller nexus.spec --noconfirm)

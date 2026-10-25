@@ -1,4 +1,4 @@
-"""Editores da barra rápida e dos atalhos de teclado (NEXUS Pro 1.2).
+"""Editores da barra rápida e dos atalhos de teclado (NEXUS Ultra 2026 1.2).
 
 São widgets comuns, então aparecem em dois lugares sem código repetido:
 dentro de Configurações (abas BARRA e ATALHOS) e como janela própria

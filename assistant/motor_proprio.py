@@ -1,4 +1,4 @@
-"""MOTOR PRÓPRIO (NEXUS Pro 1.5): seu próprio STT + LLM + TTS no lugar do Gemini Live.
+"""MOTOR PRÓPRIO (NEXUS Ultra 2026 1.5): seu próprio STT + LLM + TTS no lugar do Gemini Live.
 
 Mixin de NexusLive (assistant/core.py). Escolhido na Configuração do usuário ›
 MOTOR DE VOZ, sem editar arquivo; trocar vale na hora.
@@ -42,7 +42,7 @@ _RODADAS = 8
 # Ferramentas rápidas: não precisam de "um instante…"
 _RAPIDAS = frozenset({"save_memory", "recall_memory", "undo", "system_status", "open_app",
                       "computer_settings", "music_control", "timer_action", "quick_notes",
-                      "close_camera", "isa_core", "unit_converter", "everyday_tools",
+                      "close_camera", "isa_core", "explicar_ia", "unit_converter", "everyday_tools",
                       "memory_bank", "focus_mode", "tarefas", "compras", "rastreador_habitos",
                       "contatos", "texto_dev", "diario"})
 

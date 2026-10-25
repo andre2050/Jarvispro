@@ -88,7 +88,7 @@ def main():
                 import ctypes
                 ctypes.windll.user32.MessageBoxW(
                     None, "O NEXUS já está aberto (veja a barra de tarefas ou a bandeja).",
-                    "NEXUS Pro", 0x40)
+                    "NEXUS Ultra 2026", 0x40)
             except Exception:
                 pass
         return
@@ -169,7 +169,7 @@ def _registrar_erro_ao_abrir() -> None:
             import ctypes
             ctypes.windll.user32.MessageBoxW(
                 None, "O NEXUS não conseguiu abrir.\n\nO motivo foi gravado em:\n" + onde +
-                "\n\nMande esse arquivo para quem cuida do NEXUS.", "NEXUS Pro", 0x10)
+                "\n\nMande esse arquivo para quem cuida do NEXUS.", "NEXUS Ultra 2026", 0x10)
     except Exception:
         pass
 

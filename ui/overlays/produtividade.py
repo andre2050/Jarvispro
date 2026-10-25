@@ -1,4 +1,4 @@
-"""Painel PRODUTIVIDADE (NEXUS Pro 2.0).
+"""Painel PRODUTIVIDADE (NEXUS Ultra 2026 2.0).
 
 Um lugar só para o dia de trabalho:
   • TAREFAS ..... criar, marcar como feita, apagar (mesma lista da voz: actions/tarefas.py)

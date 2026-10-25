@@ -1,5 +1,5 @@
 """
-core/wake_custom.py — a palavra "Nexus" treinada na SUA voz (NEXUS Pro 2.3).
+core/wake_custom.py — a palavra "Nexus" treinada na SUA voz (NEXUS Ultra 2026 2.3).
 
 Hoje o NEXUS acorda transcrevendo trechos curtos com o Whisper. Aqui, uma rede neural pequena
 aprende o som da SUA chamada e decide sozinha, sem Whisper e sem internet:

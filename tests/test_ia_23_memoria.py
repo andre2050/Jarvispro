@@ -1,4 +1,4 @@
-"""NEXUS Pro 2.3 — embeddings, memória semântica e verificador do roteador."""
+"""NEXUS Ultra 2026 2.3 — embeddings, memória semântica e verificador do roteador."""
 import json
 
 import numpy as np

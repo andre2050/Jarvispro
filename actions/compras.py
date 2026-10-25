@@ -1,4 +1,4 @@
-"""Lista de compras — o NEXUS Pro 2.2 anota o que falta em casa.
+"""Lista de compras — o NEXUS Ultra 2026 2.2 anota o que falta em casa.
 
 Por voz:  "põe leite, pão e 2 dúzias de ovos na lista de compras"
           "o que falta comprar?"        "comprei o leite"        "tira o pão da lista"

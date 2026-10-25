@@ -1,5 +1,5 @@
 """
-core/indice_semantico.py — a memória que entende o SENTIDO (NEXUS Pro 2.3).
+core/indice_semantico.py — a memória que entende o SENTIDO (NEXUS Ultra 2026 2.3).
 
 Junta o que o NEXUS sabe sobre você — notas, diário, tarefas, projetos, contatos, fatos da
 memória, resumos de conversas — num índice de vetores (core/embeddings.py) e responde

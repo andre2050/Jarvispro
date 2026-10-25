@@ -1,4 +1,4 @@
-"""Central de Notas e Lembretes (NEXUS Pro 1.2).
+"""Central de Notas e Lembretes (NEXUS Ultra 2026 1.2).
 
 Uma janela só para as duas coisas, com abas:
   • NOTAS ....... escrever, procurar, editar, copiar e apagar

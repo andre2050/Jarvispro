@@ -40,6 +40,7 @@ class MainWindow(QMainWindow):
     _quiz_hide_sig  = pyqtSignal()
     _review_sig     = pyqtSignal(str, str, object, object)  # document review payload
     _ditado_sig     = pyqtSignal(bool)       # 1.4 — modo ditado ligou / desligou
+    _ia_painel_sig  = pyqtSignal(str)        # Ultra 2026 — abre o painel "Como a IA funciona" (aba)
     _restart_sig    = pyqtSignal()           # 1.4.1 — reiniciar depois de atualizar
     _ocultar_sig    = pyqtSignal(bool)       # 1.4.2 — sair da frente para fotografar a tela
 
@@ -338,6 +339,7 @@ class MainWindow(QMainWindow):
         self._quiz_hide_sig.connect(self._hide_quiz)
         self._review_sig.connect(self._show_review)
         self._ditado_sig.connect(self._on_ditado_mudou)
+        self._ia_painel_sig.connect(self._open_ia_panel)
         self._restart_sig.connect(self._restart_app)
         self._ocultar_sig.connect(self._ocultar_para_captura)
         self._cam_stop = threading.Event()
@@ -810,14 +812,14 @@ class MainWindow(QMainWindow):
             if _os == "Windows":
                 pythonw  = python.parent / "pythonw.exe"
                 target   = str(python if congelado else (pythonw if pythonw.exists() else python))
-                lnk      = str(desktop / "NEXUS Pro.lnk")
+                lnk      = str(desktop / "NEXUS Ultra 2026.lnk")
                 icon_loc = str(ico_path) if ico_path.exists() else f"{target},0"
                 self._create_lnk_windows(lnk, target, "" if congelado else str(script),
                                          str(script.parent), icon_loc)
 
             # ── macOS — proper .app bundle (no Terminal window) ───────────────
             elif _os == "Darwin":
-                app     = desktop / "NEXUS Pro.app"
+                app     = desktop / "NEXUS Ultra 2026.app"
                 mac_dir = app / "Contents" / "MacOS"
                 res_dir = app / "Contents" / "Resources"
                 mac_dir.mkdir(parents=True, exist_ok=True)
@@ -843,7 +845,7 @@ class MainWindow(QMainWindow):
                     '  <key>CFBundleExecutable</key><string>NEXUS</string>\n'
                     '  <key>CFBundleIdentifier</key>'
                     '<string>com.nexus.assistant</string>\n'
-                    '  <key>CFBundleName</key><string>NEXUS Pro</string>\n'
+                    '  <key>CFBundleName</key><string>NEXUS Ultra 2026</string>\n'
                     '  <key>CFBundlePackageType</key><string>APPL</string>\n'
                     '  <key>CFBundleVersion</key><string>1.0</string>\n'
                     '</dict></plist>\n'
@@ -881,10 +883,10 @@ class MainWindow(QMainWindow):
                         png_path = ico_path  # fallback to .ico
 
                 icon_line = f"Icon={png_path}\n" if png_path.exists() else ""
-                desk = desktop / "NEXUS Pro.desktop"
+                desk = desktop / "NEXUS Ultra 2026.desktop"
                 desk.write_text(
                     "[Desktop Entry]\n"
-                    "Name=NEXUS Pro\n"
+                    "Name=NEXUS Ultra 2026\n"
                     + (f"Exec={python}\n" if congelado else f"Exec={python} {script}\n") +
                     f"Path={script.parent}\n"
                     "Type=Application\n"
@@ -1088,13 +1090,13 @@ class MainWindow(QMainWindow):
         _tf.setLetterSpacing(QFont.SpacingType.AbsoluteSpacing, 7)
         self._title_lbl.setFont(_tf)
         self._title_lbl.setStyleSheet(f"color: {C.WHITE}; background: transparent;")
-        # 1.2 — o selo "PRO" ao lado do nome
-        self._pro_lbl = QLabel("PRO")
+        # o selo "ULTRA 2026" ao lado do nome
+        self._pro_lbl = QLabel("ULTRA 2026")
         _pf = QFont(FONT_MAIN, 8, QFont.Weight.Bold)
         _pf.setLetterSpacing(QFont.SpacingType.AbsoluteSpacing, 2)
         self._pro_lbl.setFont(_pf)
         self._pro_lbl.setStyleSheet(
-            f"color: {C.BG}; border-radius: 4px; padding: 1px 5px 1px 7px;"
+            f"color: {C.BG}; border-radius: 4px; padding: 1px 6px 1px 8px;"
             f" background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {C.ACC2}, stop:1 {C.ACC});")
         self._pro_lbl.setVisible(_disp == "NEXUS")
         _trow = QHBoxLayout(); _trow.setSpacing(8)
@@ -2174,7 +2176,7 @@ class MainWindow(QMainWindow):
         self._footer_keys = _fl("")
         lay.addWidget(self._footer_keys)
         lay.addStretch()
-        lay.addWidget(_fl("NEXUS Pro  ·  Desenvolvido por André Luiz Lima Menezes  ·  2026"))
+        lay.addWidget(_fl("NEXUS Ultra 2026  ·  Desenvolvido por André Luiz Lima Menezes  ·  2026"))
         v.addWidget(w)
         return wrap
 
@@ -2437,7 +2439,7 @@ class MainWindow(QMainWindow):
         self._hud_btn.setStyleSheet(style)
 
     def _toggle_hud_style(self):
-        """Abre a lista de visuais do hub (orbe, mínimo, aurora, líquido, holograma, globo)."""
+        """Abre a lista de visuais do hub (os clássicos e os dez novos do Ultra 2026)."""
         from PyQt6.QtGui import QAction, QCursor
         from PyQt6.QtWidgets import QMenu
         from memory.config_manager import get_hud_style
@@ -2455,7 +2457,14 @@ class MainWindow(QMainWindow):
         titulo.setEnabled(False)
         menu.addAction(titulo)
         menu.addSeparator()
+        from .hud_ultra import ULTRA_INFO
+        _primeiro_ultra = next(iter(ULTRA_INFO), "")
         for chave, (icone, nome, desc) in HUD_STYLE_INFO.items():
+            if chave == _primeiro_ultra:
+                menu.addSeparator()
+                _t2 = QAction("NOVOS · ULTRA 2026", menu)
+                _t2.setEnabled(False)
+                menu.addAction(_t2)
             marca = "●" if chave == atual else "○"
             ac = QAction(f"{marca}  {icone}  {nome}   —   {desc}", menu)
             ac.triggered.connect(lambda _=False, k=chave: self._set_hud_style(k))
@@ -3345,11 +3354,28 @@ class MainWindow(QMainWindow):
                     pass
             ov = IsaOverlay(parent=self.centralWidget(),
                             estado=lambda: (self.hud.state, self._muted),
-                            abrir_atuador=lambda: self._open_settings_panel("atuador"))
+                            abrir_atuador=lambda: self._open_settings_panel("atuador"),
+                            abrir_ia=lambda: self._open_ia_panel("areas"))
             self._centre_overlay(ov)
             self._isa_overlay = ov
         except Exception as e:
             self._log.append_log(f"ERR: O núcleo I.S.A. não abriu — {e}")
+
+    def _open_ia_panel(self, aba: str = "areas") -> None:
+        """Ultra 2026 — "Como a IA do NEXUS funciona": áreas da IA e tipos de IA."""
+        try:
+            from .overlays.ia_painel import IaPainelOverlay
+            old = getattr(self, "_ia_overlay", None)
+            if old is not None:
+                try:
+                    old._fechar()
+                except RuntimeError:
+                    pass
+            ov = IaPainelOverlay(parent=self.centralWidget(), aba=aba or "areas")
+            self._centre_overlay(ov)
+            self._ia_overlay = ov
+        except Exception as e:
+            self._log.append_log(f"ERR: O painel da IA não abriu — {e}")
 
     # ── 1.4: modo ditado no Bloco de Notas ──────────────────────────────────
 
@@ -3550,7 +3576,7 @@ class MainWindow(QMainWindow):
         texto = ((motivo + "\n\n") if motivo and "Nenhuma" not in motivo else "") + \
             f"ID deste computador: {licenca.id_da_maquina()}\n\nCole a chave de licença:"
         while True:
-            chave, ok = QInputDialog.getMultiLineText(self, "Ativar o NEXUS Pro", texto)
+            chave, ok = QInputDialog.getMultiLineText(self, "Ativar o NEXUS Ultra 2026", texto)
             if not ok:
                 self._quit_unlicensed()
                 return

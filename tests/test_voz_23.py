@@ -1,4 +1,4 @@
-"""NEXUS Pro 2.3 — cadastro de voz, palavra treinada e proteção contra fechamento sozinho."""
+"""NEXUS Ultra 2026 2.3 — cadastro de voz, palavra treinada e proteção contra fechamento sozinho."""
 import json
 import sys
 import threading
@@ -416,4 +416,5 @@ def test_hub_geometria():
 
 def test_visuais_antigos_continuam():
     from memory.config_manager import HUD_STYLES
-    assert {"orb", "minimal", "aurora", "liquid", "holo", "globe", "hub", "matrix", "waves"} == set(HUD_STYLES)
+    # os nove clássicos continuam; o Ultra 2026 acrescentou mais dez (tests/test_hud_ultra.py)
+    assert {"orb", "minimal", "aurora", "liquid", "holo", "globe", "hub", "matrix", "waves"} <= set(HUD_STYLES)

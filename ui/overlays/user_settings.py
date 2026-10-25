@@ -97,7 +97,7 @@ class PreferencesOverlay(QWidget):
         form.addLayout(prow)
 
         self._section(form, "AMBIENTE")
-        self._line(form, "background_color", "Cor de fundo (hex, ex. #070815; vazio = padrão)")
+        self._line(form, "background_color", "Cor de fundo (hex, ex. #05060d; vazio = padrão)")
         self._combo(form, "font_size", "Tamanho da fonte",
                     [("pequeno", "Pequeno"), ("medio", "Médio"), ("grande", "Grande")])
 

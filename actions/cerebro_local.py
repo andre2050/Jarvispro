@@ -1,4 +1,4 @@
-"""Cérebro local (Ollama) — NEXUS Pro 2.3. Veja core/cerebro_local.py.
+"""Cérebro local (Ollama) — NEXUS Ultra 2026 2.3. Veja core/cerebro_local.py.
 
 Por voz: "prepara o cérebro local"   "o cérebro local está funcionando?"   "avalia o cérebro local"
          "o que o cérebro local faria com: abre o spotify"

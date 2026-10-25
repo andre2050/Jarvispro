@@ -102,7 +102,7 @@ def _licenca_resumo() -> str:
 def about_info() -> list[tuple[str, str]]:
     return [
         ("Sua licença", _licenca_resumo()),
-        ("Projeto", "NEXUS Pro"),
+        ("Projeto", "NEXUS Ultra 2026"),
         ("Versão", app_version()),
         ("Desenvolvedor", "André Luiz Lima Menezes"),
         ("Licença", "Veja o arquivo LICENSE na pasta do projeto"),

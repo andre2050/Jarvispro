@@ -1,5 +1,5 @@
 """
-core/verificacao.py — 🤝 "diz o que verificou" e 🛡️ conteúdo não confiável (NEXUS Pro 1.5).
+core/verificacao.py — 🤝 "diz o que verificou" e 🛡️ conteúdo não confiável (NEXUS Ultra 2026 1.5).
 
 STATUS
     Toda resposta de ferramenta sai com status:

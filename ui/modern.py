@@ -11,7 +11,7 @@
 Todas usam as cores da classe C em folhas de estilo, então a troca de cor ao
 vivo (retheme_all_widgets) continua pintando tudo na hora.
 
-Parte do pacote ui do NEXUS Pro.
+Parte do pacote ui do NEXUS Ultra 2026.
 """
 from __future__ import annotations
 
@@ -62,10 +62,10 @@ class _Bubble(QFrame):
         lay.addWidget(self.body)
 
         if tag == "you":
-            ss = f"QFrame#bub_you {{ background: {C.PRI_GHO}; border: 1px solid {C.BORDER_B}; border-radius: 12px; }}"
+            ss = f"QFrame#bub_you {{ background: {C.PRI_GHO}; border: 1px solid {C.BORDER_B}; border-radius: 16px; }}"
         elif tag == "ai":
             ss = (f"QFrame#bub_ai {{ background: {C.PANEL2}; border: 1px solid {C.BORDER};"
-                  f" border-left: 3px solid {C.PRI}; border-radius: 12px; }}")
+                  f" border-left: 3px solid {C.PRI}; border-radius: 16px; }}")
         elif tag == "err":
             ss = (f"QFrame#bub_err {{ background: {qcol(C.RED, 22).name(QColor.NameFormat.HexArgb)};"
                   f" border: 1px solid {C.RED}; border-radius: 10px; }}")

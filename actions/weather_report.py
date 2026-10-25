@@ -1,4 +1,4 @@
-"""Clima de verdade (NEXUS Pro 2.0): temperatura, chuva e previsão — falada, não só aberta no navegador.
+"""Clima de verdade (NEXUS Ultra 2026 2.0): temperatura, chuva e previsão — falada, não só aberta no navegador.
 
 Fonte: Open-Meteo (grátis, sem chave, sem cadastro). Se a internet falhar, abre a busca do
 Google no navegador, como antes, para você nunca ficar sem resposta.

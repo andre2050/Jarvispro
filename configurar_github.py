@@ -4,7 +4,7 @@ Rode uma vez, com o Nexus FECHADO, de dentro da pasta do Nexus:
 
     python configurar_github.py
 
-Ele pergunta o repositório (ex.: andre/Nexus-Pro) e, se for PRIVADO, um token
+Ele pergunta o repositório (ex.: andre/Nexus-Ultra-2026) e, se for PRIVADO, um token
 de leitura. Testa o acesso e salva:
   - o repositório em config/update.json (vai junto pro GitHub);
   - o token em config/api_keys.json (NUNCA vai pro GitHub).
@@ -13,7 +13,7 @@ Como criar o token (só leitura, só desse repositório):
   1. github.com → sua foto → Settings → Developer settings
      → Personal access tokens → Fine-grained tokens → Generate new token
   2. Nome: Nexus. Expiration: o maior prazo que aparecer.
-  3. Repository access: "Only select repositories" → escolha o Nexus-Pro.
+  3. Repository access: "Only select repositories" → escolha o Nexus-Ultra-2026.
   4. Permissions → Repository permissions → Contents: "Read-only".
   5. Generate token e copie (começa com github_pat_).
 """
@@ -42,7 +42,7 @@ def main() -> None:
     repo = input(f"Repositório (usuario/nome){f' [{atual}]' if atual else ''}: ").strip() or atual
     repo = re.sub(r"^https?://github\.com/", "", repo).strip("/").removesuffix(".git")
     if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repo):
-        print("Formato inválido. Use usuario/repositorio, ex.: andre/Nexus-Pro.")
+        print("Formato inválido. Use usuario/repositorio, ex.: andre/Nexus-Ultra-2026.")
         return
 
     print("\nSe o repositório for PRIVADO, cole o token de leitura (github_pat_...).")

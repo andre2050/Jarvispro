@@ -11,7 +11,7 @@ Leve de propósito: o passo da animação roda num único QTimer cujo intervalo
 se adapta (ativo ~33 ms, ocioso ~66 ms, janela escondida ~400 ms) e o brilho
 de fundo é um pixmap em cache — nada de recalcular gradiente a cada quadro.
 
-Nove visuais (botão "Trocar visual" escolhe numa lista):
+Dezenove visuais (botão "Trocar visual" escolhe numa lista); os dez do Ultra 2026 estão em hud_ultra.py:
   orb ...... o orbe de sempre (completo)
   minimal .. só o texto de estado e as barras — quase zero CPU
   aurora ... (2026) fitas de luz que ondulam com a voz
@@ -22,6 +22,9 @@ Nove visuais (botão "Trocar visual" escolhe numa lista):
              aquela área (sistema, memória, web, visão, finanças, mídia), com pacotes de dados
   matrix ... (2.3) chuva de caracteres que cai mais forte e brilhante com a voz
   waves .... (2.3) ondas senoidais empilhadas que viram um osciloscópio quando há voz
+  nebula, gyro, helix, sonar, spectrum, hive, atom, plasma, stars, tunnel
+            (Ultra 2026) nebulosa, giroscópio, hélice, sonar, espectro, colmeia, átomo, plasma,
+            constelação e túnel — ver ui/hud_ultra.py
 """
 from __future__ import annotations
 
@@ -31,6 +34,7 @@ import time
 
 from ._qt import *  # noqa: F401,F403
 from ._base import C, FONT_MAIN, FONT_MONO, accent2, mix, qcol  # noqa: F401
+from .hud_ultra import ULTRA_INFO, ULTRA_STYLES
 
 # Estados que o cérebro manda (em inglês, por dentro) e como aparecem na tela
 _ESTADOS_PT = {
@@ -52,6 +56,8 @@ HUD_STYLE_INFO = {
     "matrix":  ("▦", "Matrix", "Chuva de caracteres que acelera e brilha com a voz"),
     "waves":   ("≋", "Ondas", "Ondas empilhadas que viram osciloscópio com a voz"),
 }
+# NEXUS Ultra 2026: dez visuais novos (ui/hud_ultra.py), na mesma lista
+HUD_STYLE_INFO.update(ULTRA_INFO)
 
 _BARRAS = 36                 # por lado (espelhado = 72 no anel)
 
@@ -322,6 +328,12 @@ class HudCanvas(QWidget):
             self._matrix(p, W, H, cx, cy, R, main, acc, amp)
         elif estilo == "waves":
             self._ondas(p, W, H, cx, cy, R, main, acc, amp)
+        elif estilo in ULTRA_STYLES:
+            try:
+                ULTRA_STYLES[estilo][3](self, p, W, H, cx, cy, R, main, acc, amp)
+            except Exception:           # um visual com defeito nunca derruba a janela: volta ao orbe
+                self.hud_style = "orb"
+                self._orbe(p, cx, cy, R, main, acc, amp)
         else:
             self._so_barras(p, W, H, main, amp)
 

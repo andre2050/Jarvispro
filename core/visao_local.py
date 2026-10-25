@@ -1,4 +1,4 @@
-"""Visão local (NEXUS Pro 1.4) — ler o texto e descrever imagens SEM internet.
+"""Visão local (NEXUS Ultra 2026 1.4) — ler o texto e descrever imagens SEM internet.
 
 Tudo aqui roda no seu computador; a imagem não sai dele.
 

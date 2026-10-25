@@ -1,5 +1,5 @@
 """
-core/roteador.py — segunda opinião para a rede local de intenções (NEXUS Pro 2.3).
+core/roteador.py — segunda opinião para a rede local de intenções (NEXUS Ultra 2026 2.3).
 
 A `intent_net` (MLP) decide rápido, mas pode errar com muita confiança diante de uma frase
 estranha. Aqui entra um VERIFICADOR independente: compara a frase, por sentido (core/embeddings),

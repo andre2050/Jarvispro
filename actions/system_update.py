@@ -101,7 +101,7 @@ def _zip_root(zf) -> str:
     """The folder the project sits in inside a package, e.g. "Andre-54.7.1/",
     GitHub's "owner-repo-1a2b3c/", or "" when main.py is at the zip's root.
 
-    1.4.1: the folder that holds main.py wins. The NEXUS Pro packages carry
+    1.4.1: the folder that holds main.py wins. The NEXUS Ultra 2026 packages carry
     the LEIA-ME files next to the Nexus/ folder, and the old "single top
     folder" rule saw two tops there and refused the whole package."""
     names = [i.filename.replace("\\", "/") for i in zf.infolist()

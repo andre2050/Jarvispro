@@ -1,4 +1,4 @@
-"""Manutenção do PC — espaço em disco, limpeza, backup, rede e bateria (NEXUS Pro 2.2).
+"""Manutenção do PC — espaço em disco, limpeza, backup, rede e bateria (NEXUS Ultra 2026 2.2).
 
 Por voz:  "quanto espaço livre eu tenho?"          "o que está ocupando espaço na pasta Downloads?"
           "limpa os arquivos temporários"          "faz backup da pasta Projetos"

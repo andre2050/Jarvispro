@@ -137,7 +137,9 @@ def save_push_to_talk_enabled(enabled: bool) -> None:
 # orb = orbe (padrão) · minimal = só barras (quase sem CPU) ·
 # 2026: aurora = ondas de luz · liquid = gota de vidro líquido ·
 #       holo = holograma de radar · globe = globo neural em 3D
-HUD_STYLES = ("orb", "minimal", "aurora", "liquid", "holo", "globe", "hub", "matrix", "waves")
+HUD_STYLES = ("orb", "minimal", "aurora", "liquid", "holo", "globe", "hub", "matrix", "waves",
+              # Ultra 2026 (ui/hud_ultra.py)
+              "nebula", "gyro", "helix", "sonar", "spectrum", "hive", "atom", "plasma", "stars", "tunnel")
 
 
 def get_hud_style() -> str:

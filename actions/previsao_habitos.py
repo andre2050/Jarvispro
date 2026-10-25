@@ -1,4 +1,4 @@
-"""Previsão de hábitos — NEXUS Pro 2.3. Veja core/previsao_habitos.py.
+"""Previsão de hábitos — NEXUS Ultra 2026 2.3. Veja core/previsao_habitos.py.
 
 Por voz: "treina a previsão dos meus hábitos"   "o que eu costumo fazer agora?"   "como é meu dia típico?"
 """

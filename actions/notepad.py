@@ -1,4 +1,4 @@
-"""Bloco de Notas por voz (NEXUS Pro 1.4).
+"""Bloco de Notas por voz (NEXUS Ultra 2026 1.4).
 
   "abre o bloco de notas"                         → action=open
   "escreve no bloco de notas uma lista de compras" → action=write (o Gemini monta o texto)

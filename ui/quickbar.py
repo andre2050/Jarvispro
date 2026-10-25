@@ -1,4 +1,4 @@
-"""Catálogo da barra de acesso rápido e dos atalhos de teclado (NEXUS Pro 1.2).
+"""Catálogo da barra de acesso rápido e dos atalhos de teclado (NEXUS Ultra 2026 1.2).
 
 Tudo o que o usuário escolhe fica nas preferências (config/api_keys.json):
   quick_bar       lista com os ids dos botões, na ordem da barra
