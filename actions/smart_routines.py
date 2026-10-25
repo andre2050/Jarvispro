@@ -218,6 +218,7 @@ def run_routine(key: str, player=None, speak=None) -> str:
     others = [s for s in steps if s.get("tool") != "open_app"]
     ctx = {"player": player, "speak": speak, "response": None, "session_memory": None}
     opened, failed, done = [], [], []
+    saidas: list[str] = []
 
     def _log(msg: str) -> None:
         print(f"[Routines] {msg}")
@@ -269,6 +270,8 @@ def run_routine(key: str, player=None, speak=None) -> str:
                 failed.append(tool)
             else:
                 done.append(tool)
+                if str(out).strip():
+                    saidas.append(f"{tool}: {str(out).strip()[:300]}")
         except Exception as e:           # one bad step never stops the rest
             failed.append(f"{tool} ({e})")
 
@@ -281,6 +284,8 @@ def run_routine(key: str, player=None, speak=None) -> str:
         parts.append("Could not do: " + ", ".join(failed) + ".")
     msg = " ".join(parts)
     _log(msg)
+    if saidas:                           # 3.3 — o que as ferramentas responderam (ex.: o clima), para o NEXUS dizer
+        msg += " Results (data): " + " | ".join(saidas)
     return msg
 
 

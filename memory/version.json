@@ -1,8 +1,13 @@
 {
-  "version": "3.2.0",
+  "version": "3.3.0",
   "codename": "Nexus Ultra 2026",
   "released": "2026-10-25",
   "changelog": [
+    {
+      "version": "3.3.0",
+      "date": "2026-10-25",
+      "notes": "NEXUS ULTRA 2026 3.3 — MAIS RÁPIDO, OFFLINE E SEU. LATÊNCIA: o NEXUS mede cada pedido (escutar, preparar, rota, modelo, ferramenta) do fim da sua fala até ele começar a falar; botão ⏱ Latência na I.S.A. mostra o gargalo e o que fazer; clima e notícias ficam num cache curto. MODO OFFLINE: sem internet, ferramentas de rede respondem na hora e o resto continua; avisa ao cair e ao voltar. ROTINAS POR CONVERSA: 'toda manhã abre meu e-mail e me diz o clima' — o NEXUS mostra a prévia e só salva com o seu sim. PERFIS DE USO: Trabalho, Estudo, Jogo e Normal mudam o tom, deixam o NEXUS quieto e desativam o que distrai (as travas de segurança não mudam). BUSCA NO QUE VOCÊ JÁ FEZ: relatórios, anotações e diário, entendendo 'semana passada'. REVISÃO DIÁRIA POR VOZ: o que concluiu, o que está pendente e o que fica para amanhã. PRIVACIDADE: painel 🔒 na I.S.A. com o que fica no PC, o que sai e Apagar item por item, sempre com confirmação."
+    },
     {
       "version": "3.2.0",
       "date": "2026-10-25",

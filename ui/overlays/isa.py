@@ -95,11 +95,13 @@ class IsaOverlay(_HudOverlay):
     _OH = 640
     _novo_evento = pyqtSignal(object)
 
-    def __init__(self, parent=None, estado=None, abrir_atuador=None, abrir_ia=None):
+    def __init__(self, parent=None, estado=None, abrir_atuador=None, abrir_ia=None, abrir_latencia=None, abrir_privacidade=None):
         super().__init__(parent)
         self._estado_fn = estado or (lambda: ("LISTENING", False))
         self._abrir_atuador = abrir_atuador
         self._abrir_ia = abrir_ia
+        self._abrir_latencia = abrir_latencia
+        self._abrir_privacidade = abrir_privacidade
         self._filtro: set[str] | None = None
         self._linhas: list[QWidget] = []
         self.setObjectName("Isa")
@@ -151,6 +153,24 @@ class IsaOverlay(_HudOverlay):
         tit.addWidget(sub)
         tit.addStretch(1)
         topo.addLayout(tit, 1)
+        if self._abrir_privacidade:
+            pv = QPushButton("🔒  Privacidade")
+            pv.setObjectName("sec")
+            pv.setFixedHeight(28)
+            pv.setFont(_f(8.4, True))
+            pv.setCursor(Qt.CursorShape.PointingHandCursor)
+            pv.setToolTip("O que o NEXUS guarda, o que sai do computador e como apagar")
+            pv.clicked.connect(self._abrir_privacidade)
+            topo.addWidget(pv, 0, Qt.AlignmentFlag.AlignTop)
+        if self._abrir_latencia:
+            lat = QPushButton("⏱  Latência")
+            lat.setObjectName("sec")
+            lat.setFixedHeight(28)
+            lat.setFont(_f(8.4, True))
+            lat.setCursor(Qt.CursorShape.PointingHandCursor)
+            lat.setToolTip("Onde o tempo vai: escutar, decidir, modelo pensar, ferramenta rodar")
+            lat.clicked.connect(self._abrir_latencia)
+            topo.addWidget(lat, 0, Qt.AlignmentFlag.AlignTop)
         if self._abrir_ia:
             ia = QPushButton("🧬  Como a IA funciona")
             ia.setObjectName("sec")

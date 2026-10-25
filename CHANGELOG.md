@@ -1,5 +1,33 @@
 # Mudanças
 
+## 3.3.0 — 25/10/2026
+
+### ⏱ Latência e resposta mais rápida (`core/latencia.py`, `core/cache_respostas.py`)
+* Cada pedido do motor próprio é medido por etapa (escutar, preparar, rota, modelo, ferramenta), do fim da sua fala
+  até a 1ª fala (`memory/latencia.json`). No Gemini Live mede-se o total.
+* Botão **⏱ Latência** na I.S.A.: tempo típico, 90% dos casos, média de cada etapa, maior gargalo e dica.
+* Clima e notícias ficam num cache curto. "Nexus, por que você está lento?" responde com os números.
+
+### 📴 Modo offline (`core/conexao.py`)
+* Sem internet, as ferramentas de rede respondem na hora e o resto segue funcionando; aviso ao cair e ao voltar.
+
+### 🗣 Rotinas por conversa (`core/rotinas_conversa.py`)
+* "Toda manhã abre meu e-mail e me diz o clima": mostra a prévia e só salva com o seu sim; roda uma vez por dia.
+
+### 🎚 Perfis de uso (`core/perfis.py`)
+* Trabalho, Estudo, Jogo e Normal mudam o tom, silenciam a proatividade (e a água no Jogo) e desativam ferramentas
+  que distraem. Travas de segurança e confirmações são iguais em todos os perfis.
+
+### 🔎 Busca no que você já fez (`core/busca_historico.py`)
+* Procura em relatórios, anotações e diário, entendendo hoje, ontem, semana passada, mês passado, últimos N dias.
+
+### 🌙 Revisão diária por voz (`core/revisao_diaria.py`)
+* "Como foi meu dia?": concluído hoje, pendente/atrasado, lembretes que ainda tocam e o que fica para amanhã.
+
+### 🔒 Privacidade (`core/privacidade.py`)
+* Painel na I.S.A. e por voz: o que fica no PC, o que sai e **Apagar** por item, sempre com confirmação
+  (por voz só vale depois de o NEXUS perguntar). Chaves de API e licença não são apagáveis por ali.
+
 ## 3.2.0 — 25/10/2026
 
 ### 🤝 Equipe de agentes mais forte (`actions/orquestrador.py`)

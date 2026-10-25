@@ -251,7 +251,20 @@ class ToolsMixin:
                     args["file_path"] = self.ui.current_file
                 _ctx = {"player": self.ui, "speak": self.speak,
                         "response": None, "session_memory": None}
-                r = await loop.run_in_executor(None, lambda: self._action_registry.run(name, args, _ctx))
+                # 3.3 — ferramentas de LEITURA (clima, notícias) repetidas saem do cache, na hora
+                from core import cache_respostas as _cache
+                from core import perfis as _perfis
+                r = _perfis.bloqueada(name)                    # 3.3 — o perfil (Trabalho, Estudo, Jogo) desativa algumas
+                if r is None:
+                    r = _cache.obter(name, args)
+                _do_cache = r is not None and not str(r).startswith("[failed] O perfil")
+                if r is None:
+                    # 3.3 — sem internet, a ferramenta que precisa de rede responde na hora (sem esperar o tempo limite)
+                    from core import conexao as _conexao
+                    r = await loop.run_in_executor(None, _conexao.bloqueio, name)
+                if r is None:
+                    r = await loop.run_in_executor(None, lambda: self._action_registry.run(name, args, _ctx))
+                    _cache.guardar(name, args, r)
                 result = r or "Done."
                 # Feed the habit log (core/habits.py) — routines 'suggest' learns
                 # from it. It only keeps SAFE_TOOLS and never raises. Until now
@@ -310,6 +323,11 @@ class ToolsMixin:
         if _ver.precisa_embrulhar(name, args):
             result = _ver.embrulhar(name, result)
 
+        try:                                                 # 3.3 — tempo da ferramenta (painel de latência)
+            from core import latencia as _lat
+            _lat.marca_ferramenta((_time.monotonic() - _t0) * 1000, cache=bool(locals().get("_do_cache")))
+        except Exception:
+            pass
         _isa.concluir_acao(_isa_tok, result, ok=_status != "failed")
         print(f"[NEXUS] 📤 {name} [{_status}] → {str(result)[:80]}")
         from core.audit import record as _audit

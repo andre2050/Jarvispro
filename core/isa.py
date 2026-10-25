@@ -77,7 +77,7 @@ _NOMES_INTERNOS = {
     "save_memory": "Guardar na memória", "recall_memory": "Lembrar da memória",
     "undo": "Desfazer", "screen_process": "Olhar a tela / câmera", "close_camera": "Fechar a câmera",
     "system_status": "Estado do sistema", "manage_monitor": "Monitorar assunto",
-    "shutdown_jarvis": "Desligar o NEXUS", "isa_core": "Relatório da I.S.A.", "explicar_ia": "Explicar a IA", "memoria_semanal": "Memória semanal",
+    "shutdown_jarvis": "Desligar o NEXUS", "isa_core": "Relatório da I.S.A.", "explicar_ia": "Explicar a IA", "memoria_semanal": "Memória semanal", "conexao": "Internet e modo offline", "criar_rotina": "Criar rotina por conversa", "perfil": "Perfil de uso", "buscar_historico": "Busca no que você fez", "revisao_diaria": "Revisão do dia", "privacidade": "Privacidade",
 }
 
 

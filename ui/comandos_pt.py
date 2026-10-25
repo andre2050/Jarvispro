@@ -69,6 +69,19 @@ COMANDOS = {
     "memoria_semanal": ("Memória semanal", "O NEXUS conta o que aprendeu sobre a sua rotina na semana e sugere o hábito "
                         "que combina com este dia e hora (ele só sugere; você decide).",
                         "Nexus, o que você aprendeu sobre mim esta semana?"),
+    "conexao": ("Internet e modo offline", "Confere se há internet e diz o que continua funcionando sem ela.",
+                "Nexus, o que funciona sem internet?"),
+    "criar_rotina": ("Rotinas por conversa", "Você descreve a rotina numa frase, o NEXUS mostra o que vai fazer e "
+                     "só salva depois do seu sim (pode ter dia e hora).",
+                     "Nexus, toda segunda de manhã abre o Spotify e me diz o clima"),
+    "perfil": ("Perfis de uso", "Trabalho, Estudo, Jogo ou Normal: muda o tom, deixa o NEXUS quieto e desativa "
+               "o que distrai (as travas de segurança são sempre as mesmas).", "Nexus, vou estudar"),
+    "buscar_historico": ("Busca no que você já fez", "Procura nos relatórios, anotações e no diário, "
+                         "entendendo períodos como “semana passada”.", "Nexus, o que anotei sobre o carro semana passada?"),
+    "revisao_diaria": ("Revisão do dia", "Fala o que você concluiu hoje, o que está pendente e o que fica "
+                       "para amanhã.", "Nexus, como foi meu dia?"),
+    "privacidade": ("Privacidade", "Mostra o que o NEXUS guarda, o que sai do computador e apaga cada coisa "
+                    "(sempre pedindo confirmação).", "Nexus, o que você guarda sobre mim?"),
     "notepad": ("Bloco de Notas e ditado",
                 "Abre o Bloco de Notas, escreve textos, lê o que está nele e, no modo ditado, "
                 "escreve sozinho tudo o que você falar (diga “parar ditado” para terminar).",

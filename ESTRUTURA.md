@@ -428,5 +428,19 @@ Veja `actions/focus_mode.py` como exemplo curto.
 | `core/autoavaliacao.py` | Mede cada pedido (rota, tempo, erro) e ajusta o roteador de modelos |
 | `core/memoria_semanal.py` | Resumo semanal da sua rotina e antecipação de hábitos (só sugere) |
 | `actions/memoria_semanal.py` | A voz: "o que você aprendeu sobre mim esta semana?" |
+| `core/latencia.py` | Mede cada etapa do pedido (escutar, preparar, rota, modelo, ferramenta) |
+| `core/cache_respostas.py` | Cache curto de clima e notícias |
+| `core/conexao.py` | Modo offline: detecta queda e volta da internet |
+| `core/rotinas_conversa.py` | Rotinas criadas por conversa, com prévia e confirmação |
+| `core/perfis.py` | Perfis de uso: Trabalho, Estudo, Jogo e Normal |
+| `core/busca_historico.py` | Busca em relatórios, anotações e diário, com período |
+| `core/revisao_diaria.py` | Revisão do dia para ser falada |
+| `core/privacidade.py` | O que fica no PC, o que sai e apagar com confirmação |
+| `actions/perfil.py` | A voz dos perfis: "modo estudo" |
+| `actions/buscar_historico.py` | A voz da busca: "o que anotei sobre o carro semana passada?" |
+| `actions/revisao_diaria.py` | A voz: "como foi meu dia?" |
+| `actions/privacidade.py` | A voz: "o que você guarda sobre mim?" |
+| `ui/overlays/latencia_painel.py` | Painel ⏱ Latência |
+| `ui/overlays/privacidade_painel.py` | Painel 🔒 Privacidade |
 | `actions/orquestrador.py` | Equipe de agentes com revisor e uma rodada de "refaz isso" |
 | `actions/agent_task.py` | Modo agente com conferência do resultado antes de terminar |

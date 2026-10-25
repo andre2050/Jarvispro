@@ -368,6 +368,8 @@ class AudioMixin:
                                         from core import isa as _isa
                                         _isa.registrar_latencia(
                                             (time.monotonic() - self._fala_fim) * 1000)
+                                        from core import latencia as _lat       # 3.3
+                                        _lat.registrar_total("gemini", (time.monotonic() - self._fala_fim) * 1000)
                                     except Exception:
                                         pass
                                     self._fala_fim = None

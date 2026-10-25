@@ -42,7 +42,7 @@ _RODADAS = 8
 # Ferramentas rápidas: não precisam de "um instante…"
 _RAPIDAS = frozenset({"save_memory", "recall_memory", "undo", "system_status", "open_app",
                       "computer_settings", "music_control", "timer_action", "quick_notes",
-                      "close_camera", "isa_core", "explicar_ia", "memoria_semanal", "unit_converter", "everyday_tools",
+                      "close_camera", "isa_core", "explicar_ia", "memoria_semanal", "conexao", "perfil", "buscar_historico", "revisao_diaria", "privacidade", "unit_converter", "everyday_tools",
                       "memory_bank", "focus_mode", "tarefas", "compras", "rastreador_habitos",
                       "contatos", "texto_dev", "diario"})
 
@@ -73,6 +73,29 @@ def _nome_decl(d) -> str:
 def _ja_vou(nome: str, idioma: str) -> str:
     tab = _JA_VOU.get((idioma or "pt")[:2], _JA_VOU["en"])
     return tab.get(nome) or tab["_"]
+
+
+
+def _marca_fala() -> None:
+    """3.3 — o NEXUS começou a falar: fecha o relógio do 'fim da sua fala → 1ª fala'."""
+    try:
+        from core import latencia as _lat
+        _lat.marca_primeira_fala()
+    except Exception:
+        pass
+
+
+class _SemMedir:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+
+def _medir(tr, etapa: str):
+    """tr.medir(etapa) quando há medição; um bloco vazio quando não há."""
+    return tr.medir(etapa) if tr is not None else _SemMedir()
 
 
 class MotorProprioMixin:
@@ -211,7 +234,9 @@ class MotorProprioMixin:
                     if tipo == "voz":
                         audio = item[1]
                         self.ui.set_state("THINKING")
+                        _t_stt = time.monotonic()
                         texto, idioma = await asyncio.to_thread(ouvido.transcrever, audio)
+                        self._stt_ms = (time.monotonic() - _t_stt) * 1000          # 3.3 — painel de latência
                         if not texto.strip():
                             self.ui.set_state("LISTENING" if not self.ui.muted else "SLEEPING")
                             continue
@@ -350,6 +375,7 @@ class MotorProprioMixin:
         idioma = idioma or self._idioma_da_resposta()
         tocador.novo_turno()
         self.set_speaking(True)
+        _marca_fala()
         try:
             def _tocar():
                 # 2.4.5 — a síntese da frase seguinte roda ENQUANTO a anterior toca (antes era
@@ -482,7 +508,18 @@ class MotorProprioMixin:
         hist = self._proprio_hist
         hist.append({"role": "user", "content": texto, "images": imagens or []})
         cerebro = self._proprio_cerebro
-        decisao = self._proprio_decidir(texto, origem)           # 2.5 — rápido / forte / delegar
+        try:                                                     # 3.3 — onde o tempo vai (core/latencia.py)
+            from core import latencia as _LAT
+            tr = _LAT.iniciar(origem, texto, None, getattr(self, "_stt_ms", None) if origem == "voz" else None)
+        except Exception:
+            tr = None
+        self._stt_ms = None
+        if tr is not None:
+            with tr.medir("rota"):
+                decisao = self._proprio_decidir(texto, origem)   # 2.5 — rápido / forte / delegar
+            tr.rota = decisao.rota if decisao is not None else None
+        else:
+            decisao = self._proprio_decidir(texto, origem)
         if decisao is not None:
             from core import roteador_modelos as _RM
             cerebro = _RM.cerebro_para(cerebro, getattr(self, "_proprio_cfg", {}) or {}, decisao.rota)
@@ -497,8 +534,13 @@ class MotorProprioMixin:
 
         # 2.4.5 — o prompt (lê arquivos e a memória) e as declarações das ferramentas eram
         # refeitos a cada rodada do mesmo pedido; agora são montados uma vez por pedido.
-        sistema = self._proprio_sistema()
-        ferramentas = self._proprio_ferramentas(texto)
+        if tr is not None:
+            with tr.medir("preparar"):
+                sistema = self._proprio_sistema()
+                ferramentas = self._proprio_ferramentas(texto)
+        else:
+            sistema = self._proprio_sistema()
+            ferramentas = self._proprio_ferramentas(texto)
         if (decisao is not None and decisao.rota == "delegar"
                 and any(_nome_decl(d) == "orchestrate" for d in ferramentas)):
             sistema += ("\n\n[ROTEADOR] This request looks like a multi-part goal. Prefer the `orchestrate` "
@@ -522,17 +564,26 @@ class MotorProprioMixin:
                 if streaming:
                     fala = V.FalaEmFluxo(
                         voz, tocador, self._idioma_da_resposta(),
-                        ao_comecar=lambda: self.set_speaking(True),
+                        ao_comecar=lambda: (self.set_speaking(True), _marca_fala()),
                         ao_terminar=lambda: (self.set_speaking(False), self.ui.set_audio_level(0.0)),
                         ao_erro=lambda m: self.ui.write_log(f"SYS: {m}"),
                         depois_de=fala_anterior)
-                    resp = await asyncio.to_thread(cerebro.conversar_stream, sistema,
-                                                   L.janela_historico(hist, 30), ferramentas,
-                                                   fala.alimentar)
+
+                    def _alimentar(pedaco, _f=fala):
+                        if tr is not None:
+                            tr.primeiro_token()
+                        return _f.alimentar(pedaco)
+                    with _medir(tr, "modelo"):
+                        resp = await asyncio.to_thread(cerebro.conversar_stream, sistema,
+                                                       L.janela_historico(hist, 30), ferramentas,
+                                                       _alimentar)
                     fala.fechar()
                 else:
-                    resp = await asyncio.to_thread(cerebro.conversar, sistema,
-                                                   L.janela_historico(hist, 30), ferramentas)
+                    with _medir(tr, "modelo"):
+                        resp = await asyncio.to_thread(cerebro.conversar, sistema,
+                                                       L.janela_historico(hist, 30), ferramentas)
+                    if tr is not None:
+                        tr.primeiro_token()
             except Exception as e:
                 if fala is not None:
                     fala.cancelar()
@@ -545,6 +596,8 @@ class MotorProprioMixin:
                     self._proprio_aprender(texto, "forte")        # o modelo rápido falhou: o forte da próxima vez
                 if aval is not None:
                     aval.fechar(False)
+                if tr is not None:
+                    tr.fechar(False)
                 self.ui.write_log(f"ERR: {cerebro.descricao()} — {str(e)[:200]}")
                 await self._proprio_falar("Não consegui falar com o modelo agora."
                                           if self._idioma_da_resposta() == "pt"
@@ -564,6 +617,8 @@ class MotorProprioMixin:
             if not resp.chamadas:
                 if aval is not None:
                     aval.fechar(True)
+                if tr is not None:
+                    tr.fechar(True)
                 if fala_pendente is not None:
                     await fala_pendente
                 if resp.texto:
@@ -636,6 +691,8 @@ class MotorProprioMixin:
 
         if aval is not None:
             aval.fechar(False)
+        if tr is not None:
+            tr.fechar(False)
         if fala_pendente is not None:
             await fala_pendente
         await self._proprio_falar("Não consegui terminar: foram passos demais."

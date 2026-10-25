@@ -3355,11 +3355,45 @@ class MainWindow(QMainWindow):
             ov = IsaOverlay(parent=self.centralWidget(),
                             estado=lambda: (self.hud.state, self._muted),
                             abrir_atuador=lambda: self._open_settings_panel("atuador"),
-                            abrir_ia=lambda: self._open_ia_panel("areas"))
+                            abrir_ia=lambda: self._open_ia_panel("areas"),
+                            abrir_latencia=self._open_latencia_panel,
+                            abrir_privacidade=self._open_privacidade_panel)
             self._centre_overlay(ov)
             self._isa_overlay = ov
         except Exception as e:
             self._log.append_log(f"ERR: O núcleo I.S.A. não abriu — {e}")
+
+    def _open_privacidade_panel(self) -> None:
+        """3.3 — Privacidade: o que fica no PC, o que sai e apagar com confirmação."""
+        try:
+            from .overlays.privacidade_painel import PrivacidadeOverlay
+            old = getattr(self, "_priv_overlay", None)
+            if old is not None:
+                try:
+                    old._fechar()
+                except RuntimeError:
+                    pass
+            ov = PrivacidadeOverlay(parent=self.centralWidget())
+            self._centre_overlay(ov)
+            self._priv_overlay = ov
+        except Exception as e:
+            self._log.append_log(f"ERR: O painel de privacidade não abriu — {e}")
+
+    def _open_latencia_panel(self) -> None:
+        """3.3 — Latência: onde o tempo de cada pedido vai."""
+        try:
+            from .overlays.latencia_painel import LatenciaOverlay
+            old = getattr(self, "_lat_overlay", None)
+            if old is not None:
+                try:
+                    old._fechar()
+                except RuntimeError:
+                    pass
+            ov = LatenciaOverlay(parent=self.centralWidget())
+            self._centre_overlay(ov)
+            self._lat_overlay = ov
+        except Exception as e:
+            self._log.append_log(f"ERR: O painel de latência não abriu — {e}")
 
     def _open_ia_panel(self, aba: str = "areas") -> None:
         """Ultra 2026 — "Como a IA do NEXUS funciona": áreas da IA e tipos de IA."""

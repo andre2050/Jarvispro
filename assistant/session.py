@@ -370,6 +370,13 @@ class SessionMixin:
             parts.append(_facts_ctx)
         if _custom_ctx:
             parts.append(_custom_ctx)
+        try:                                           # 3.3 — o tom do perfil de uso (Trabalho, Estudo, Jogo)
+            from core.perfis import bloco_prompt as _perfil_bloco
+            _pb = _perfil_bloco()
+            if _pb:
+                parts.append(_pb)
+        except Exception as e:
+            print(f"[Perfis] ⚠️ {e}")
         if mem_str:
             parts.append(mem_str)
         if _threads_ctx:
@@ -864,6 +871,8 @@ class SessionMixin:
                     tg.create_task(self._isolada(self._run_battery_watch))
                     tg.create_task(self._isolada(self._run_anomaly_watch))
                     tg.create_task(self._isolada(self._run_memoria_semanal))
+                    tg.create_task(self._isolada(self._run_conexao_watch))
+                    tg.create_task(self._isolada(self._run_rotinas_agendadas))
                     if self._dashboard:
                         tg.create_task(self._isolada(self._relay_phone_audio))
 
