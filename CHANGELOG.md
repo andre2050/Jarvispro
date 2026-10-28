@@ -1,5 +1,33 @@
 # Mudanças
 
+## 3.7.0 — 28/10/2026
+
+### 🔎 OCR na memória de documentos (`core/ocr.py`)
+* "Liga a leitura de fotos": fotos de recibos e PDFs escaneados viram texto (Tesseract local + pytesseract + pypdfium2) e entram na busca, citando "p. 3 (OCR)".
+  Opt-in (OCR é lento); sem o Tesseract instalado o NEXUS diz o que falta. 4 testes com imagem e PDF de verdade.
+
+### 🗞️ Resumo diário por voz (`core/resumo_diario.py`)
+* "Resumo do dia": agenda de hoje + e-mails importantes (remetentes VIP ou palavras como urgente/prazo/vence) + tarefas, lidos ao mesmo tempo. Texto de e-mail marcado como de terceiros.
+
+### 🎯 Modo foco com distrações
+* `focus_mode` guarda a lista de programas de distração; "foco de 25 min e fecha as distrações" pede CONFIRMAR e fecha com `terminate` (nunca kill; protegidos nunca entram).
+  Durante o foco os avisos no celular (push) ficam em silêncio.
+
+### 👋 Presença (`core/presenca.py`)
+* Opt-in: celular na rede da casa (só IP privado) e/ou câmera que pergunta "tem rosto?" e descarta o quadro. Ao chegar, acorda e dá um oi (no máx. 1 a cada 30 min).
+
+### 🎛️ Editor do hub (`core/hub_ajustes.py`)
+* Cor (matiz) e velocidade por visual, com prévia ao vivo: menu do hub › "Ajustar cor e velocidade deste visual…".
+
+### 🏠 Ambientes (`core/perfis.py`)
+* Perfil novo **Casa**; cada ambiente traz cor da interface, visual do hub e silêncio de push. Ao voltar ao Normal, devolve a cor e o visual que eram seus.
+
+### 💾 Backup criptografado (`core/backup_cripto.py`)
+* AES-256-GCM, chave derivada da frase por scrypt; a frase não é guardada. Pasta da sua nuvem, a cada 24 h, últimos 7. Restaurar pede CONFIRMAR e só escreve em memory/ e config/.
+
+### 📦 Rotinas na loja (`core/rotinas_loja.py`)
+* Pacotes `.nexusrotina` (sem código, só ferramentas seguras, assinatura opcional de autor confiável). Instalar pede CONFIRMAR e nunca substitui rotina sua.
+
 ## 3.6.0 — 28/10/2026
 
 ### 🔧 Integração MCP (`core/mcp_cliente.py`, `actions/mcp_nexus.py`)

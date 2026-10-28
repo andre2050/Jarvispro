@@ -120,6 +120,8 @@ class HudCanvas(QWidget):
         self._pulsos: list[float] = []              # instantes das ondas de pulso (globo/holo)
         self._ult_pulso = 0.0
 
+        self._ajustes: dict = {}
+        self.recarregar_ajustes()
         self._tick = 0
         self._fase = 0.0            # fase dos anéis (integrada, nunca salta)
         self._t_passo = time.time()
@@ -226,7 +228,7 @@ class HudCanvas(QWidget):
         vel = 1.0 + (1.8 if pensando else 0.0) + (0.9 if self.speaking else 0.0)
         if self.muted:
             vel = 0.25
-        self._fase += dt * vel
+        self._fase += dt * vel * self._ajustes.get("velocidade", 1.0)
 
         # histórico do anel: uma amostra a cada ~35 ms
         if agora - self._hist_t >= 0.035:
@@ -259,10 +261,30 @@ class HudCanvas(QWidget):
         self.update()
 
     # ── desenho ──────────────────────────────────────────────────────────────
+    def recarregar_ajustes(self) -> None:
+        """Lê do disco a cor/velocidade escolhidas para o visual atual (editor do hub, 3.7)."""
+        try:
+            from core import hub_ajustes
+            self._ajustes = hub_ajustes.obter(self.hud_style)
+        except Exception:
+            self._ajustes = {}
+
     def _cores(self):
         """(principal, destaque) conforme o estado."""
         if self.muted:
             return qcol(C.MUTED_C), qcol(C.MUTED_C)
+        mt = self._ajustes.get("matiz")
+        if mt is not None:
+            from core.hub_ajustes import cores_com_matiz
+            base = qcol(C.PRI)
+            (r1, g1, b1), (r2, g2, b2) = cores_com_matiz(mt, (base.red(), base.green(), base.blue()))
+            if self.speaking:
+                return QColor(r1, g1, b1), qcol(C.VIOLET)
+            if self.state in ("THINKING", "PROCESSING"):
+                return QColor(r1, g1, b1), qcol(C.ACC)
+            if self.state == "LISTENING":
+                return QColor(r1, g1, b1), qcol(C.GREEN)
+            return QColor(r1, g1, b1), QColor(r2, g2, b2)
         if self.speaking:
             return qcol(C.PRI), qcol(C.VIOLET)
         if self.state in ("THINKING", "PROCESSING"):

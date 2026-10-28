@@ -38,3 +38,36 @@ def test_acao_voz(tmp_path, monkeypatch):
     assert "Jogo" in perfil({"name": "jogo"})
     assert "Jogo" in perfil({"action": "status"})
     assert "Normal" in perfil({"name": "normal"})
+
+
+def test_ambientes_gravam_cor_e_hub_e_devolvem_no_normal(tmp_path, monkeypatch):
+    import memory.config_manager as CM
+    cfg = {"ui_color": "#112233", "hud_style": "matrix"}
+    monkeypatch.setattr(CM, "load_api_keys", lambda: dict(cfg))
+    monkeypatch.setattr(CM, "_save_flag", lambda k, v: cfg.__setitem__(k, v))
+    monkeypatch.setattr(CM, "get_hud_style", lambda: cfg["hud_style"])
+    monkeypatch.setattr(P, "ARQUIVO", tmp_path / "perfil.json")
+    avisos = []
+    P.ao_mudar(lambda: avisos.append(1))
+    try:
+        r = P.definir("trabalho")
+        assert "Trabalho ligado" in r and "Sem avisos no celular" in r
+        assert cfg["ui_color"] == "#5aa9ff" and cfg["hud_style"] == "gears"
+        P.definir("casa")                                        # troca de ambiente sem perder o original
+        assert cfg["hud_style"] == "lotus"
+        P.definir("normal")
+        assert cfg == {"ui_color": "#112233", "hud_style": "matrix"}
+        assert len(avisos) == 3
+    finally:
+        P._ouvintes.clear()
+
+
+def test_todo_ambiente_usa_visual_e_cor_validos():
+    from memory.config_manager import HUD_STYLES
+    for chave, p in P.PERFIS.items():
+        if p.get("hub"):
+            assert p["hub"] in HUD_STYLES, chave
+        if p.get("cor"):
+            assert len(p["cor"]) == 7 and p["cor"].startswith("#")
+    assert P.resolver("vou relaxar em casa") == "casa"
+    assert P.silencia_integracao("push", "trabalho") and not P.silencia_integracao("push", "casa")

@@ -16,7 +16,7 @@ def perfil(parameters: dict, player=None) -> str:
 TOOL = {
     "name": "perfil",
     "description": ("Usage profiles that change NEXUS's tone, proactivity and which tools are enabled. Profiles: "
-                    "normal, trabalho (work), estudo (study), jogo (game). Use when the user says 'modo trabalho', "
+                    "normal, casa (home), trabalho (work), estudo (study), jogo (game); each environment also changes the UI colour and hub visual and (except normal/casa) silences phone push. Use when the user says 'modo trabalho', "
                     "'vou estudar', 'vou jogar', 'volta pro normal', 'qual perfil está ligado?'. action=set with "
                     "name (default when a name is given), status, list. Security rules never change with the "
                     "profile. Answer in Portuguese, briefly."),

@@ -227,6 +227,59 @@ class BackgroundMixin:
             except Exception as e:
                 print(f"[Focus] ⚠️ {e}")
 
+    # ── Backup criptografado (3.7) ──────────────────────────────────────────────
+
+    async def _run_backup_auto(self) -> None:
+        """A cada 24 h faz o backup criptografado, se ele foi configurado (core/backup_cripto.py). Silencioso."""
+        try:
+            from core import backup_cripto as _bk
+        except Exception as e:
+            print(f"[Backup] ⚠️ indisponível: {e}")
+            return
+        await asyncio.sleep(180)
+        while True:
+            try:
+                if await asyncio.to_thread(_bk.precisa_backup):
+                    r = await asyncio.to_thread(_bk.fazer_backup)
+                    self.ui.write_log(f"SYS: 💾 Backup criptografado feito ({r['kb']} KB).")
+            except Exception as e:
+                print(f"[Backup] ⚠️ {e}")
+            await asyncio.sleep(3600)
+
+    # ── Presença (3.7) ──────────────────────────────────────────────────────────
+
+    async def _run_presenca(self) -> None:
+        """Acorda e dá um oi quando você chega (core/presenca.py). Desligado por padrão; sem sensor, não faz nada."""
+        try:
+            from core import presenca as _pr
+        except Exception as e:
+            print(f"[Presença] ⚠️ indisponível: {e}")
+            return
+        estado = _pr.Presenca()
+        while True:
+            await asyncio.sleep(_pr.INTERVALO)
+            try:
+                sensor = _pr.sensor_atual()
+                if sensor is None:
+                    continue
+                viu = await asyncio.to_thread(sensor)
+                if estado.passo(viu) != "chegou" or not self.session:
+                    continue
+                with self._speaking_lock:
+                    speaking = self._is_speaking
+                if speaking:
+                    continue
+                if self._wake_enabled and not self._awake:
+                    self.wake("presença")
+                self.ui.write_log("SYS: 👋 Você chegou.")
+                await self.session.send_client_content(
+                    turns={"role": "user", "parts": [{"text":
+                        "[PRESENCA] The user just arrived. In one short friendly sentence in their language, say hi "
+                        "and that you are here. Call no tools."}]},
+                    turn_complete=True)
+            except Exception as e:
+                print(f"[Presença] ⚠️ {e}")
+
     # ── GitHub update watch ─────────────────────────────────────────────────────
 
     async def _run_update_watch(self) -> None:

@@ -1,8 +1,13 @@
 {
-  "version": "3.6.0",
+  "version": "3.7.0",
   "codename": "Nexus Ultra 2026",
   "released": "2026-10-28",
   "changelog": [
+    {
+      "version": "3.7.0",
+      "date": "2026-10-28",
+      "notes": "NEXUS ULTRA 2026 3.7 — OCR, RESUMO DO DIA, FOCO, PRESENÇA, AMBIENTES E BACKUP. OCR: fotos de recibos e PDFs escaneados entram na memória de documentos (Tesseract local, opt-in). RESUMO DIÁRIO POR VOZ: agenda, e-mails importantes e tarefas num pedido só. MODO FOCO: fecha programas de distração (com CONFIRMAR) e silencia os avisos no celular. PRESENÇA: o NEXUS acorda quando você chega (celular na rede da casa e/ou câmera que só detecta rosto, sem gravar). EDITOR DO HUB: cor e velocidade de cada visual. AMBIENTES: Casa, Trabalho, Estudo e Jogo trocam cor, visual do hub e avisos. BACKUP CRIPTOGRAFADO (AES-256-GCM) automático para a pasta da sua nuvem. ROTINAS NA LOJA: pacotes .nexusrotina com rotinas prontas, sem código e só com ferramentas seguras."
+    },
     {
       "version": "3.6.0",
       "date": "2026-10-28",

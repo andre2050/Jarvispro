@@ -28,6 +28,7 @@ from pathlib import Path
 import numpy as np
 
 from core import embeddings as E
+from core import ocr as OCR
 
 _BASE = Path(__file__).resolve().parent.parent
 ARQUIVO = _BASE / "memory" / "rag_documentos.npz"
@@ -175,12 +176,38 @@ def _ler_pptx(path: Path) -> list[tuple[str, str]]:
     return saida
 
 
+def _pdf_com_ocr(path: Path) -> list[tuple[str, str]]:
+    """PDF: usa o texto digital e, com o OCR ligado, lê por imagem as páginas sem texto (PDF escaneado)."""
+    paginas = _ler_pdf(path)
+    if not OCR.ativo() or not OCR.disponivel():
+        return paginas
+    if paginas and all(len(t.strip()) >= 20 for _, t in paginas):
+        return paginas
+    ja = {}
+    for loc, t in paginas:
+        m = re.search(r"\d+", loc)
+        if m and len(t.strip()) >= 20:
+            ja[int(m.group())] = t
+    try:
+        return OCR.ler_pdf_escaneado(path, ja) or paginas
+    except Exception as e:
+        print(f"[RAG] OCR de {path.name} falhou: {e}")
+        return paginas
+
+
+def extensoes() -> set[str]:
+    """Tipos lidos agora: os de sempre, mais fotos quando o OCR está ligado e instalado."""
+    return EXTENSOES | (OCR.IMAGENS if OCR.ativo() and OCR.disponivel() else set())
+
+
 def ler_arquivo(path: Path) -> list[tuple[str, str]]:
     """[(localização, texto)] de um arquivo; lista vazia se não der para ler (sem levantar erro)."""
     try:
         ext = path.suffix.lower()
         if ext == ".pdf":
-            return _ler_pdf(path)
+            return _pdf_com_ocr(path)
+        if ext in OCR.IMAGENS:
+            return OCR.ler_imagem(path) if OCR.ativo() and OCR.disponivel() else []
         if ext == ".docx":
             return _ler_docx(path)
         if ext == ".pptx":
@@ -223,12 +250,13 @@ def _assinatura(p: Path) -> str:
 
 def _arquivos(pastas: list[str]):
     vistos = 0
+    exts = extensoes()
     for raiz in pastas:
         for dirpath, dirnames, nomes in os.walk(raiz):
             dirnames[:] = [d for d in dirnames if not d.startswith(".") and d.lower() not in _IGNORAR_PASTAS]
             for nome in nomes:
                 p = Path(dirpath) / nome
-                if p.suffix.lower() not in EXTENSOES or nome.startswith(("~$", ".")):
+                if p.suffix.lower() not in exts or nome.startswith(("~$", ".")):
                     continue
                 try:
                     if p.stat().st_size > TAMANHO_MAX_ARQUIVO or p.stat().st_size == 0:

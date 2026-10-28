@@ -1,6 +1,9 @@
 """Perfis de uso (NEXUS Ultra 2026 3.3): Trabalho, Estudo, Jogo — e o Normal.
 
-Cada perfil muda quatro coisas, e só elas:
+3.7 — ambientes: cada perfil também pode trazer a sua COR da interface, o seu VISUAL do hub e silenciar os avisos
+no celular (push). Ao sair do Normal o NEXUS lembra a cor e o visual que você usava e devolve quando você volta.
+
+Cada perfil muda quatro coisas (mais o visual do ambiente), e só elas:
   • TOM            uma instrução curta de estilo que entra no prompt (no motor próprio vale já no próximo
                    pedido; no Gemini Live vale na próxima conexão);
   • PROATIVIDADE   se o NEXUS puxa conversa sozinho (nos três perfis ele fica quieto);
@@ -26,11 +29,18 @@ PERFIS: dict[str, dict] = {
         "nome": "Normal", "descricao": "Tudo liberado, do jeito de sempre.",
         "tom": "", "proativo": True, "agua": True, "bloqueadas": (),
     },
+    "casa": {
+        "nome": "Casa", "descricao": "Descontraído e caloroso; tudo liberado, visual aconchegante.",
+        "tom": "Seja caloroso e descontraído, como alguém em casa com o usuário; pode puxar assunto leve.",
+        "proativo": True, "agua": True, "bloqueadas": (),
+        "cor": "#ff9f6b", "hub": "lotus", "silencia": (),
+    },
     "trabalho": {
         "nome": "Trabalho", "descricao": "Direto e sem conversa fiada; sem vídeos para não distrair.",
         "tom": "Seja objetivo e direto: respostas curtas, sem conversa fiada, sem piadas, sem puxar assunto.",
         "proativo": False, "agua": True,
         "bloqueadas": ("youtube_video", "video_player", "game_updater"),
+        "cor": "#5aa9ff", "hub": "gears", "silencia": ("push",),
     },
     "estudo": {
         "nome": "Estudo", "descricao": "Didático e paciente; sem vídeos nem jogos para manter o foco.",
@@ -38,15 +48,18 @@ PERFIS: dict[str, dict] = {
                 "claro. Não puxe assunto fora do estudo."),
         "proativo": False, "agua": True,
         "bloqueadas": ("youtube_video", "video_player", "game_updater"),
+        "cor": "#34e0a1", "hub": "origami", "silencia": ("push",),
     },
     "jogo": {
         "nome": "Jogo", "descricao": "Quieto e breve; não interrompe nem atualiza nada no meio da partida.",
         "tom": "Seja animado e muito breve: no máximo uma frase por resposta. Nunca interrompa por iniciativa própria.",
         "proativo": False, "agua": False,
         "bloqueadas": ("system_update", "dev_agent", "manutencao_pc"),
+        "cor": "#ff4fd8", "hub": "synthwave", "silencia": ("push",),
     },
 }
 _ALIAS = {
+    "casa": "casa", "home": "casa", "descansar": "casa", "relaxar": "casa",
     "normal": "normal", "padrao": "normal", "comum": "normal", "nenhum": "normal", "sair": "normal",
     "trabalho": "trabalho", "trabalhar": "trabalho", "work": "trabalho", "foco": "trabalho",
     "estudo": "estudo", "estudar": "estudo", "study": "estudo", "prova": "estudo",
@@ -104,8 +117,18 @@ def definir(nome: str, arquivo: Path | None = None) -> str:
     arq = arquivo or ARQUIVO
     try:
         arq.parent.mkdir(parents=True, exist_ok=True)
+        antes = {}
+        try:
+            antes = json.loads(arq.read_text(encoding="utf-8")).get("antes", {})
+        except Exception:
+            pass
+        dados = {"ativo": chave, "desde": int(time.time())}
+        if arquivo is None:
+            antes = _aplicar_ambiente(chave, antes)
+        if antes:
+            dados["antes"] = antes
         tmp = arq.with_suffix(".tmp")
-        tmp.write_text(json.dumps({"ativo": chave, "desde": int(time.time())}), encoding="utf-8")
+        tmp.write_text(json.dumps(dados), encoding="utf-8")
         tmp.replace(arq)
     except Exception as e:
         return f"[failed] Não consegui guardar o perfil: {e}"
@@ -120,7 +143,49 @@ def definir(nome: str, arquivo: Path | None = None) -> str:
     extra = ""
     if p["bloqueadas"]:
         extra = " Ficam desativadas: " + ", ".join(p["bloqueadas"]) + "."
+    if p.get("silencia"):
+        extra += " Sem avisos no celular."
     return f"Perfil {p['nome']} ligado. {p['descricao']}{extra}"
+
+
+_ouvintes: list = []
+
+
+def ao_mudar(cb) -> None:
+    """A interface se registra aqui para aplicar cor e visual ao vivo quando o perfil troca."""
+    _ouvintes.append(cb)
+
+
+def _aplicar_ambiente(chave: str, antes: dict) -> dict:
+    """Grava cor/visual do ambiente na configuração; guarda os seus de antes para devolver no Normal."""
+    try:
+        from memory.config_manager import _save_flag, get_hud_style, load_api_keys
+        p = PERFIS[chave]
+        cfg = load_api_keys()
+        if p.get("cor") or p.get("hub"):
+            if not antes:                                    # primeira saída do Normal: lembra o que era seu
+                antes = {"ui_color": cfg.get("ui_color", ""), "hud_style": get_hud_style()}
+            if p.get("cor"):
+                _save_flag("ui_color", p["cor"])
+            if p.get("hub"):
+                _save_flag("hud_style", p["hub"])
+        elif antes:                                          # voltou ao Normal: devolve
+            _save_flag("ui_color", antes.get("ui_color", ""))
+            _save_flag("hud_style", antes.get("hud_style", "orb"))
+            antes = {}
+        for cb in list(_ouvintes):
+            try:
+                cb()
+            except Exception:
+                pass
+    except Exception:
+        pass
+    return antes
+
+
+def silencia_integracao(nome: str, perfil: str | None = None) -> bool:
+    """True se o perfil ligado pede silêncio nessa integração (hoje: 'push')."""
+    return nome in PERFIS.get(perfil or ativo(), PERFIS["normal"]).get("silencia", ())
 
 
 # ── o que cada parte do NEXUS consulta ──────────────────────────────────────
