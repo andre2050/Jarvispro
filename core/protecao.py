@@ -49,6 +49,11 @@ def registrar_falha(origem: str, texto: str) -> None:
         if ARQ_FALHAS.exists():
             antigo = ARQ_FALHAS.read_text(encoding="utf-8", errors="replace")[-MAX_BYTES:]
         ARQ_FALHAS.write_text(antigo + f"\n=== {_agora()} · {origem} ===\n{texto}\n", encoding="utf-8")
+        try:                                                    # 4.0 — a imunidade guarda a digital de cada falha
+            from core import imunidade
+            imunidade.registrar(texto, origem)
+        except Exception:
+            pass
     except Exception:
         pass
 

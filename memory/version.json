@@ -1,8 +1,13 @@
 {
-  "version": "3.9.1",
+  "version": "4.0.0",
   "codename": "Nexus Ultra 2026",
   "released": "2026-10-28",
   "changelog": [
+    {
+      "version": "4.0.0",
+      "date": "2026-10-28",
+      "notes": "NEXUS ULTRA 2026 4.0 — NÚCLEO I.S.A. QUE SE PROTEGE, SE ORGANIZA E SE ADAPTA. IMUNIDADE: guarda a digital de cada falha, aplica ANTES a vacina que já funcionou (espera de rede, liberar memória) e transforma bugs repetidos em relatório (arquivo:linha) — nunca reescreve o próprio código. MÓDULOS COMPETITIVOS: variantes da mesma capacidade competem e a melhor vence, com experimento ocasional, aposentadoria e fixação manual. PLANEJAMENTO DE MODULARIZAÇÃO: como dividir módulos grandes, em que ordem e com que testes (só planeja). DESEMPENHO PROATIVO: avisa de programa pesado ou com vazamento, com sugestão específica. CONTEXTO DE PROJETO: andamento, horas, arquivos mudados e o que você escreveu sobre ele. HISTÓRICO LONGO: arquivo permanente e pesquisável das conversas/diário/notas (sem segredos), com busca que escolhe a melhor estratégia. MULTI-AGENTES: quadro compartilhado ao vivo entre especialistas e detecção de conflitos. ADAPTAÇÃO CONTÍNUA (opt-in): ajusta o quanto fala e avisa conforme o seu uso, com freios, travas e desfazer."
+    },
     {
       "version": "3.9.1",
       "date": "2026-10-28",

@@ -30,6 +30,14 @@ MODULOS = {
     "estatisticas": ("core.estatisticas_pc", "estatísticas do PC e sugestões"),
     "auditoria": ("core.auditoria", "registro verificável de decisões"),
     "missoes": ("core.missoes", "missões de longa duração"),
+    "imunidade": ("core.imunidade", "vacinas contra falhas conhecidas"),
+    "competicao": ("core.competicao", "variantes de um módulo competem e a melhor vence"),
+    "modularizacao": ("core.isa_modularizacao", "planeja como dividir módulos grandes"),
+    "desempenho": ("core.desempenho_proativo", "avisa de processos pesados e sugere otimizações"),
+    "contexto_projeto": ("core.contexto_projeto", "andamento do projeto e informações relevantes"),
+    "historico_longo": ("core.historico_longo", "memória de longo prazo das conversas"),
+    "equipe": ("core.equipe_agentes", "agentes especializados com quadro compartilhado"),
+    "adaptacao": ("core.adaptacao", "ajustes automáticos ao seu modo de uso"),
 }
 
 

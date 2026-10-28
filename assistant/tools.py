@@ -336,6 +336,11 @@ class ToolsMixin:
             from core import autoregeneracao as _regen
             from core import isa_preditiva as _ip
             _ip.marcar_uso()
+            try:                                             # 4.0 — adaptação: contagem de uso (só o nome da ferramenta)
+                from core import adaptacao as _adapt
+                _adapt.observar("uso", name)
+            except Exception:
+                pass
             if self._action_registry.has(name) and not str(result).startswith("[failed] A função"):
                 if _status == "failed" and str(result).startswith(("Tool '", "Action '")):
                     if _regen.falha_de_funcao(name):

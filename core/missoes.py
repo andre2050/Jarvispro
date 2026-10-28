@@ -34,7 +34,8 @@ MAX_ATIVAS = 3
 MAX_LOG = 200
 PROIBIDAS = {"missao", "agent_task", "orchestrate", "dev_agent", "game_updater", "system_update", "desktop_control",
              "neural_core", "fabrica_plugins", "plugin_factory", "computer_use", "rede_nexus", "loja_plugins", "backup_cripto", "shortcut_manager", "focus_mode",
-             "recurring_mission", "approvals", "connectors", "advanced_mode", "organize_folder", "travel_mode", "isa_nucleo", "routine_learning"}
+             "recurring_mission", "approvals", "connectors", "advanced_mode", "organize_folder", "travel_mode", "isa_nucleo", "routine_learning",
+             "immunity", "long_history", "adaptation"}
 ESPERAR = "_esperar"
 
 ESTADOS_FINAIS = ("concluida", "falhou", "cancelada")

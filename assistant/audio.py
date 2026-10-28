@@ -61,6 +61,11 @@ class AudioMixin:
 
     def interrupt(self) -> None:
         """Stop NEXUS mid-speech: drain queued audio and open mic immediately."""
+        try:                                           # 4.0 — adaptação: o usuário cortou a fala (sinal para falar menos)
+            from core import adaptacao as _adapt
+            _adapt.observar("interrompeu")
+        except Exception:
+            pass
         try:   # 1.5 — motor próprio: corta a voz local
             self._proprio_parar_fala()
         except Exception:

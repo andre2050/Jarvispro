@@ -1,5 +1,23 @@
 # Mudanças
 
+## 4.0.0 — 28/10/2026
+
+### 🛡️ Auto-regeneração com imunidade (`core/imunidade.py`)
+* Cada falha ganha uma **digital** (sem números, caminhos e endereços). O NEXUS conta as repetições e o que resolveu; quando uma vacina **já funcionou**, aplica **antes** (espera de rede crescente, espera de arquivo em uso, liberar memória, limpar sobras do NEXUS).
+* Falha repetida sem remédio vira **relatório de bug** (arquivo:linha, quantas vezes). Instalar pacote continua pedindo o seu sim; **o NEXUS nunca reescreve o próprio código**.
+### 🧬 Arquitetura que evolui
+* **Módulos competitivos** (`core/competicao.py`): variantes da mesma capacidade competem (acerto + tempo), com teste mínimo, experimento de 10%, aposentadoria reversível e fixação manual.
+* **Planejamento da modularização** (`core/isa_modularizacao.py`): onde dividir, em grupos de funções, em que ordem (menos dependentes primeiro) e com que testes. Só planeja.
+### ⚙️ Desempenho e projeto
+* **Desempenho proativo** (`core/desempenho_proativo.py`): avisa de programa pesado ou com vazamento; nunca fecha nada; respeita foco e a proatividade aprendida.
+* **Contexto de projeto** (`core/contexto_projeto.py`): andamento, próximo passo, horas, arquivos da pasta que mudaram e o que você escreveu sobre ele.
+### 🧠 Memória e equipe
+* **Histórico longo** (`core/historico_longo.py`): arquivo permanente das conversas, diário e notas (sem cartões/CPF/chaves), com compactação e busca em que **palavras × semântica competem**.
+* **Quadro da equipe** (`core/equipe_agentes.py`): os especialistas do orquestrador veem o que os outros descobrem **ao vivo**; conflitos entre eles vão para a síntese.
+* **Adaptação contínua** (`core/adaptacao.py`, opt-in): ajusta verbosidade e proatividade, silêncio de avisos e favoritas; 8 sinais, 1 passo por dia, travar e desfazer.
+### 🔧 Núcleo I.S.A.
+* `isa_nucleo` ganhou: `modularization`, `immunity`, `competition`; novos módulos entram na checagem de saúde.
+
 ## 3.9.1 — 28/10/2026
 
 ### 🐞 Correção
