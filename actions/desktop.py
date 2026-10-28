@@ -43,6 +43,23 @@ def _get_desktop() -> Path:
             return Path(xdg)
     return Path.home() / "Desktop"
 
+def _copy2_sem_sobrescrever(src, dst, *args, **kwargs):
+    """3.5.0 — shutil.copy2 da caixa de areia: copiar, nunca sobrescrever."""
+    destino = Path(dst)
+    if destino.is_dir():
+        destino = destino / Path(src).name
+    if destino.exists() or destino.is_symlink():
+        raise PermissionError(f"já existe, não vou sobrescrever: {destino.name}")
+    return shutil.copy2(src, dst)
+
+
+def _copytree_sem_sobrescrever(src, dst, *args, **kwargs):
+    """3.5.0 — shutil.copytree da caixa de areia: pasta de destino nova, sempre."""
+    if Path(dst).exists():
+        raise PermissionError(f"já existe, não vou misturar: {Path(dst).name}")
+    return shutil.copytree(src, dst)
+
+
 def _build_sandbox() -> dict:
     import time
 
@@ -61,8 +78,8 @@ def _build_sandbox() -> dict:
         "Path": Path,
         "time": time,
         "shutil": type("shutil", (), {
-            "copy2":      shutil.copy2,
-            "copytree":   shutil.copytree,
+            "copy2":      staticmethod(_copy2_sem_sobrescrever),
+            "copytree":   staticmethod(_copytree_sem_sobrescrever),
             "disk_usage": shutil.disk_usage,
         })(),
         "os_path": os.path,  
@@ -100,6 +117,8 @@ _CHAMADAS_PROIBIDAS = frozenset({
     # str.replace, que é inofensivo. Tratado à parte na função abaixo.)
     "unlink", "rmdir", "rmtree", "removedirs", "rename", "renames",
     "move", "truncate", "chmod", "chown", "symlink_to", "hardlink_to",
+    # 3.5.0 — escrever também sobrescreve: "sem escrita" estava só no texto do pedido à IA
+    "write_text", "write_bytes", "writelines",
     # rodar outros programas
     "system", "popen", "Popen", "spawn", "startfile", "run", "call", "check_output",
 })
@@ -107,6 +126,14 @@ _CTYPES_OK = frozenset({"windll", "c_int", "c_uint", "c_long", "c_ulong", "c_sho
                         "c_ushort", "c_wchar_p", "c_char_p", "c_void_p", "byref",
                         "create_unicode_buffer", "create_string_buffer", "sizeof"})
 _DLLS_OK = frozenset({"user32", "gdi32"})     # janelas e mouse — nada de kernel32/shell32
+# 3.5.0 — dentro do user32 ainda há funções que desligam, bloqueiam ou fecham coisas.
+# Desligar/reiniciar só passa pela confirmação do HUD (computer_settings), nunca por aqui.
+_USER32_PROIBIDAS = frozenset({
+    "ExitWindowsEx", "LockWorkStation", "BlockInput", "EndTask", "SwitchDesktop",
+    "SetWindowsHookExA", "SetWindowsHookExW", "SendMessageA", "SendMessageW",
+    "PostMessageA", "PostMessageW", "PostThreadMessageA", "PostThreadMessageW",
+    "PostQuitMessage", "SendNotifyMessageA", "SendNotifyMessageW",
+})
 
 
 def _validar_codigo_gerado(code: str) -> str | None:
@@ -127,6 +154,10 @@ def _validar_codigo_gerado(code: str) -> str | None:
             return "laço infinito sem 'break' não é permitido"
         if isinstance(no, ast.Name) and no.id.startswith("__"):
             return f"nome interno proibido: {no.id}"
+        if isinstance(no, ast.Constant) and isinstance(no.value, str) and no.value in _USER32_PROIBIDAS:
+            return f"user32.{no.value} não é permitido"      # u["ExitWindowsEx"](...)
+        if isinstance(no, ast.Attribute) and no.attr in _USER32_PROIBIDAS:
+            return f"user32.{no.attr} não é permitido"       # vale mesmo via variável: u = ...user32
         if isinstance(no, ast.Attribute):
             if no.attr.startswith("__") or no.attr.endswith("__"):
                 return f"atributo interno proibido: {no.attr}"

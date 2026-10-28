@@ -1,5 +1,56 @@
 # Mudanças
 
+## 3.5.0 — 28/10/2026
+
+### 🧩 Loja de plugins (`core/plugin_loja.py`, `actions/loja_plugins.py`, `ferramentas/assinar_plugin.py`)
+* Pacote `.nexusplugin` (zip com `plugin.json` + `plugin.sig` + os `.py`). O autor assina com Ed25519; só vale se a chave dele estiver em
+  `config/autores_confiaveis.json` ("confia no autor Maria com a chave …"). A chave do desenvolvedor do NEXUS já vem confiada.
+* **Permissões** (rede, arquivos, programas, tela, mídia, pessoais) declaradas no manifesto e **conferidas no código** por análise estática:
+  usou algo que não declarou, o pacote é recusado. `eval`, `exec` e `importlib` são recusados sempre.
+* Instalar mostra **CONFIRMAR** com autor, assinatura e permissões. Pacote sem assinatura de autor confiável é recusado.
+* O hash de cada arquivo é conferido na instalação e a cada abertura: plugin alterado depois de instalado não carrega.
+  Plugins soltos em `plugins/` continuam funcionando como antes. `ferramentas/assinar_plugin.py` gera chaves e empacota. 8 testes.
+
+### 🔌 Integrações (`core/integracoes.py`, `actions/telegram_nexus.py`, `agenda_google.py`, `notion_nexus.py`)
+* **Telegram:** manda e lê mensagens do SEU chat com o SEU bot; mensagens de outros chats são ignoradas.
+* **Agenda:** Google Calendar (ou qualquer `.ics` https) pelo endereço secreto iCal, só leitura: hoje, amanhã, semana, próximo; entende eventos repetidos.
+* **Notion:** cria páginas no seu banco de dados e procura nas suas páginas. Chaves ficam em `config/api_keys.json` e nunca aparecem em respostas ou erros. 9 testes.
+
+### 📱 Painel do celular como app — PWA (`dashboard/`)
+* Manifesto, ícones, service worker e tela "NEXUS fora do ar". O service worker não guarda `/api`, `/ws` nem `/uploads`.
+* Botão 🔔: avisa no celular quando o NEXUS responde com o app em segundo plano (aviso local, sem servidor de push).
+* O logo do painel agora diz NEXUS. Precisa de contexto seguro (https confiável ou localhost) para instalar. 2 testes novos.
+
+### 🎨 Tema automático (`core/tema_auto.py`, `actions/tema_auto.py`)
+* "Tema automático pelo horário / pelo humor / pelos dois / desliga": a cor da interface acompanha a faixa do dia e a média do humor do diário
+  nos últimos 3 dias. Nada é gravado: ao desligar volta a cor que você escolheu. 6 testes.
+
+### 🧾 Preparar publicação
+* `preparar_publicacao.py` e `.gitignore` deixam de fora a memória de documentos, os plugins instalados e os autores confiáveis.
+
+### 📚 Memória de documentos com fonte citada (`core/rag_documentos.py`, `actions/memoria_semantica.py`)
+* "Indexa a pasta Documentos/Contratos", "o que o contrato diz sobre multa?", "procura nos meus documentos algo sobre garantia".
+  Lê PDF, Word, PowerPoint, texto, Markdown, CSV, JSON e código; corta em trechos e responde **com a fonte** (arquivo e página, slide ou linha).
+* Opt-in: só entram as pastas que você adicionar. Recusa o disco inteiro, a pasta pessoal inteira e a pasta do próprio NEXUS.
+  Ignora pastas ocultas, de dependências e de sistema. Tudo fica no PC (`memory/rag_documentos.npz`, `memory/rag_pastas.json`).
+* Atualização incremental: só arquivo novo ou alterado é lido de novo; o que sumiu sai do índice. Busca por sentido + empurrão para as palavras exatas.
+* Novas ações: `add_folder`, `remove_folder`, `folders`, `docs_reindex`, `docs_status`, `docs_search`. 9 testes em `tests/test_rag_documentos.py`.
+
+### 🧭 Menu SETUP em ordem lógica (`ui/overlays/settings.py`, `ui/main_window.py`)
+* Três grupos: GERAL (Configuração do usuário, Áudio, Chaves e APIs), SISTEMA (Status, Núcleo I.S.A., Atuador, Backup) e PERSONALIZAR (Barra rápida, Atalhos).
+
+### 🔒 Apagar só com o CONFIRMAR da pessoa (`actions/file_controller.py`)
+* **Limpar temporários** e **apagar arquivos ocultos** não dependem mais do `confirm=true` que o modelo escreve:
+  o pedido abre o aviso **CONFIRMAR / CANCELAR** no HUD (`core/confirm.py`) e só apaga quando a pessoa aperta.
+  Sem interface ligada, não apaga nada. Medir e listar continuam imediatos, sem pergunta.
+
+### 🛡 Caixa de areia do controle do desktop (`actions/desktop.py`)
+* O código gerado pela IA não pode mais **escrever** (`write_text`, `write_bytes`) nem **desligar, bloquear ou fechar
+  janelas** pelo `user32` (`ExitWindowsEx`, `LockWorkStation`, `PostMessage`…), nem por variável nem por índice.
+* `shutil.copy2` / `copytree` da caixa de areia **não sobrescrevem** nem misturam com o que já existe.
+* Corrigido: o `shutil.copy2` da caixa de areia nunca funcionou (dava `TypeError`); agora copia para destino novo.
+* 31 testes novos em `tests/test_seguranca_35.py`.
+
 ## 3.4.0 — 25/10/2026
 
 ### 📞 Ligar pelo WhatsApp (`core/whatsapp_ligacao.py`, `actions/ligar_whatsapp.py`)

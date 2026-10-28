@@ -476,6 +476,19 @@ def clean_temp(confirm: bool = False, min_age_hours: float = 1.0) -> str:
     return msg
 
 
+def _pedir_confirmacao(chave: str, titulo: str, detalhe: str, executar) -> str:
+    """3.5.0 — estaciona uma ação destrutiva atrás da confirmação da INTERFACE.
+
+    O `confirm=true` que vem nos parâmetros da ferramenta é escrito pelo modelo,
+    então não prova que uma pessoa disse sim. Aqui a ação só roda se o HUD
+    chamar core.confirm.resolve(True). Sem interface ligada, não apaga nada."""
+    from core import confirm as _confirm
+    if _confirm.pending_title():
+        return ("There is already a confirmation waiting on screen. "
+                "Ask the user to answer that one first.")
+    return _confirm.request(key=chave, title=titulo, detail=detalhe, run=executar)
+
+
 def _format_size(b: int) -> str:
     for unit in ["B", "KB", "MB", "GB", "TB"]:
         if b < 1024:
@@ -1003,11 +1016,18 @@ def file_controller(
             return open_path(path)
 
         elif action == "hidden_files":
-            return hidden_files(
-                path=path,
-                mode=str(params.get("mode", "list")).lower(),
-                confirm=bool(params.get("confirm", False)),
-                recursive=bool(params.get("recursive", False)),
+            modo = str(params.get("mode", "list")).lower()
+            recursivo = bool(params.get("recursive", False))
+            if modo != "delete":
+                return hidden_files(path=path, mode=modo, confirm=False, recursive=recursivo)
+            # 3.5.0 — apagar NÃO depende mais do `confirm` que o modelo escreve:
+            # só roda se a pessoa apertar CONFIRMAR no HUD (core/confirm.py).
+            resumo = hidden_files(path=path, mode="delete", confirm=False, recursive=recursivo)
+            if not resumo.startswith("Found "):
+                return resumo                       # nada a apagar, ou acesso negado
+            return _pedir_confirmacao(
+                "hidden_files_delete", "Apagar arquivos ocultos", resumo,
+                lambda: hidden_files(path=path, mode="delete", confirm=True, recursive=recursivo),
             )
 
         elif action == "info":
@@ -1020,7 +1040,14 @@ def file_controller(
             return folder_watch(path, mode=str(params.get("mode", "check")).lower())
 
         elif action in ("clean_temp", "limpar_temp", "limpar_temporarios"):
-            return clean_temp(confirm=bool(params.get("confirm", False)))
+            # 3.5.0 — a limpeza é permanente: só roda com o CONFIRMAR da pessoa no HUD.
+            resumo = clean_temp(confirm=False)
+            if "can be removed" not in resumo or not bool(params.get("confirm", False)):
+                return resumo                       # só mede (ou já está limpa)
+            return _pedir_confirmacao(
+                "clean_temp", "Limpar arquivos temporários", resumo,
+                lambda: clean_temp(confirm=True),
+            )
 
         else:
             return f"Unknown action: '{action}'"
@@ -1050,7 +1077,7 @@ TOOL = {
             },
             "confirm": {
                 "type": "BOOLEAN",
-                "description": "true only after the user explicitly confirmed a deletion (hidden_files delete, clean_temp)"
+                "description": "set true to ask for a deletion (hidden_files delete, clean_temp) AFTER the user said yes out loud; a confirm button then appears on the HUD and nothing is deleted until the user presses it"
             },
             "recursive": {
                 "type": "BOOLEAN",

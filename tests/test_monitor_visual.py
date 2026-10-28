@@ -56,13 +56,17 @@ def test_lista_de_processos_ordena_por_cpu_e_por_ram():
     assert [r[0] for r in w._sorted()][0] == "c"
 
 
-def test_setup_so_tem_isa_e_atualizar():
+def test_setup_em_ordem_logica_e_agrupado():
     from ui.overlays.settings import SettingsPanelOverlay as S
-    menu = [rotulo for _, rotulo in S.MENU_LABELS]
-    assert menu == ["NÚCLEO I.S.A."]   # o ATUALIZAR entra em main_window
+    grupos = [g for g, _ in S.MENU_GROUPS]
+    assert grupos == ["GERAL", "SISTEMA", "PERSONALIZAR"]
     chaves_menu = [k for k, _ in S.MENU_LABELS]
+    assert chaves_menu[0] == "usuario"                   # a entrada principal vem primeiro
+    assert len(chaves_menu) == len(set(chaves_menu))     # sem item repetido
     assert "skin" not in chaves_menu and "notif" not in chaves_menu
-    assert "usuario" not in [k for k, _ in S._TABS]   # o menu abre a janela direto
+    assert "usuario" not in [k for k, _ in S._TABS]      # o menu abre a janela direto
+    # toda chave do menu abre algo: aba própria ou um dos editores tratados em main_window
+    assert set(chaves_menu) - {"usuario", "barra", "atalhos"} <= {k for k, _ in S._TABS}
 
 
 def test_hub_tem_seis_visuais_e_todos_desenham():

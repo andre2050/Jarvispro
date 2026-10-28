@@ -1,5 +1,5 @@
 # NEXUS ULTRA 2026
-### Assistente pessoal de voz — desenvolvido por André Luiz Lima Menezes · Versão 3.0.0
+### Assistente pessoal de voz — desenvolvido por André Luiz Lima Menezes · Versão 3.5.0
 
 Mapa de todas as pastas e arquivos do projeto, como estão hoje na pasta.
 Base: MARK LV — JARVIS (© FatihMakes, CC BY-NC 4.0) — veja `LICENSE` e `NOTICE.md`.
@@ -27,9 +27,10 @@ Nexus-Ultra-2026/
 ├── readme.md                            # Apresentação, funções e como usar
 ├── requirements.txt                     # Bibliotecas Python necessárias
 ├── setup.py                             # Instalação inicial (confere o Python e as bibliotecas)
-├── VERSION                              # Número da versão (3.0.0)
+├── VERSION                              # Número da versão (3.5.0)
 ├── actions/                             # Habilidades que controlam o computador — uma por arquivo, descobertas sozinhas ao iniciar
 │   ├── agent_task.py                    # Tarefas autônomas (modo agente): planeja, executa, confere e avisa no fim
+│   ├── agenda_google.py                 # Agenda: Google Calendar / .ics por voz (só leitura)
 │   ├── anomalia_pc.py                   # Vigia de anomalias do PC (autoencoder)
 │   ├── background_monitor.py            # Vigia de assuntos que você pediu (checagem diária)
 │   ├── briefing.py                      # Resumo do dia por voz
@@ -58,6 +59,7 @@ Nexus-Ultra-2026/
 │   ├── focus_mode.py                    # Modo foco (Pomodoro por voz)
 │   ├── game_updater.py                  # Atualiza ou instala jogos pelo launcher
 │   ├── isa_core.py                      # I.S.A. por voz: "relatório da I.S.A."
+│   ├── loja_plugins.py                  # Loja de plugins por voz: listar, instalar (com CONFIRMAR), remover, confiar no autor
 │   ├── llm_brain.py                     # Modelo de linguagem para trabalhos pesados de texto
 │   ├── local_vision.py                  # Visão local por voz e modo privado (sem internet)
 │   ├── manutencao_pc.py                 # Manutenção do PC: disco, limpeza, backup, rede e bateria
@@ -67,6 +69,7 @@ Nexus-Ultra-2026/
 │   ├── music_control.py                 # Controle de música e mídia
 │   ├── neural_core.py                   # Rede neural treinada do zero
 │   ├── notepad.py                       # Bloco de Notas por voz e ditado
+│   ├── notion_nexus.py                  # Notion: criar notas e buscar
 │   ├── noticias.py                      # Notícias sob demanda
 │   ├── open_app.py                      # Abre programas (mapa de nomes por sistema)
 │   ├── orquestrador.py                  # Equipe de agentes especialistas trabalhando juntos
@@ -84,6 +87,8 @@ Nexus-Ultra-2026/
 │   ├── smart_routines.py                # Rotinas: uma frase, várias ações
 │   ├── system_monitor.py                # Monitor de CPU, RAM, GPU e temperatura com alerta
 │   ├── system_update.py                 # O NEXUS se mantém atualizado
+│   ├── telegram_nexus.py                # Telegram: manda e lê mensagens do seu chat com o seu bot
+│   ├── tema_auto.py                     # Tema automático por voz: horário, humor ou os dois
 │   ├── tarefas.py                       # Lista de tarefas com prazo e prioridade
 │   ├── texto_dev.py                     # Ferramentas de texto e de programador, offline
 │   ├── timer_action.py                  # Timers e alarmes por voz
@@ -138,6 +143,8 @@ Nexus-Ultra-2026/
 │   ├── installer.py                     # Instalador automático de dependências
 │   ├── intent_net.py                    # Rede neural local que entende comandos sem internet
 │   ├── isa.py                           # I.S.A.: o núcleo de decisões ao vivo
+│   ├── integracoes.py                   # Telegram, agenda (.ics) e Notion
+│   ├── plugin_loja.py                   # Loja de plugins: pacotes assinados, permissões conferidas, hashes
 │   ├── isa_hud.py                       # Desenho da I.S.A. no HUD: cérebro + engrenagens
 │   ├── janelas.py                       # Fechar app pelo nome, trazer para a frente, limites da plataforma
 │   ├── keras_engine.py                  # Motor de rede neural em Keras/TensorFlow (opcional)
@@ -156,9 +163,11 @@ Nexus-Ultra-2026/
 │   ├── pt_time.py                       # Datas e horas em português
 │   ├── reconexoes.py                    # Diário das quedas e renovações da conexão
 │   ├── roteador.py                      # Segunda opinião para a rede de intenções
+│   ├── rag_documentos.py                # Memória de documentos (RAG): pastas opt-in, trechos com fonte citada
 │   ├── roteador_modelos.py              # Cérebro de decisão: modelo rápido, forte ou equipe de agentes
 │   ├── settings_tools.py                # Lógica das Configurações (sem Qt)
 │   ├── stt.py                           # Motores de fala para texto
+│   ├── tema_auto.py                     # Tema automático: cor pela hora do dia e pelo humor do diário
 │   ├── tts.py                           # Motores de texto para fala
 │   ├── undo.py                          # Pilha única de desfazer
 │   ├── verificacao.py                   # Status done/unverified/failed e conteúdo não confiável

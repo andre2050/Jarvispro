@@ -307,8 +307,12 @@ class PreferencesOverlay(QWidget):
         for v, t in (("piper", "Piper — neural e offline (~50 idiomas)"),
                      ("elevenlabs", "ElevenLabs — ao vivo, todas as línguas"),
                      ("edge", "Edge — vozes da Microsoft, online e grátis"),
+                     ("clone", "Ricardo — voz clonada da amostra (XTTS, offline, só uso não comercial)"),
                      ("sistema", "Voz do Windows")):
             self._m_tts.addItem(t, v)
+        # a amostra e a licença do modelo clonado ficam como estão; escolher a voz aceita a licença
+        self._clone_voz = str(cfg.get("clone_voz") or "Ricardo")
+        self._clone_aceita = bool(cfg.get("clone_licenca_aceita"))
         i = self._m_tts.findData(cfg.get("tts_motor") or "piper")
         self._m_tts.setCurrentIndex(i if i >= 0 else 0)
         linha("Voz", self._m_tts)
@@ -336,7 +340,9 @@ class PreferencesOverlay(QWidget):
         form.addLayout(trow)
         self._teste_motor_sig.connect(self._m_status.setText)
         dica = QLabel("No PC sem internet: instale o Ollama (ollama.com), rode  ollama pull qwen3:8b  "
-                      "e escolha Ollama + Piper. Pacotes: pip install faster-whisper piper-tts")
+                      "e escolha Ollama + Piper. Pacotes: pip install faster-whisper piper-tts. "
+                      "Voz do Ricardo: pip install coqui-tts miniaudio (modelo de ~1,8 GB; "
+                      "a amostra fica em config/voices/Ricardo.mp3).")
         dica.setWordWrap(True)
         form.addWidget(dica)
 
@@ -351,6 +357,8 @@ class PreferencesOverlay(QWidget):
             "tts_motor": self._m_tts.currentData(),
             "elevenlabs_api_key": self._m_el_chave.text().strip(),
             "elevenlabs_voice_id": self._m_el_voz.text().strip(),
+            "clone_voz": self._clone_voz,
+            "clone_licenca_aceita": self._clone_aceita or self._m_tts.currentData() == "clone",
             "orcamento_ferramentas": self._m_orc.currentData(),
         }
 

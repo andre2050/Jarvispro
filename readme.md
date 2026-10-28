@@ -1,7 +1,7 @@
 # ✦ NEXUS Ultra 2026
 ### Assistente pessoal de voz para o seu computador — desenvolvido por André Luiz Lima Menezes
 
-Versão 3.0.0 — interface 2026
+Versão 3.5.0 — interface 2026
 
 NEXUS ouve, vê, fala e controla o computador em tempo real. Ele conversa por voz
 (Gemini Live), lembra de você entre uma conversa e outra, abre seus programas,
@@ -15,6 +15,11 @@ lê seus e-mails, cuida do seu foco e aprende com o seu jeito de usar.
 
 | Área | Funções |
 |---|---|
+| Documentos | (3.5) "Indexa a pasta Contratos", "o que o contrato diz sobre multa?": lê PDF, Word, PowerPoint, texto e código só das pastas que você escolher e responde **citando a fonte** (arquivo e página) |
+| Loja de plugins | (3.5) Pacotes `.nexusplugin` assinados, com permissões conferidas no código; instalar pede CONFIRMAR |
+| Integrações | (3.5) Telegram (só o seu chat), Google Calendar por link iCal (só leitura) e Notion (criar e buscar) |
+| App no celular | (3.5) O painel do celular instala na tela inicial (PWA), tem tela offline e avisos |
+| Tema automático | (3.5) A cor da interface acompanha a hora do dia e o seu humor do diário |
 | Visual do hub | (Ultra 2026) 19 visuais para escolher no botão VISUAL DO HUB — orbe, aurora, holograma, globo, Matrix e os dez novos: Nebulosa, Giroscópio, Hélice, Sonar, Espectro, Colmeia, Átomo, Plasma, Constelação e Túnel |
 | Conversa | Voz em tempo real, em português; histórico longo; responde por texto também |
 | Memória | Lembra fatos sobre você, das últimas conversas e do que ficou em aberto ("fios de conversa") |

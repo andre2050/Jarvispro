@@ -9,7 +9,8 @@ def test_dez_visuais_novos_registrados():
     assert len(ULTRA_STYLES) == 10
     assert set(ULTRA_STYLES) == set(ULTRA_INFO)
     assert set(ULTRA_STYLES) <= set(HUD_STYLES) and set(ULTRA_STYLES) <= set(HUD_STYLE_INFO)
-    assert len(HUD_STYLES) == 19
+    assert len(HUD_STYLES) == 34          # 9 clássicos + 10 Ultra + 15 do núcleo
+    assert set(HUD_STYLES) == set(HUD_STYLE_INFO)   # tudo que o menu mostra pode ser salvo
 
 
 @pytest.mark.parametrize("estilo", ["nebula", "gyro", "helix", "sonar", "spectrum",
