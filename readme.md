@@ -26,7 +26,7 @@ lê seus e-mails, cuida do seu foco e aprende com o seu jeito de usar.
 | Especialistas e auditoria | (3.8) Agentes por área com permissões próprias; registro verificável de cada decisão |
 | Computer-use | (3.8) Vê a tela e opera mouse/teclado em passos visíveis, com CONFIRMAR e freios |
 | Grafo, modelo híbrido, fábrica de plugins | (3.8) Memória ligada com fontes; roteador local/nuvem; plugins por conversa testados em caixa de areia |
-| Missões 4.1 | (4.1) Checkpoints e rewind, guardrails de entrada/saída editáveis, trace local; visual Rosto · Real animado |
+| Missões 4.1 | (4.1) Checkpoints e rewind, guardrails de entrada/saída editáveis, trace local |
 | Núcleo I.S.A. 4.0 | (4.0) Imunidade a falhas, módulos competitivos, desempenho proativo, histórico longo, quadro de agentes, adaptação contínua |
 | Missões 3.9 | (3.9) Ensaio, orçamento, aprovações aprendidas, recorrentes, painel de auditoria |
 | Núcleo I.S.A. 3.9 | (3.9) Módulos com saúde, análise de código, arquitetura, autonomia |

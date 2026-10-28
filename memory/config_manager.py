@@ -141,9 +141,7 @@ HUD_STYLES = ("orb",                       # reserva interna (não aparece na li
               # os vinte visuais do hub (ui/hud_novos.py)
               "prism", "origami", "drops", "saturn", "fireflies", "comets", "arcs", "fireworks", "rose",
               "synthwave", "galaxy", "city", "gears", "strings", "tree", "kaleido", "blackhole", "shield",
-              "lotus", "storm",
-              # 4.1 — cinco rostos (ui/hud_rostos.py)
-              "face_real")
+              "lotus", "storm")
 HUD_PADRAO = "galaxy"
 
 

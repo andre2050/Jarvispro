@@ -11,7 +11,7 @@ def test_vinte_visuais_novos_3_6_registrados_e_no_menu():
     from memory.config_manager import HUD_STYLES
     from ui.hud import HUD_STYLE_INFO
     from ui.hud_novos import NOVOS_INFO, NOVOS_STYLES
-    assert len(NOVOS_STYLES) == 21 and set(NOVOS_STYLES) == set(NOVOS_INFO)      # 20 da 3.6 + Rosto · Real (4.1)
+    assert len(NOVOS_STYLES) == 20 and set(NOVOS_STYLES) == set(NOVOS_INFO)
     assert set(NOVOS_STYLES) <= set(HUD_STYLES) and set(NOVOS_STYLES) <= set(HUD_STYLE_INFO)
 
 
@@ -40,7 +40,7 @@ def test_cada_visual_novo_desenha_em_todos_os_estados_e_tamanhos(estilo):
 def test_so_existem_os_vinte_visuais_mais_o_orbe_de_reserva():
     from memory.config_manager import HUD_STYLES
     from ui.hud import HUD_STYLE_INFO
-    assert len(HUD_STYLES) == 22 and "orb" in HUD_STYLES      # orbe + 20 da 3.6 + Rosto · Real (4.1)
+    assert len(HUD_STYLES) == 21 and "orb" in HUD_STYLES
     assert set(HUD_STYLES) == set(HUD_STYLE_INFO)
     assert not {"aurora", "liquid", "holo", "globe", "hub", "matrix", "waves", "minimal", "nebula"} & set(HUD_STYLES)
 
