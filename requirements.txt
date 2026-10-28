@@ -136,3 +136,5 @@ pynvml                       # system_monitor + the HUD's GPU meter (NVIDIA)
 tzdata>=2024.1
 python-dateutil               # agenda (.ics): eventos repetidos
 pywebpush>=2.0,<3
+pytesseract>=0.3.10,<1
+pypdfium2>=4,<6

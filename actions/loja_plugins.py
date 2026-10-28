@@ -47,6 +47,25 @@ def loja_plugins(parameters: dict, player=None) -> str:
                 key=f"plugin_{pacote.id}", title=f"INSTALAR PLUGIN {pacote.manifesto['nome'].upper()}",
                 detail=pacote.resumo(),
                 run=lambda: "[done] " + L.instalar(pacote, conceder=pacote.permissoes))
+        if acao in ("install_routines", "instalar_rotinas"):
+            from core import rotinas_loja as RL
+            caminho = str(parameters.get("path") or "").strip()
+            if not caminho:
+                return "Qual pacote .nexusrotina devo instalar? Diga o caminho do arquivo."
+            pr = RL.abrir(_achar(caminho))
+            if _confirm.pending_title():
+                return "Já há uma confirmação esperando na tela; resolva ela antes."
+            return _confirm.request(
+                key=f"rotinas_{pr.id}", title=f"INSTALAR ROTINAS {pr.manifesto['nome'].upper()}",
+                detail=pr.resumo(), run=lambda: "[done] " + RL.instalar(pr))
+        if acao in ("export_routines", "exportar_rotinas"):
+            from core import rotinas_loja as RL
+            nomes = [x.strip() for x in str(parameters.get("name") or "").split(",") if x.strip()]
+            destino = Path(str(parameters.get("path") or "")).expanduser() if parameters.get("path") else \
+                Path.home() / "Documents" / "minhas-rotinas.nexusrotina"
+            meta = {"id": "minhas_rotinas", "nome": "Minhas rotinas", "versao": "1.0", "autor": "eu"}
+            out = RL.exportar(nomes, destino, meta, str(parameters.get("key") or "") or None)
+            return f"[done] Pacote de rotinas criado: {out}. Compartilhe esse arquivo; quem instalar confirma na tela."
         if acao in ("remove", "remover"):
             return "[done] " + L.remover(str(parameters.get("name") or parameters.get("path") or ""))
         if acao in ("trust", "confiar"):
@@ -58,7 +77,7 @@ def loja_plugins(parameters: dict, player=None) -> str:
         return f"[failed] {e}"
     except Exception as e:
         return f"[failed] Loja de plugins: {e}"
-    return "Ação desconhecida. Use list, install, remove, trust ou authors."
+    return "Ação desconhecida. Use list, install, install_routines, export_routines, remove, trust ou authors."
 
 
 TOOL = {
@@ -67,13 +86,13 @@ TOOL = {
         "PLUGIN STORE: signed .nexusplugin packages with declared permissions. action=list (installed store plugins), "
         "action=install with path (shows a CONFIRM banner with author, signature and permissions; unsigned packages "
         "are refused), action=remove with name, action=trust with name and key (trust a plugin author's public key), "
-        "action=authors. Use for 'instala o plugin…', 'quais plugins da loja…', 'remove o plugin…'."),
+        "action=authors. Use for 'instala o plugin…', 'quais plugins da loja…', 'remove o plugin…'. ROUTINE PACKS (.nexusrotina, only safe tools, no code): action=install_routines with path (CONFIRM banner shows what each routine does; never replaces the user's own routines), action=export_routines with name (comma list of the user's routines) and optional path/key to share them."),
     "parameters": {
         "type": "OBJECT",
         "properties": {
-            "action": {"type": "STRING", "description": "list | install | remove | trust | authors"},
-            "path": {"type": "STRING", "description": "For install: path or file name of the .nexusplugin package"},
-            "name": {"type": "STRING", "description": "For remove: plugin id or name. For trust: the author's name"},
+            "action": {"type": "STRING", "description": "list | install | install_routines | export_routines | remove | trust | authors"},
+            "path": {"type": "STRING", "description": "For install: path or file name of the .nexusplugin package; install_routines: the .nexusrotina; export_routines: where to save"},
+            "name": {"type": "STRING", "description": "For remove: plugin id or name. For trust: the author's name. For export_routines: comma list of routine names"},
             "key": {"type": "STRING", "description": "For trust: the author's public key (base64)"},
         },
         "required": ["action"],

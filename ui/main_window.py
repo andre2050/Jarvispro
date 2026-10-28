@@ -25,6 +25,7 @@ class MainWindow(QMainWindow):
     _state_sig      = pyqtSignal(str)
     _content_sig    = pyqtSignal(str, str)   # (title, text) — thread-safe content display
     _reconfig_sig   = pyqtSignal()           # trigger setup overlay from any thread
+    _ambiente_sig   = pyqtSignal()           # perfil/ambiente mudou (3.7): reaplica cor e visual do hub
     _camera_sig     = pyqtSignal(bytes)      # show camera frame preview (small overlay)
     _cam_stream_sig = pyqtSignal(bool)       # True=start live stream, False=stop
     _cam_frame_sig  = pyqtSignal(bytes)      # live camera frame → HUD area
@@ -336,6 +337,12 @@ class MainWindow(QMainWindow):
         self._log_sig.connect(self._log.append_log)
         self._state_sig.connect(self._apply_state)
         self._content_sig.connect(self._show_content)
+        self._ambiente_sig.connect(self._aplicar_ambiente)
+        try:
+            from core import perfis as _perfis
+            _perfis.ao_mudar(self._ambiente_sig.emit)
+        except Exception:
+            pass
         self._reconfig_sig.connect(self._show_setup)
         self._camera_sig.connect(self._show_camera_frame)
         self._confirm_sig.connect(self._show_confirm_banner)
@@ -2501,11 +2508,82 @@ class MainWindow(QMainWindow):
                 ac = QAction(f"{marca}  {icone}  {nome}   —   {desc}", menu)
                 ac.triggered.connect(lambda _=False, k=chave: self._set_hud_style(k))
                 menu.addAction(ac)
+        menu.addSeparator()
+        aj = QAction("🎛  Ajustar cor e velocidade deste visual…", menu)
+        aj.triggered.connect(self._ajustar_visual)
+        menu.addAction(aj)
         if self._hud_btn.isVisible():
             pos = self._hud_btn.mapToGlobal(QPoint(0, self._hud_btn.height()))
         else:
             pos = QCursor.pos()
         menu.exec(pos)
+
+    def _aplicar_ambiente(self):
+        """Perfil trocou (Trabalho, Casa, Estudo…): aplica a cor e o visual do hub que ele gravou na configuração."""
+        try:
+            cfg = _read_full_config()
+            cor = (cfg.get("ui_color") or "").strip().lower() or DEFAULT_UI_COLOR
+            antes = current_palette()
+            if apply_ui_accent(cor):
+                retheme_all_widgets(antes, current_palette())
+            from memory.config_manager import get_hud_style
+            self.hud.hud_style = get_hud_style()
+            self.hud.recarregar_ajustes()
+            self.hud._pulsos = []
+            self.hud.update()
+            self._refresh_hud_btn()
+        except Exception as e:
+            print(f"[Ambiente] ⚠️ {e}")
+
+    def _ajustar_visual(self):
+        """Editor do hub (3.7): cor e velocidade do visual atual, com prévia ao vivo."""
+        from PyQt6.QtWidgets import QDialog, QHBoxLayout, QLabel, QPushButton, QSlider, QVBoxLayout
+        from core import hub_ajustes as HA
+        estilo = self.hud.hud_style
+        aj = HA.obter(estilo)
+        dlg = QDialog(self)
+        dlg.setWindowTitle("Ajustar visual do hub")
+        dlg.setStyleSheet(f"QDialog {{ background: {C.PANEL}; }} QLabel {{ color: {C.TEXT}; }}")
+        lay = QVBoxLayout(dlg)
+        lay.addWidget(QLabel(f"<b>{estilo}</b> — cor e velocidade"))
+        def linha(rotulo, mn, mx, v):
+            lay.addWidget(QLabel(rotulo))
+            s = QSlider(Qt.Orientation.Horizontal)
+            s.setRange(mn, mx)
+            s.setValue(v)
+            lay.addWidget(s)
+            return s
+        sm = linha("Cor", 0, 359, aj.get("matiz", 0))
+        sv = linha("Velocidade", int(HA.VEL_MIN * 100), int(HA.VEL_MAX * 100), int(aj.get("velocidade", 1.0) * 100))
+        usar = QPushButton("Usar a cor do tema" if "matiz" in aj else "Usando a cor do tema (mexa na barra para trocar)")
+        usar.setCheckable(True)
+        usar.setChecked("matiz" not in aj)
+        lay.addWidget(usar)
+        estado = {"matiz": aj.get("matiz")}
+        def aplicar(*_):
+            estado["matiz"] = None if usar.isChecked() else sm.value()
+            HA.salvar(estilo, estado["matiz"], sv.value() / 100)
+            self.hud.recarregar_ajustes()
+            self.hud.update()
+        def mexeu_cor(_v):
+            usar.setChecked(False)
+            aplicar()
+        sm.valueChanged.connect(mexeu_cor)
+        sv.valueChanged.connect(aplicar)
+        usar.toggled.connect(aplicar)
+        linha_bt = QHBoxLayout()
+        rest = QPushButton("Restaurar padrão")
+        ok = QPushButton("Pronto")
+        def restaurar():
+            HA.restaurar(estilo)
+            self.hud.recarregar_ajustes()
+            dlg.accept()
+        rest.clicked.connect(restaurar)
+        ok.clicked.connect(dlg.accept)
+        linha_bt.addWidget(rest)
+        linha_bt.addWidget(ok)
+        lay.addLayout(linha_bt)
+        dlg.exec()
 
     def _set_hud_style(self, want: str):
         """Troca o visual do hub na hora e guarda a escolha."""
@@ -2516,6 +2594,7 @@ class MainWindow(QMainWindow):
         save_hud_style(want)
         try:
             self.hud.hud_style = want
+            self.hud.recarregar_ajustes()
             self.hud._pulsos = []
             self.hud.update()
         except Exception:

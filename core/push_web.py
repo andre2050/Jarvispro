@@ -159,6 +159,18 @@ def enviar(titulo: str, corpo: str, arq_subs: Path | None = None, arq_chave: Pat
     global _ultimo_envio
     arq_subs, arq_chave = Path(arq_subs or ARQ_SUBS), Path(arq_chave or ARQ_CHAVE)
     res = {"enviados": 0, "removidos": 0, "falhas": 0, "motivo": ""}
+    if not ignorar_intervalo:
+        try:                                                    # modo foco (3.7): nada de aviso no celular
+            from actions import focus_mode as _F
+            if _F.active_reason():
+                res["motivo"] = "modo foco ligado"
+                return res
+            from core import perfis as _P
+            if _P.silencia_integracao("push"):
+                res["motivo"] = "perfil sem avisos no celular"
+                return res
+        except Exception:
+            pass
     agora = time.monotonic() if agora is None else agora
     with _trava:
         subs = _ler(arq_subs)

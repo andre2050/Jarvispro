@@ -144,3 +144,9 @@ memory/emails_cache/
 memory/push_subs.json
 memory/push_vapid.pem
 memory/mcp_*.json
+
+memory/backup_chave.json
+memory/presenca.json
+memory/rag_config.json
+config/focus_state.json
+memory/perfil.json

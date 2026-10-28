@@ -59,6 +59,63 @@ def _today_count(d: dict) -> int:
     return int(d.get("done_today", 0)) if d.get("day") == date.today().isoformat() else 0
 
 
+# ── distractions (3.7): apps the user wants closed during focus ─────────────
+PROTEGIDOS = {"explorer.exe", "system", "svchost.exe", "csrss.exe", "winlogon.exe", "lsass.exe", "services.exe",
+              "dwm.exe", "python.exe", "pythonw.exe", "nexus.exe", "systemd", "init", "bash", "sh", "python3", "python"}
+
+
+def _nome_app(n: str) -> str:
+    n = str(n or "").strip().lower()
+    return n if n.endswith(".exe") or "." in n else n
+
+
+def get_distractions() -> list[str]:
+    try:
+        from memory.config_manager import get_plugin_config
+        v = get_plugin_config("foco").get("apps", [])
+        return [str(x) for x in v] if isinstance(v, list) else []
+    except Exception:
+        return []
+
+
+def set_distractions(texto: str) -> list[str]:
+    from memory.config_manager import save_plugin_config
+    nomes = []
+    for x in str(texto or "").replace(";", ",").split(","):
+        x = _nome_app(x)
+        if x and x not in PROTEGIDOS and x not in nomes and len(x) <= 60:
+            nomes.append(x)
+    save_plugin_config("foco", {"apps": nomes[:20]})
+    return nomes[:20]
+
+
+def _processos_abertos(apps: list[str], listar=None) -> list:
+    """Processos cujo nome bate com a lista (com ou sem .exe), sem tocar nos protegidos."""
+    try:
+        procs = list(listar()) if listar else list(__import__("psutil").process_iter(["name"]))
+    except Exception:
+        return []
+    quer = {a.lower().removesuffix(".exe") for a in apps}
+    achados = []
+    for p in procs:
+        nome = (p.info.get("name") or "").lower()
+        if nome in PROTEGIDOS or nome.removesuffix(".exe") not in quer:
+            continue
+        achados.append(p)
+    return achados
+
+
+def _fechar(apps: list[str], listar=None) -> str:
+    n = 0
+    for p in _processos_abertos(apps, listar):
+        try:
+            p.terminate()                          # pede para fechar; nunca kill forçado
+            n += 1
+        except Exception:
+            pass
+    return f"[done] Pedi para fechar {n} programa(s) de distração."
+
+
 # ── queried by the rest of the app ───────────────────────────────────────────
 
 def remaining() -> int:
@@ -117,9 +174,25 @@ def focus_mode(parameters: dict, player=None) -> str:
                     "day": d.get("day") or date.today().isoformat(),
                     "done_today": _today_count(d)})
             _log(f"focus started: {minutes} min", player)
+            extra = ""
+            if str(parameters.get("close_distractions", "")).lower() in ("1", "true", "yes", "sim"):
+                apps = get_distractions()
+                abertos = _processos_abertos(apps)
+                if not apps:
+                    extra = " No distraction apps are set yet: ask which ones to close (action=distractions)."
+                elif abertos:
+                    from core import confirm
+                    nomes = sorted({(p.info.get("name") or "?") for p in abertos})
+                    extra = " " + confirm.request("foco_fechar", "Fechar programas de distração",
+                                                  ", ".join(nomes), lambda: _fechar(apps))
             return (f"Focus started for {minutes} minutes. Confirm in one short sentence. "
                     "From now on you stay silent unless the user speaks to you — no "
-                    "check-ins, alerts or email reading until it ends.")
+                    "check-ins, alerts, phone push notifications or email reading until it ends." + extra)
+
+        if action == "distractions":
+            nomes = set_distractions(parameters.get("apps"))
+            return ("[done] Distrações do modo foco: " + ", ".join(nomes) + ". Diga 'foco de 25 minutos e fecha as distrações' "
+                    "e eu peço o seu CONFIRMAR.") if nomes else "[failed] Diga os nomes dos programas (ex.: discord, steam)."
 
         if action == "break":
             minutes = _minutes(parameters.get("minutes"), DEFAULT_BREAK, 60)
@@ -169,12 +242,15 @@ TOOL = {
         "suggest a break. Actions: start ('me dá 25 minutos de foco', 'modo foco "
         "por 50 minutos' — minutes, 25 when not said), status ('quanto falta?'), "
         "stop ('cancela o foco'), break (the user accepted the pause — minutes, 5 "
-        "when not said)."
+        "when not said). 3.7: start with close_distractions=true also asks (CONFIRM on screen) to close the "
+        "apps listed with action=distractions apps='discord, steam'; phone push notifications are silenced too."
     ),
     "parameters": {
         "type": "OBJECT",
         "properties": {
-            "action": {"type": "STRING", "enum": ["start", "status", "stop", "break"]},
+            "action": {"type": "STRING", "enum": ["start", "status", "stop", "break", "distractions"]},
+            "close_distractions": {"type": "BOOLEAN", "description": "start: also close the distraction apps (needs CONFIRM)"},
+            "apps": {"type": "STRING", "description": "distractions: comma list of program names"},
             "minutes": {"type": "INTEGER",
                         "description": "start: focus minutes (1-180, default 25); "
                                        "break: pause minutes (default 5)"},

@@ -21,6 +21,7 @@ import threading
 from core import embeddings as E
 from core import indice_semantico as IS
 from core import rag_documentos as RD
+from core import ocr as OCR
 from core import rag_emails as RE
 
 _ROTULO = {"notas": "nota", "diario": "diário", "tarefas": "tarefa", "projetos": "projeto",
@@ -137,6 +138,20 @@ def memoria_semantica(parameters: dict, player=None) -> str:
             ri = RD.indice().atualizar()
             return (f"[done] E-mails na memória: {r['novos']} novo(s), {r['total']} guardado(s) só no seu PC "
                     f"(últimos {max(1, min(365, dias))} dias). {ri['trechos']} trecho(s) no índice.")
+        if acao in ("ocr_on", "ligar_ocr", "ocr_off", "desligar_ocr"):
+            if acao in ("ocr_on", "ligar_ocr"):
+                falta = OCR.faltando()
+                if falta:
+                    return f"[failed] Ainda não dá para ler imagens: {falta}."
+                OCR.definir_ativo(True)
+                if not _tem_fontes():
+                    return "[done] Leitura de fotos e PDFs escaneados ligada. Adicione uma pasta para começar."
+                ri = RD.indice().atualizar(forcar=True)
+                return (f"[done] Leitura de fotos e PDFs escaneados ligada (tudo local). Documentos: {ri['arquivos']} "
+                        f"arquivo(s), {ri['trechos']} trecho(s).")
+            OCR.definir_ativo(False)
+            ri = RD.indice().atualizar(forcar=True) if _tem_fontes() else {"trechos": 0}
+            return f"[done] Leitura de fotos e PDFs escaneados desligada ({ri['trechos']} trecho(s) restam)."
         if acao in ("emails_off", "esquecer_emails", "emails_forget"):
             n = RE.esquecer()
             ri = RD.indice().atualizar()
@@ -149,7 +164,7 @@ def memoria_semantica(parameters: dict, player=None) -> str:
     except Exception as e:
         return f"[failed] Memória semântica: {e}"
     return ("Ação desconhecida. Use search, reindex, status, install_model, add_folder, remove_folder, folders, "
-            "docs_reindex, docs_status, docs_search, emails_on ou emails_forget.")
+            "docs_reindex, docs_status, docs_search, emails_on, emails_forget, ocr_on ou ocr_off.")
 
 
 TOOL = {
@@ -165,11 +180,11 @@ TOOL = {
         "(opt-in, indexes in background), remove_folder, folders, docs_reindex, docs_status, and "
         "action=docs_search with query (+ optional folder filter, top) — use it for 'o que o contrato diz "
         "sobre…', 'procura nos meus documentos…'. It returns excerpts WITH their source (file, page/line): answer "
-        "only from them and cite the source; never invent content that is not in the excerpts. E-MAILS (opt-in, local only): action=emails_on (optional days) downloads recent mail into the document memory and also refreshes it; action=emails_forget deletes the cache; then docs_search finds them (cite 'E-mail de …')."),
+        "only from them and cite the source; never invent content that is not in the excerpts. E-MAILS (opt-in, local only): action=emails_on (optional days) downloads recent mail into the document memory and also refreshes it; action=emails_forget deletes the cache; then docs_search finds them (cite 'E-mail de …'). OCR (opt-in): action=ocr_on makes photos (receipts) and scanned PDFs searchable, ocr_off turns it off."),
     "parameters": {
         "type": "OBJECT",
         "properties": {
-            "action": {"type": "STRING", "description": "search | reindex | status | install_model | add_folder | remove_folder | folders | docs_reindex | docs_status | docs_search | emails_on | emails_forget"},
+            "action": {"type": "STRING", "description": "search | reindex | status | install_model | add_folder | remove_folder | folders | docs_reindex | docs_status | docs_search | emails_on | emails_forget | ocr_on | ocr_off"},
             "folder": {"type": "STRING", "description": "For add_folder/remove_folder: the folder path or name. For docs_search: optional filter on the file path"},
             "query": {"type": "STRING", "description": "For search: what to look for, in the user's own words"},
             "sources": {"type": "STRING", "description": "For search: comma list to restrict (notas,diario,tarefas,projetos,contatos,memoria,conversas)"},

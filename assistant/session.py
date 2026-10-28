@@ -866,6 +866,8 @@ class SessionMixin:
                     tg.create_task(self._isolada(self._run_email_watch))
                     tg.create_task(self._isolada(self._run_update_watch))
                     tg.create_task(self._isolada(self._run_focus_watch))
+                    tg.create_task(self._isolada(self._run_presenca))        # 3.7
+                    tg.create_task(self._isolada(self._run_backup_auto))     # 3.7
                     tg.create_task(self._isolada(self._run_sleep_watch))
                     tg.create_task(self._isolada(self._run_water_reminder))
                     tg.create_task(self._isolada(self._run_battery_watch))
