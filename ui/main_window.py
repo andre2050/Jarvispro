@@ -2466,7 +2466,7 @@ class MainWindow(QMainWindow):
         atual = get_hud_style()
         icone, nome, desc = HUD_STYLE_INFO.get(atual, HUD_STYLE_INFO["orb"])
         self._hud_btn.setText(f"{icone}  VISUAL DO HUB: {nome}")
-        self._hud_btn.setToolTip(f"{desc}.\nClique para escolher entre os visuais do hub (Ultra 2026 e os novos da 3.6).")
+        self._hud_btn.setToolTip(f"{desc}.\nClique para escolher entre os 20 visuais do hub.")
         self._hud_btn.setStyleSheet(style)
 
     def _toggle_hud_style(self):
@@ -2489,14 +2489,7 @@ class MainWindow(QMainWindow):
         menu.addAction(titulo)
         menu.addSeparator()
         from .hud_novos import NOVOS_INFO
-        from .hud_ultra import ULTRA_INFO
-        # Só os visuais atuais aparecem na lista; os antigos continuam funcionando se já estavam escolhidos.
-        grupos = (("ESSENCIAIS", ("orb", "minimal")),
-                  ("ULTRA 2026", tuple(ULTRA_INFO)),
-                  ("NOVOS · 3.6", tuple(NOVOS_INFO)))
-        visiveis = {k for _, ks in grupos for k in ks}
-        if atual not in visiveis and atual in HUD_STYLE_INFO:
-            grupos = (("ESCOLHIDO (antigo)", (atual,)),) + grupos
+        grupos = (("NOVOS · 3.6", tuple(NOVOS_INFO)),)
         for titulo_g, chaves in grupos:
             menu.addSeparator()
             _t2 = QAction(titulo_g, menu)
@@ -2590,7 +2583,7 @@ class MainWindow(QMainWindow):
         from memory.config_manager import HUD_STYLES, save_hud_style
         from .hud import HUD_STYLE_INFO
         if want not in HUD_STYLES:
-            want = "orb"
+            want = "galaxy"
         save_hud_style(want)
         try:
             self.hud.hud_style = want

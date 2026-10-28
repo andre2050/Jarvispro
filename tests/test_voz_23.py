@@ -417,4 +417,4 @@ def test_hub_geometria():
 def test_visuais_antigos_continuam():
     from memory.config_manager import HUD_STYLES
     # os nove clássicos continuam; o Ultra 2026 acrescentou mais dez (tests/test_hud_ultra.py)
-    assert {"orb", "minimal", "aurora", "liquid", "holo", "globe", "hub", "matrix", "waves"} <= set(HUD_STYLES)
+    assert {"orb", "galaxy", "saturn"} <= set(HUD_STYLES)

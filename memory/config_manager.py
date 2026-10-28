@@ -137,27 +137,23 @@ def save_push_to_talk_enabled(enabled: bool) -> None:
 # orb = orbe (padrão) · minimal = só barras (quase sem CPU) ·
 # 2026: aurora = ondas de luz · liquid = gota de vidro líquido ·
 #       holo = holograma de radar · globe = globo neural em 3D
-HUD_STYLES = ("orb", "minimal", "aurora", "liquid", "holo", "globe", "hub", "matrix", "waves",
-              # Ultra 2026 (ui/hud_ultra.py)
-              "nebula", "gyro", "helix", "sonar", "spectrum", "hive", "atom", "plasma", "stars", "tunnel",
-              # visuais do núcleo (ui/hud_core.py) — sem estar aqui, escolher um voltava ao orbe sem avisar
-              "bubbles", "circuit", "corona", "crystal", "grid", "heartbeat", "lissajous", "mandala", "meteors",
-              "network", "orbits", "pendulum", "pulsar", "sparks", "vortex",
-              # 3.6 (ui/hud_novos.py)
+HUD_STYLES = ("orb",                       # reserva interna (não aparece na lista)
+              # os vinte visuais do hub (ui/hud_novos.py)
               "prism", "origami", "drops", "saturn", "fireflies", "comets", "arcs", "fireworks", "rose",
               "synthwave", "galaxy", "city", "gears", "strings", "tree", "kaleido", "blackhole", "shield",
               "lotus", "storm")
+HUD_PADRAO = "galaxy"
 
 
 def get_hud_style() -> str:
-    """Visual do HUD: um de HUD_STYLES ("orb" é o padrão; "minimal" é só barras, quase sem CPU)."""
-    v = str(load_api_keys().get("hud_style", "orb")).strip().lower()
-    return v if v in HUD_STYLES else "orb"
+    """Visual do HUD: um dos vinte de hud_novos.py. Escolha antiga (orbe, matrix, aurora…) migra para o padrão."""
+    v = str(load_api_keys().get("hud_style", HUD_PADRAO)).strip().lower()
+    return v if v in HUD_STYLES and v != "orb" else HUD_PADRAO
 
 
 def save_hud_style(style: str) -> None:
     s = str(style or "").strip().lower()
-    _save_flag("hud_style", s if s in HUD_STYLES else "orb")
+    _save_flag("hud_style", s if s in HUD_STYLES and s != "orb" else HUD_PADRAO)
 
 
 # ── Live-session tuning ──────────────────────────────────────────────────────

@@ -74,6 +74,64 @@ AGENTES: dict[str, dict] = {
 }
 
 
+# 3.8 — dois especialistas a mais (agenda e finanças) e permissões editáveis por agente
+AGENTES["agenda"] = {
+    "papel": "Looks at the user's calendar, tasks and reminders and plans time (no sending, no deleting).",
+    "ferramentas": ("agenda_google", "tarefas", "daily_planner", "reminder", "timer_action", "weather_report"),
+}
+AGENTES["financas"] = {
+    "papel": "Reads the user's spending data and spreadsheets, categorises, totals and compares against budgets.",
+    "ferramentas": ("simple_finance", "financas_ia", "file_processor", "unit_converter", "memoria_semantica"),
+}
+_ARQ_AGENTES = Path(__file__).resolve().parent.parent / "config" / "agentes.json"
+
+
+def carregar_permissoes(arq: Path | None = None) -> None:
+    """Aplica config/agentes.json {"agente": {"ferramentas": [...]}} por cima dos padrões. Nunca libera o que o
+    modo autônomo proíbe (_AT._PROIBIDAS): isso é conferido a cada uso."""
+    try:
+        d = json.loads(Path(arq or _ARQ_AGENTES).read_text(encoding="utf-8"))
+    except Exception:
+        return
+    for nome, cfg in (d.items() if isinstance(d, dict) else ()):
+        if nome in AGENTES and isinstance(cfg, dict) and isinstance(cfg.get("ferramentas"), list):
+            AGENTES[nome]["ferramentas"] = tuple(str(x) for x in cfg["ferramentas"])[:30]
+
+
+def definir_ferramentas(agente: str, ferramentas: list[str], existentes: set[str] | None = None,
+                        arq: Path | None = None) -> tuple[bool, str]:
+    """Define quais ferramentas um especialista pode usar (salvo em config/agentes.json)."""
+    agente = str(agente or "").strip().lower()
+    if agente not in AGENTES:
+        return False, "Não conheço esse especialista. São: " + ", ".join(AGENTES) + "."
+    pedidas = [str(f).strip() for f in ferramentas if str(f).strip()]
+    proibidas = [f for f in pedidas if f in _AT._PROIBIDAS or _AT._ACOES_PROIBIDAS.get(f, ()) is None]
+    if proibidas:
+        return False, "Estas ferramentas não podem ir para agentes autônomos: " + ", ".join(proibidas) + "."
+    if existentes is not None:
+        faltam = [f for f in pedidas if f not in existentes]
+        if faltam:
+            return False, "Estas ferramentas não existem: " + ", ".join(faltam) + "."
+    arq = Path(arq or _ARQ_AGENTES)
+    try:
+        d = json.loads(arq.read_text(encoding="utf-8"))
+        d = d if isinstance(d, dict) else {}
+    except Exception:
+        d = {}
+    d[agente] = {"ferramentas": pedidas[:30]}
+    arq.parent.mkdir(parents=True, exist_ok=True)
+    arq.write_text(json.dumps(d, ensure_ascii=False, indent=1), encoding="utf-8")
+    AGENTES[agente]["ferramentas"] = tuple(pedidas[:30])
+    return True, f"O {agente} agora pode usar: {', '.join(pedidas) or 'nenhuma ferramenta (só raciocina)'}."
+
+
+carregar_permissoes()
+
+
+def permissoes_texto() -> str:
+    return " | ".join(f"{n}: {', '.join(a['ferramentas']) or '—'}" for n, a in AGENTES.items())
+
+
 def bind(registry) -> None:
     global _registry
     _registry = registry
@@ -467,7 +525,7 @@ def orchestrate(parameters: dict, player=None, speak=None, **_kw) -> str:
 TOOL = {
     "name": "orchestrate",
     "description": (
-        "A TEAM of specialist agents (researcher, programmer, archivist, analyst, writer, reviewer) for a BIG goal "
+        "A TEAM of specialist agents (researcher, programmer, archivist, analyst, writer, reviewer, agenda, finance) for a BIG goal "
         "that splits into parts which can run in parallel, e.g. 'research the 3 best laptops, compare "
         "them against my budget notes and save a report', 'research X and Y at the same time, compare "
         "and write a conclusion in a file'. Slower to start than agent_task but faster and better on "

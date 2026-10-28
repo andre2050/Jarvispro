@@ -179,6 +179,19 @@ class AudioMixin:
                 # block here and call interrupt() after `required_blocks` of
                 # agreement — but it depends on the listener's room, so it stays
                 # out until it can be tried on real hardware.
+                #
+                # 3.8: opt-in (config "voz_interrupcao", desligado por padrão) — ver core/voz_emocao.Interrupcao.
+                try:
+                    from core import voz_emocao as _ve
+                    if _ve.interrupcao_ligada():
+                        _int = getattr(self, "_interrupcao_voz", None)
+                        if _int is None:
+                            _int = self._interrupcao_voz = _ve.Interrupcao(
+                                lambda b: self._echo.is_user_speech(b, SEND_SAMPLE_RATE, _pcm_level(b)))
+                        if _int.bloco(indata):
+                            loop.call_soon_threadsafe(self.interrupt)
+                except Exception:
+                    pass
                 return
 
             # ── Echo tail ────────────────────────────────────────────────────
@@ -210,6 +223,12 @@ class AudioMixin:
                 try:                                    # 2.3: guarda os últimos segundos p/ a trava de voz
                     from core import voz_id as _vid
                     _vid.anel.adicionar(indata)
+                except Exception:
+                    pass
+                try:                                    # 3.8: emoção na voz (opt-in; só mede, nada é gravado)
+                    from core import voz_emocao as _ve
+                    if _ve.emocao_ligada():
+                        _ve.tracker.alimentar(indata)
                 except Exception:
                     pass
                 loop.call_soon_threadsafe(

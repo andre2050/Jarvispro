@@ -141,12 +141,19 @@
   </style>
 </head>
 <body>
+  <div id="mis-painel" style="display:none;position:fixed;inset:0;z-index:50;background:var(--bg);overflow:auto;padding:14px;color:var(--text)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <b>🎯 Missões</b><button onclick="_missoesFechar()" style="background:none;border:0;color:var(--text);font-size:20px;cursor:pointer">✕</button>
+    </div>
+    <div id="mis-lista"></div>
+  </div>
   <div id="toast"></div>
   <header>
     <div class="logo"><em>N</em>EXUS</div>
     <div class="pill" id="pill"><span class="dot"></span><span id="st">Connecting</span></div>
     <div class="enc-badge" id="enc">AES-256</div>
     <div class="spacer"></div>
+    <button id="mis-btn" onclick="_missoesAbrir()" title="Missões" style="background:none;border:0;font-size:18px;cursor:pointer">🎯</button>
     <button id="bell" title="Avisos no celular" style="display:none;background:none;border:0;font-size:18px;cursor:pointer">🔔</button>
     <div class="url">__IP__:__PORT__</div>
   </header>
@@ -620,6 +627,58 @@
         navigator.serviceWorker.ready.then((r) => r.showNotification('NEXUS', { body: corpo, icon: '/icons/icon-192.png', tag: 'nexus' })).catch(() => {});
       } else { try { new Notification('NEXUS', { body: corpo, icon: '/icons/icon-192.png' }); } catch (e) {} }
     }
+
+    // Missões de longa duração: acompanhar, aprovar/negar decisões, cancelar, pausar e desfazer. Todo texto entra por textContent.
+    let _misTimer = null, _misAberta = '';
+    function _el(tag, texto, css) { const e = document.createElement(tag); if (texto != null) e.textContent = texto; if (css) e.style.cssText = css; return e; }
+    async function _misAcao(mid, acao, extra) {
+      try {
+        const r = await _authFetch('/api/missoes/' + encodeURIComponent(mid) + '/' + acao,
+          { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(extra || {}) });
+        const d = await r.json(); if (!d.ok) toast(d.error || 'Não deu'); else if (d.texto) toast(d.texto.slice(0, 120));
+      } catch (e) { toast('Sem conexão'); }
+      _missoesAtualizar();
+    }
+    function _misBtn(txt, fn, cor) {
+      const b = _el('button', txt, 'margin:4px 6px 0 0;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:' + (cor || 'var(--surface)') + ';color:var(--text);cursor:pointer');
+      b.onclick = fn; return b;
+    }
+    async function _missoesAtualizar() {
+      const box = document.getElementById('mis-lista'); if (!box) return;
+      let ls = [];
+      try { ls = (await (await _authFetch('/api/missoes')).json()).missoes || []; } catch (e) { return; }
+      box.textContent = '';
+      if (!ls.length) { box.appendChild(_el('p', 'Nenhuma missão. Peça por voz: “NEXUS, missão: …”', 'color:var(--muted)')); return; }
+      for (const m of ls) {
+        const card = _el('div', null, 'border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:12px;margin-bottom:10px');
+        card.appendChild(_el('div', m.objetivo, 'font-weight:600'));
+        card.appendChild(_el('div', m.estado + ' · ' + m.feitos + '/' + m.passos + ' passos', 'color:var(--muted);font-size:13px;margin:4px 0'));
+        let det = null;
+        if (['plano_pronto', 'aguardando', 'executando', 'pausada', 'concluida', 'falhou'].includes(m.estado)) {
+          try { det = await (await _authFetch('/api/missoes/' + encodeURIComponent(m.id))).json(); } catch (e) {}
+        }
+        if (det && det.missao) {
+          const pend = (det.missao.decisoes || []).filter((d) => d.estado === 'pendente');
+          for (const d of pend) {
+            card.appendChild(_el('div', d.pergunta || 'Decisão pendente', 'margin:6px 0;color:#f59e0b'));
+            card.appendChild(_misBtn('✅ Aprovar', () => _misAcao(m.id, 'aprovar', { decisao: d.id }), 'var(--adim)'));
+            card.appendChild(_misBtn('✋ Negar', () => _misAcao(m.id, 'negar', { decisao: d.id })));
+          }
+          if (det.missao.relatorio) card.appendChild(_el('div', det.missao.relatorio, 'margin-top:6px;font-size:13px;white-space:pre-wrap'));
+        }
+        if (!['concluida', 'falhou', 'cancelada'].includes(m.estado)) {
+          card.appendChild(_misBtn(m.estado === 'pausada' ? '▶ Retomar' : '⏸ Pausar', () => _misAcao(m.id, m.estado === 'pausada' ? 'retomar' : 'pausar')));
+          card.appendChild(_misBtn('⛔ Cancelar', () => _misAcao(m.id, 'cancelar')));
+        }
+        card.appendChild(_misBtn('↩ Desfazer último', () => _misAcao(m.id, 'desfazer')));
+        box.appendChild(card);
+      }
+    }
+    function _missoesAbrir() {
+      document.getElementById('mis-painel').style.display = 'block';
+      _missoesAtualizar(); clearInterval(_misTimer); _misTimer = setInterval(_missoesAtualizar, 5000);
+    }
+    function _missoesFechar() { document.getElementById('mis-painel').style.display = 'none'; clearInterval(_misTimer); }
   </script>
 </body>
 </html>

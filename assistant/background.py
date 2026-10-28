@@ -246,6 +246,96 @@ class BackgroundMixin:
                 print(f"[Backup] ⚠️ {e}")
             await asyncio.sleep(3600)
 
+    # ── Contexto vivo (3.8) ─────────────────────────────────────────────────────
+
+    async def _run_contexto_vivo(self) -> None:
+        """Se ligado (config contexto_vivo), avisa de reunião chegando, anexo esquecido e erro na tela. Opt-in e local."""
+        try:
+            from core import contexto_vivo as _cv
+            from core import focus_guard as _fg
+        except Exception as e:
+            print(f"[Contexto] ⚠️ indisponível: {e}")
+            return
+        obs = None
+        while True:
+            await asyncio.sleep(30)
+            try:
+                f = _cv.flags()
+                if not f["ligado"] or not self.session:
+                    obs = None
+                    continue
+                if obs is None or bool(obs.tela) != f["ocr"]:
+                    obs = _cv.Observador(agenda=_cv.agenda_real, janela=_cv.titulo_ativo,
+                                         tela=_cv.tela_ocr if f["ocr"] else None, silencio=_fg.busy_reason)
+                with self._speaking_lock:
+                    if self._is_speaking:
+                        continue
+                avisos = await asyncio.to_thread(obs.passo)
+                for msg in avisos[:2]:
+                    self.ui.write_log(f"SYS: 👁 {msg}")
+                    await self.session.send_client_content(
+                        turns={"role": "user", "parts": [{"text":
+                            f"[CONTEXTO] {msg} Avise o usuário em uma frase curta e natural, no idioma dele. Não chame ferramentas."}]},
+                        turn_complete=True)
+            except Exception as e:
+                print(f"[Contexto] ⚠️ {e}")
+
+    # ── Voz com emoção (3.8) ────────────────────────────────────────────────────
+
+    async def _run_voz_emocao(self) -> None:
+        """Se ligado (config voz_emocao), analisa o tom das suas falas e manda ao modelo uma dica rara de como responder."""
+        try:
+            from core import voz_emocao as _ve
+        except Exception as e:
+            print(f"[VozEmoção] ⚠️ indisponível: {e}")
+            return
+        while True:
+            await asyncio.sleep(2)
+            try:
+                if not _ve.emocao_ligada() or not self.session:
+                    continue
+                dica = await asyncio.to_thread(_ve.tracker.processar)
+                if not dica:
+                    continue
+                await self.session.send_client_content(
+                    turns={"role": "user", "parts": [{"text":
+                        f"[VOZ] {dica} Não mencione que analisou a voz e não chame ferramentas por causa disto."}]},
+                    turn_complete=False)
+            except Exception as e:
+                print(f"[VozEmoção] ⚠️ {e}")
+
+    # ── Missões (3.8) ───────────────────────────────────────────────────────────
+
+    async def _run_missoes(self) -> None:
+        """Retoma as missões que estavam em andamento quando o NEXUS fechou. O resto roda em threads próprias."""
+        try:
+            import importlib
+            mod = importlib.import_module("actions.missao")
+        except Exception as e:
+            print(f"[Missões] ⚠️ indisponível: {e}")
+            return
+        await asyncio.sleep(20)                      # espera as ferramentas serem ligadas
+        def falar(texto: str) -> None:
+            if not self.session or getattr(self, "_loop", None) is None:
+                return
+            with self._speaking_lock:
+                if self._is_speaking:
+                    return
+            try:
+                from actions import focus_mode as _F
+                if _F.active_reason():
+                    return
+            except Exception:
+                pass
+            asyncio.run_coroutine_threadsafe(self.session.send_client_content(
+                turns={"role": "user", "parts": [{"text": texto}]}, turn_complete=True), self._loop)
+        try:
+            n = await asyncio.to_thread(mod.retomar, falar)
+            if n:
+                self.ui.write_log(f"SYS: 🎯 {n} missão(ões) retomada(s).")
+        except Exception as e:
+            print(f"[Missões] ⚠️ {e}")
+
     # ── Presença (3.7) ──────────────────────────────────────────────────────────
 
     async def _run_presenca(self) -> None:
