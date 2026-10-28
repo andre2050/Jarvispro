@@ -10,15 +10,21 @@ com cooldown. A voz do NEXUS vem do modelo ao vivo: o tom dela só muda por inst
 """
 from __future__ import annotations
 
+import json
 import re
 import threading
 import time
 from collections import deque
+from pathlib import Path
 
 import numpy as np
 
 from core import audio_feat as AF
 
+ARQ_CALIB = Path(__file__).resolve().parent.parent / "config" / "voz_calibracao.json"
+ESTADOS_CALIB = ("neutro", "cansado", "agitado")
+MIN_CALIB = 6                  # falas por estado na calibração guiada
+_CAMPOS = ("energia", "f0", "var_f0")
 MIN_AMOSTRAS = 12              # falas para formar a sua linha de base
 COOLDOWN_S = 150.0
 _CORRECAO = re.compile(r"\b(n[aã]o,? (espera|pera|calma)|espera,? n[aã]o|quer dizer|ou melhor|na verdade,? n[aã]o|"
@@ -50,7 +56,11 @@ def prosodia(x: np.ndarray, taxa: int = AF.TAXA) -> dict | None:
 
 
 class Emocao:
-    def __init__(self, relogio=time.monotonic):
+    def __init__(self, relogio=time.monotonic, arq_calib: Path | None = None):
+        self.arq_calib = Path(arq_calib or ARQ_CALIB)
+        self.calibrando: str | None = None
+        self._amostras: list[dict] = []
+        self.calib: dict = self._ler_calib()
         self.hist: deque = deque(maxlen=80)
         self.seg = AF.SegmentadorFala(min_s=0.6, max_s=6.0)
         self.relogio = relogio
@@ -75,6 +85,9 @@ class Emocao:
             p = prosodia(fala)
             if p is None:
                 continue
+            if self.calibrando:                                  # calibração guiada: só junta amostras, não comenta nada
+                self._amostras.append(p)
+                continue
             estado = self.classificar(p)
             self.hist.append(p)
             if estado != "neutro" and estado != self._ultimo_estado and self.relogio() - self._ultimo_aviso > COOLDOWN_S:
@@ -83,7 +96,74 @@ class Emocao:
             self._ultimo_estado = estado
         return dica
 
+    # ── calibração guiada (3.9) ──
+    def _ler_calib(self) -> dict:
+        try:
+            d = json.loads(self.arq_calib.read_text(encoding="utf-8"))
+            return {k: v for k, v in d.items() if k in ESTADOS_CALIB and isinstance(v, dict) and "media" in v}
+        except Exception:
+            return {}
+
+    def iniciar_calibracao(self, estado: str) -> str:
+        if estado not in ESTADOS_CALIB:
+            raise ValueError("Estado inválido. Use: " + ", ".join(ESTADOS_CALIB))
+        self.calibrando, self._amostras = estado, []
+        self._fila.clear()
+        return {"neutro": "Fale normalmente, umas 8 frases curtas.",
+                "cansado": "Fale como fala quando está cansado, umas 8 frases curtas.",
+                "agitado": "Fale como fala quando está agitado ou com pressa, umas 8 frases curtas."}[estado]
+
+    def amostras_juntadas(self) -> int:
+        return len(self._amostras)
+
+    def concluir_calibracao(self) -> str:
+        est, am = self.calibrando, list(self._amostras)
+        self.calibrando, self._amostras = None, []
+        if not est:
+            return "Não há calibração em andamento."
+        if len(am) < MIN_CALIB:
+            return f"Só captei {len(am)} falas (preciso de {MIN_CALIB}). Tente de novo falando um pouco mais alto e em frases curtas."
+        media = {k: float(np.mean([a[k] for a in am])) for k in ("energia", "f0", "var_f0", "vozeado")}
+        desvio = {k: float(np.std([a[k] for a in am])) + 1e-6 for k in ("energia", "f0", "var_f0", "vozeado")}
+        self.calib[est] = {"media": media, "desvio": desvio, "n": len(am)}
+        self.arq_calib.parent.mkdir(parents=True, exist_ok=True)
+        self.arq_calib.write_text(json.dumps(self.calib), encoding="utf-8")
+        faltam = [e for e in ESTADOS_CALIB if e not in self.calib]
+        return f"Calibrei “{est}” com {len(am)} falas." + (f" Falta: {', '.join(faltam)}." if faltam else " Calibração completa.")
+
+    def limpar_calibracao(self) -> None:
+        self.calib, self.calibrando, self._amostras = {}, None, []
+        try:
+            self.arq_calib.unlink()
+        except OSError:
+            pass
+
+    def _classificar_calibrado(self, p: dict) -> str | None:
+        """Com o 'neutro' calibrado usa a SUA linha de base; com mais um estado calibrado escolhe o mais próximo."""
+        neu = self.calib.get("neutro")
+        if not neu:
+            return None
+        sd = {k: max(neu["desvio"][k], 0.05 * abs(neu["media"][k]) + 1e-6) for k in _CAMPOS}
+        def dist(c):
+            return float(np.sqrt(sum(((p[k] - c["media"][k]) / sd[k]) ** 2 for k in _CAMPOS)))
+        cand = {e: dist(c) for e, c in self.calib.items()}
+        if len(cand) >= 2:
+            melhor = min(cand, key=cand.get)
+            return melhor
+        z = {k: (p[k] - neu["media"][k]) / sd[k] for k in _CAMPOS}
+        if z["energia"] > 2.0 and (z["f0"] > 1.0 or z["var_f0"] > 1.2):
+            return "agitado"
+        if z["energia"] < -2.0 and z["f0"] < -1.0:
+            return "cansado"
+        return "neutro"
+
     def classificar(self, p: dict) -> str:
+        cal = self._classificar_calibrado(p)
+        if cal is not None:
+            vz = self.calib["neutro"]
+            if cal == "neutro" and (p["vozeado"] - vz["media"]["vozeado"]) / max(vz["desvio"]["vozeado"], 0.05) < -2.0:
+                return "hesitante"
+            return cal
         if len(self.hist) < MIN_AMOSTRAS:
             return "neutro"
         base = {k: float(np.mean([h[k] for h in self.hist])) for k in ("energia", "f0", "var_f0", "vozeado")}
@@ -149,7 +229,7 @@ def _flags() -> dict:
 
 
 def emocao_ligada() -> bool:
-    return _flags()["emocao"]
+    return _flags()["emocao"] or tracker.calibrando is not None
 
 
 def interrupcao_ligada() -> bool:

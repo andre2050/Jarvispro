@@ -174,3 +174,28 @@ def aparar(arq: Path | None = None, maximo: int = MAX_LINHAS) -> int:
         sobra = linhas[-maximo:]
         arq.write_text("\n".join(sobra) + "\n", encoding="utf-8")
         return len(linhas) - maximo
+
+
+def consultar(q: str = "", tipo: str = "", missao: str = "", dias: float = 0, limite: int = 60,
+              arq: Path | None = None, agora: float | None = None) -> list[dict]:
+    """Linha do tempo filtrada para o painel: texto livre, tipo, missão e janela de dias. Mais novo primeiro."""
+    itens = ler(2000, arq)
+    corte = ((agora if agora is not None else time.time()) - dias * 86400) if dias else 0
+    termos = [p for p in re.findall(r"\w{2,}", _sem(q))]
+    out = []
+    for d in reversed(itens):
+        if tipo and d.get("tipo") != tipo:
+            continue
+        if missao and d.get("missao") != missao:
+            continue
+        if corte and d.get("t", 0) < corte:
+            continue
+        if termos:
+            alvo = _sem(f"{d.get('o_que')} {d.get('params')} {d.get('motivo')} {d.get('resultado')} {d.get('ator')}")
+            if not all(t in alvo for t in termos):
+                continue
+        out.append({"t": d.get("t"), "tipo": d.get("tipo"), "ator": d.get("ator"), "missao": d.get("missao", ""),
+                    "texto": descrever(d), "h": str(d.get("h", ""))[:8]})
+        if len(out) >= max(1, min(limite, 300)):
+            break
+    return out

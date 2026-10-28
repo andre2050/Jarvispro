@@ -1,5 +1,5 @@
 # NEXUS ULTRA 2026
-### Assistente pessoal de voz — desenvolvido por André Luiz Lima Menezes · Versão 3.8.0
+### Assistente pessoal de voz — desenvolvido por André Luiz Lima Menezes · Versão 3.9.0
 
 Mapa de todas as pastas e arquivos do projeto, como estão hoje na pasta.
 Base: MARK LV — JARVIS (© FatihMakes, CC BY-NC 4.0) — veja `LICENSE` e `NOTICE.md`.
@@ -27,7 +27,7 @@ Nexus-Ultra-2026/
 ├── readme.md                            # Apresentação, funções e como usar
 ├── requirements.txt                     # Bibliotecas Python necessárias
 ├── setup.py                             # Instalação inicial (confere o Python e as bibliotecas)
-├── VERSION                              # Número da versão (3.8.0)
+├── VERSION                              # Número da versão (3.9.0)
 ├── actions/                             # Habilidades que controlam o computador — uma por arquivo, descobertas sozinhas ao iniciar
 │   ├── agent_task.py                    # Tarefas autônomas (modo agente): planeja, executa, confere e avisa no fim
 │   ├── agenda_google.py                 # Agenda: Google Calendar / .ics por voz (só leitura)
@@ -485,3 +485,21 @@ Veja `actions/focus_mode.py` como exemplo curto.
 | `core/voz_emocao.py`, `actions/voz_natural.py` | Emoção/correção/interrupção na voz (opt-in) |
 | `core/contexto_vivo.py`, `actions/contexto_vivo.py` | Avisos de contexto: reunião, anexo, erro (opt-in) |
 | `core/rede_nexus.py`, `actions/rede_nexus.py` | Rede de NEXUS pareados, cifrada |
+
+
+## 3.9.0 — arquivos novos
+| Arquivo | O que faz |
+|---|---|
+| `core/aprovacoes.py`, `actions/aprovacoes.py` | Aprovações aprendidas (sugere, você aceita) |
+| `core/missoes_recorrentes.py`, `actions/missao_recorrente.py` | Missões que se repetem |
+| `core/copiloto.py` | Diagnóstico de erro na tela e oferta de correção |
+| `core/viagem.py`, `actions/modo_viagem.py` | Pacote offline para viagem |
+| `core/isa_modulos.py`, `core/isa_codigo.py`, `core/isa_arquitetura.py`, `core/isa_autonomia.py`, `actions/isa_nucleo.py` | Núcleo I.S.A.: módulos, código recente, arquitetura, autonomia |
+| `core/conectores.py`, `actions/conectores.py` | Todoist, Trello, ntfy, Discord, IFTTT, Home Assistant |
+| `core/aprendizado.py`, `actions/aprendizado.py` | Aprendizado da rotina (opt-in, local) |
+| `core/estatisticas_pc.py`, `actions/estatisticas_pc.py` | Estatísticas do PC e sugestões |
+| `core/organizador_inteligente.py`, `actions/organizador_inteligente.py` | Organizar qualquer pasta com regras suas |
+| `core/reuniao.py`, `actions/reuniao.py` | Preparação para a próxima reunião |
+| `core/revisao_texto.py`, `actions/revisao_texto.py` | Revisão de texto em português |
+| `core/abrir_tudo.py`, `actions/abrir_tudo.py` | Abrir pasta, arquivo ou programa pelo nome |
+| `core/modo_avancado.py`, `actions/modo_avancado.py` | Scripts seus em isolamento |

@@ -1062,6 +1062,27 @@ class DashboardServer:
                 _rede_falhas[ip] = falhas + [agora]
                 return JSONResponse({"error": "Recusado"}, status_code=400)
 
+        @app.get("/api/auditoria")
+        async def auditoria_lista(req: Request):
+            if not _auth(req):
+                return JSONResponse({"error": "Unauthorized"}, status_code=401)
+            from core import auditoria as _AU
+            qp = req.query_params
+            try:
+                itens = _AU.consultar(q=qp.get("q", "")[:80], tipo=qp.get("tipo", "")[:20], missao=qp.get("missao", "")[:16],
+                                      dias=float(qp.get("dias", 0) or 0), limite=int(qp.get("limite", 60) or 60))
+            except Exception:
+                itens = []
+            return JSONResponse({"itens": itens})
+
+        @app.get("/api/auditoria/verificar")
+        async def auditoria_verificar(req: Request):
+            if not _auth(req):
+                return JSONResponse({"error": "Unauthorized"}, status_code=401)
+            from core import auditoria as _AU
+            ok, msg = await asyncio.to_thread(_AU.verificar)
+            return JSONResponse({"integro": ok, "mensagem": msg})
+
         @app.get("/api/files")
         async def list_files(req: Request):
             if not _auth(req):

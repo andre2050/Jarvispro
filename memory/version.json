@@ -1,8 +1,13 @@
 {
-  "version": "3.8.0",
+  "version": "3.9.0",
   "codename": "Nexus Ultra 2026",
   "released": "2026-10-28",
   "changelog": [
+    {
+      "version": "3.9.0",
+      "date": "2026-10-28",
+      "notes": "NEXUS ULTRA 2026 3.9 — MISSÕES MAIS SEGURAS, NÚCLEO I.S.A. MAIS FORTE E NOVOS CONECTORES. Missões: modo ensaio, orçamento (horas/chamadas/passos sensíveis), aprovações que o NEXUS aprende com você (sempre com sua aceitação) e missões recorrentes. Painel de auditoria no celular. Grafo que se atualiza sozinho e mostra novidades. Plugins gerados com versões (comparar, melhorar, voltar). Rede com fila de tarefas e sincronização automática. Calibração guiada da voz. Copiloto de tela (diagnostica e oferece corrigir). Modo viagem/offline. NÚCLEO I.S.A.: módulos com saúde e recarga a quente, análise de código recente, relatório de arquitetura (ciclos, arquivos grandes) e autonomia que religa tarefas caídas. NOVOS: conectores (Todoist, Trello, ntfy, Discord, IFTTT, Home Assistant), aprendizado da rotina (opt-in, local), estatísticas do PC com sugestões, organizador de pastas com regras suas e desfazer, preparação de reunião, revisão de texto, abrir pasta/arquivo/programa pelo nome e modo avançado (scripts seus em isolamento). CORREÇÃO: a caixa de areia de plugins da 3.8 impedia plugins que importam urllib/requests de carregar."
+    },
     {
       "version": "3.8.0",
       "date": "2026-10-28",

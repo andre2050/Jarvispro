@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 from core import voz_emocao as V
 
@@ -57,3 +58,53 @@ def test_interrupcao_exige_blocos_seguidos():
     r = [i.bloco(None) for _ in range(7)]
     assert r == [False] * 6 + [True]
     assert not V.Interrupcao(lambda b: 1 / 0).bloco(None)
+
+
+def _p(e, f0, var=.10, voz=.7):
+    return {"energia": e, "f0": f0, "var_f0": var, "vozeado": voz}
+
+
+def _calibrar(em, estado, amostras):
+    em.iniciar_calibracao(estado)
+    em._amostras.extend(amostras)
+    return em.concluir_calibracao()
+
+
+def test_calibracao_guiada_usa_os_limites_da_pessoa(tmp_path):
+    rng = np.random.default_rng(1)
+    em = V.Emocao(arq_calib=tmp_path / "c.json")
+    # esta pessoa fala BAIXO e grave normalmente: o que seria "cansado" para a média geral é neutro para ela
+    neutro = [_p(0.04 + rng.normal(0, .003), 100 + rng.normal(0, 3)) for _ in range(8)]
+    assert "Falta" in _calibrar(em, "neutro", neutro)
+    assert em.classificar(_p(0.04, 100)) == "neutro"
+    agitado = [_p(0.09 + rng.normal(0, .005), 140 + rng.normal(0, 4), .2) for _ in range(8)]
+    cansado = [_p(0.02 + rng.normal(0, .002), 85 + rng.normal(0, 3), .06) for _ in range(8)]
+    _calibrar(em, "agitado", agitado)
+    assert "completa" in _calibrar(em, "cansado", cansado)
+    assert em.classificar(_p(0.09, 140, .2)) == "agitado" and em.classificar(_p(0.02, 85, .06)) == "cansado"
+    assert em.classificar(_p(0.04, 100)) == "neutro" and em.classificar(_p(0.04, 100, voz=.2)) == "hesitante"
+    assert V.Emocao(arq_calib=tmp_path / "c.json").classificar(_p(0.09, 140, .2)) == "agitado"    # ficou salvo
+
+
+def test_calibracao_pede_amostras_suficientes_valida_estado_e_limpa(tmp_path):
+    em = V.Emocao(arq_calib=tmp_path / "c.json")
+    assert "Só captei 2" in _calibrar(em, "neutro", [_p(.1, 130)] * 2)
+    with pytest.raises(ValueError):
+        em.iniciar_calibracao("furioso")
+    assert "Não há" in em.concluir_calibracao()
+    _calibrar(em, "neutro", [_p(.1, 130)] * 7)
+    em.limpar_calibracao()
+    assert em.calib == {} and not (tmp_path / "c.json").exists()
+
+
+def test_durante_a_calibracao_processar_so_junta_e_liga_o_microfone(tmp_path):
+    em = V.Emocao(arq_calib=tmp_path / "c.json")
+    em.iniciar_calibracao("neutro")
+    em._fila.append(_tom(150, 1.0, 0.3))
+    assert em.processar() is None and em.amostras_juntadas() == 1
+    antigo = V.tracker
+    V.tracker = em
+    try:
+        assert V.emocao_ligada()                       # o mic precisa alimentar mesmo com a leitura de emoção desligada
+    finally:
+        V.tracker = antigo

@@ -82,3 +82,15 @@ def test_acao_de_voz(tmp_path, monkeypatch):
     assert "open_app" in AA.auditoria({"action": "explain", "query": "spotify"})
     assert AA.auditoria({"action": "verify"})[:6] == "[done]"
     assert "open_app" in AA.auditoria({"action": "recent"})
+
+
+def test_consultar_filtra_por_texto_tipo_missao_e_dias(tmp_path):
+    arq = tmp_path / "a.jsonl"
+    A.registrar("acao", "missao", "enviou e-mail", {"to": "x"}, motivo="avisar", missao="m1", arq=arq, agora=1_000_000)
+    A.registrar("decisao", "usuario", "aprovou", {}, motivo="plano", missao="m1", arq=arq, agora=1_000_500)
+    A.registrar("acao", "nexus", "abriu o Chrome", {}, arq=arq, agora=1_090_000)
+    assert [d["tipo"] for d in A.consultar(arq=arq)] == ["acao", "decisao", "acao"]       # mais novo primeiro
+    assert len(A.consultar(q="e-mail", arq=arq)) == 1 and len(A.consultar(tipo="decisao", arq=arq)) == 1
+    assert len(A.consultar(missao="m1", arq=arq)) == 2
+    assert len(A.consultar(dias=1, arq=arq, agora=1_090_100)) == 1
+    assert A.consultar(q="inexistente", arq=arq) == [] and A.consultar(arq=tmp_path / "nao.jsonl") == []

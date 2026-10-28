@@ -33,7 +33,8 @@ LIMITE_HORAS = 8
 MAX_ATIVAS = 3
 MAX_LOG = 200
 PROIBIDAS = {"missao", "agent_task", "orchestrate", "dev_agent", "game_updater", "system_update", "desktop_control",
-             "neural_core", "fabrica_plugins", "plugin_factory", "computer_use", "rede_nexus", "loja_plugins", "backup_cripto", "shortcut_manager", "focus_mode"}
+             "neural_core", "fabrica_plugins", "plugin_factory", "computer_use", "rede_nexus", "loja_plugins", "backup_cripto", "shortcut_manager", "focus_mode",
+             "recurring_mission", "approvals", "connectors", "advanced_mode", "organize_folder", "travel_mode", "isa_nucleo", "routine_learning"}
 ESPERAR = "_esperar"
 
 ESTADOS_FINAIS = ("concluida", "falhou", "cancelada")
@@ -135,6 +136,24 @@ def validar_plano(bruto, existe: Callable[[str], bool]) -> tuple[list[dict], lis
     return plano, avisos
 
 
+def limpar_orcamento(o) -> dict:
+    """{horas, chamadas, sensiveis}: só números positivos e sensatos; o resto é ignorado."""
+    out = {}
+    if isinstance(o, dict):
+        for k, teto in (("horas", LIMITE_HORAS), ("chamadas", 500), ("sensiveis", 100)):
+            try:
+                v = float(o.get(k)) if k == "horas" else int(o.get(k))
+            except (TypeError, ValueError):
+                continue
+            if v > 0:
+                out[k] = min(v, teto)
+    return out
+
+
+def texto_ensaio(ensaio: list[dict]) -> str:
+    return "\n".join(f"- [{e['modo']}] {e['titulo']}: {e['resultado'][:120]}" for e in ensaio) or "(nada a ensaiar)"
+
+
 def simular_plano(m: dict) -> dict:
     return SIM.simular([{"tool": p["tool"], "args": p["args"], "titulo": p["titulo"]}
                         for p in m["plano"] if p["estado"] == "pendente" and p["tool"] != ESPERAR])
@@ -146,8 +165,10 @@ class Motor:
     `conferir(objetivo, passos) -> str` (o que faltou, '' = cumprido), `existe(tool) -> bool`, `avisar(texto, urgente)`."""
 
     def __init__(self, planejar, executar, conferir=None, existe=None, avisar=None, pasta: Path | None = None,
-                 desfazer_info=None, desfazer_ultimo=None):
+                 desfazer_info=None, desfazer_ultimo=None, auto_aprovar=None, aprendeu=None):
         self.planejar, self.executar = planejar, executar
+        self.auto_aprovar = auto_aprovar or (lambda tool, args: False)     # regra "pode fazer sem perguntar" (core/aprovacoes)
+        self.aprendeu = aprendeu or (lambda tool, args, aprovou: None)     # anota a sua decisão; devolve texto se vale sugerir
         self.conferir = conferir or (lambda objetivo, passos: "")
         self.existe = existe or (lambda t: True)
         self.avisar = avisar or (lambda texto, urgente=False: None)
@@ -157,7 +178,7 @@ class Motor:
         self._trava = threading.RLock()
 
     # criação ------------------------------------------------------------------
-    def criar(self, objetivo: str) -> dict:
+    def criar(self, objetivo: str, orcamento: dict | None = None, ensaiar: bool = False) -> dict:
         objetivo = re.sub(r"\s+", " ", str(objetivo or "")).strip()[:400]
         if not objetivo:
             raise ErroMissao("Falta a meta: o que devo fazer?")
@@ -165,7 +186,10 @@ class Motor:
             raise ErroMissao(f"Já há {MAX_ATIVAS} missões em andamento; espere uma terminar ou cancele uma.")
         mid = uuid.uuid4().hex[:8]
         m = {"id": mid, "objetivo": objetivo, "estado": "planejando", "criada": _agora(), "plano": [], "decisoes": [],
-             "log": [], "replanos": 0, "limite_h": LIMITE_HORAS, "relatorio": ""}
+             "log": [], "replanos": 0, "limite_h": LIMITE_HORAS, "relatorio": "",
+             "orcamento": limpar_orcamento(orcamento), "uso": {"chamadas": 0, "sensiveis": 0, "avisados": []}}
+        if m["orcamento"].get("horas"):
+            m["limite_h"] = min(LIMITE_HORAS, m["orcamento"]["horas"])
         _log(m, "Missão criada; planejando.")
         salvar(m, self.pasta)
         self._auditar(m, "criou a missão", objetivo)
@@ -186,10 +210,14 @@ class Motor:
         m["plano"] = plano
         sim = simular_plano(m)
         m["simulacao"] = sim
-        if sim["sensiveis"]:
+        if ensaiar:
+            m["ensaio"] = self._ensaio(m)
+        exigem = [p for p in m["plano"] if p["risco"] == "sensivel" and not self.auto_aprovar(p["tool"], p["args"])]
+        if exigem or ensaiar:
             m["estado"] = "plano_pronto"
+            extra = ("\nENSAIO (nada de escrita foi feito):\n" + texto_ensaio(m["ensaio"])) if ensaiar else ""
             m["decisoes"].append({"id": "plano", "passo": "", "estado": "pendente",
-                                  "pergunta": "Posso começar este plano?\n" + SIM.texto(sim)})
+                                  "pergunta": "Posso começar este plano?\n" + SIM.texto(sim) + extra})
             _log(m, "Plano pronto; aguardando a sua aprovação.")
             self.avisar(f"A missão “{objetivo[:60]}” tem um plano com {sim['sensiveis']} passo(s) sensível(is). "
                         "Veja e aprove no painel.", True)
@@ -199,6 +227,57 @@ class Motor:
         salvar(m, self.pasta)
         self._auditar(m, "planejou", f"{len(plano)} passos; {sim['resumo']}")
         return m
+
+    # ensaio ---------------------------------------------------------------------
+    def _ensaio(self, m: dict) -> list[dict]:
+        """Roda o plano 'no seco': leituras de verdade, tudo que escreve/envia/apaga SIMULADO. Nada é salvo no plano."""
+        feitos: dict[str, str] = {}
+        rel = []
+        for p in m["plano"]:
+            if p["estado"] not in ("pendente", "aprovado", "esperando"):
+                continue
+            if any(feitos.get(d) == "falhou" for d in p["depende"]):
+                feitos[p["id"]] = "falhou"
+                rel.append({"titulo": p["titulo"], "tool": p["tool"], "modo": "pulado", "resultado": "um passo anterior falharia"})
+                continue
+            if p["tool"] == ESPERAR:
+                feitos[p["id"]] = "ok"
+                rel.append({"titulo": p["titulo"], "tool": p["tool"], "modo": "pulado",
+                            "resultado": f"esperaria {p['args']['minutos']} min"})
+            elif p["risco"] == "sensivel":
+                feitos[p["id"]] = "ok"
+                rel.append({"titulo": p["titulo"], "tool": p["tool"], "modo": "simulado",
+                            "resultado": SIM.simular_passo(p)["resumo"]})
+            else:
+                try:
+                    status, texto = self.executar(p["tool"], p["args"], {"ator": "ensaio", "missao": m["id"], "motivo": p["titulo"]})
+                except Exception as e:
+                    status, texto = "failed", f"erro: {e}"
+                feitos[p["id"]] = "ok" if status in ("done", "unverified") else "falhou"
+                rel.append({"titulo": p["titulo"], "tool": p["tool"], "modo": "real (leitura)", "resultado": str(texto)[:200]})
+        return rel
+
+    def ensaiar(self, mid: str) -> list[dict]:
+        with self._trava:
+            m = carregar(mid, self.pasta)
+            m["ensaio"] = self._ensaio(m)
+            _log(m, "Ensaio feito (nada de escrita foi executado).")
+            salvar(m, self.pasta)
+            self._auditar(m, "ensaiou o plano", f"{len(m['ensaio'])} passos")
+            return m["ensaio"]
+
+    # orçamento ------------------------------------------------------------------
+    def _orcamento_estourou(self, m: dict, dim: str) -> bool:
+        lim = (m.get("orcamento") or {}).get(dim)
+        return bool(lim) and m["uso"][dim] >= lim
+
+    def _contar(self, m: dict, dim: str) -> None:
+        m["uso"][dim] += 1
+        lim = (m.get("orcamento") or {}).get(dim)
+        if lim and m["uso"][dim] >= 0.8 * lim and dim not in m["uso"]["avisados"] and m["uso"][dim] < lim:
+            m["uso"]["avisados"].append(dim)
+            _log(m, f"Orçamento: {m['uso'][dim]} de {lim} {dim} usados (80%).")
+            self.avisar(f"Missão “{m['objetivo'][:50]}”: já usou {m['uso'][dim]} de {lim} {dim} do orçamento.", False)
 
     # decisões -----------------------------------------------------------------
     def decidir(self, mid: str, did: str, aprovar: bool) -> dict:
@@ -220,6 +299,13 @@ class Motor:
                     _log(m, m["relatorio"])
             else:
                 p = next((x for x in m["plano"] if x["id"] == d["passo"]), None)
+                if p:
+                    try:
+                        dica = self.aprendeu(p["tool"], p["args"], aprovar)
+                        if dica:
+                            self.avisar(dica, False)
+                    except Exception:
+                        pass
                 if p:
                     if aprovar:
                         p["estado"] = "aprovado"
@@ -314,6 +400,15 @@ class Motor:
                     p["estado"], p["resultado"] = "ok", "Espera concluída."
                     salvar(m, self.pasta)
                     return "trabalhou"
+                if p["risco"] == "sensivel" and self._orcamento_estourou(m, "sensiveis"):
+                    p["estado"], p["resultado"] = "negado", "Orçamento de passos sensíveis esgotado."
+                    _log(m, f"Orçamento de passos sensíveis esgotado: {p['titulo']} não foi feito.")
+                    salvar(m, self.pasta)
+                    return "trabalhou"
+                if p["risco"] == "sensivel" and p["estado"] != "aprovado" and self.auto_aprovar(p["tool"], p["args"]):
+                    p["estado"] = "aprovado"
+                    _log(m, f"Regra sua: “{p['titulo']}” pode ser feito sem perguntar.")
+                    self._auditar(m, "aprovou pela regra automática", p["titulo"], tipo="decisao", ator="regra")
                 if p["risco"] == "sensivel" and p["estado"] != "aprovado":
                     if not any(d["passo"] == p["id"] and d["estado"] == "pendente" for d in m["decisoes"]):
                         sim = SIM.simular_passo(p)
@@ -338,6 +433,12 @@ class Motor:
             return self._finalizar(m)
 
     def _rodar(self, m: dict, p: dict) -> str:
+        if self._orcamento_estourou(m, "chamadas"):
+            return self._encerrar(m, "falhou", f"Orçamento de {m['orcamento']['chamadas']} chamadas esgotado. "
+                                                f"{sum(1 for x in m['plano'] if x['estado'] == 'ok')} passos concluídos até aqui.")
+        self._contar(m, "chamadas")
+        if p["risco"] == "sensivel":
+            self._contar(m, "sensiveis")
         antes, _ = self.desfazer_info()
         p["estado"] = "rodando"
         p["tentativas"] += 1

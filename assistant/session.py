@@ -129,9 +129,17 @@ class SessionMixin:
                                           traceback.format_exc())
                 except Exception:
                     pass
-                if tentativas > 4:
+                espera = 5.0 * tentativas if tentativas <= 4 else None
+                try:                                        # 3.9 — a I.S.A. dá descansos e recomeça em vez de desistir de vez
+                    from core import isa_autonomia as _auto
+                    espera = _auto.tarefa_caiu(getattr(funcao, "__name__", "?"), tentativas)
+                    if espera is not None and tentativas > 4:
+                        tentativas = 0
+                except Exception:
+                    pass
+                if espera is None:
                     return
-                await asyncio.sleep(5 * tentativas)
+                await asyncio.sleep(espera)
 
     async def _devolver_contexto(self, session) -> None:
         """Entrega à sessão nova as últimas falas, como DADO, sem pedir resposta."""
@@ -870,6 +878,9 @@ class SessionMixin:
                     tg.create_task(self._isolada(self._run_missoes))          # 3.8
                     tg.create_task(self._isolada(self._run_voz_emocao))       # 3.8
                     tg.create_task(self._isolada(self._run_contexto_vivo))    # 3.8
+                    tg.create_task(self._isolada(self._run_grafo))            # 3.9
+                    tg.create_task(self._isolada(self._run_recorrentes))      # 3.9
+                    tg.create_task(self._isolada(self._run_rede))             # 3.9
                     tg.create_task(self._isolada(self._run_backup_auto))     # 3.7
                     tg.create_task(self._isolada(self._run_sleep_watch))
                     tg.create_task(self._isolada(self._run_water_reminder))

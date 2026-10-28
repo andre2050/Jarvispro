@@ -309,6 +309,89 @@ class Rede:
         except Exception:
             return False
 
+    # ── fila de tarefas e sincronização automática (3.9) ──
+    MAX_FILA = 20
+    VALIDADE_FILA_S = 24 * 3600
+
+    def _fila(self) -> list[dict]:
+        d = self._cfg().get("fila")
+        return [x for x in d if isinstance(x, dict)] if isinstance(d, list) else []
+
+    def _gravar_fila(self, fila: list[dict]) -> None:
+        d = self._cfg()
+        d["fila"] = fila
+        self._gravar(d)
+
+    def enfileirar(self, peer_id: str, tool: str, args: dict | None = None) -> str:
+        """Guarda um pedido de LEITURA para o outro aparelho rodar quando ele estiver online. Devolve o id."""
+        from core import missoes as M
+        from core import simulacao as SIM
+        self._chave_peer(peer_id)
+        args = args if isinstance(args, dict) else {}
+        if tool in M.PROIBIDAS or tool == "especialista" or SIM.risco(tool, args) != "seguro":
+            raise ErroRede(f"'{tool}' não é uma ferramenta segura (só leitura vai para a fila).")
+        fila = self._fila()
+        if sum(1 for x in fila if x["estado"] == "pendente") >= self.MAX_FILA:
+            raise ErroRede(f"A fila já tem {self.MAX_FILA} pedidos pendentes.")
+        item = {"id": secrets.token_hex(3), "peer": peer_id, "tool": tool, "args": args, "criada": self.agora(),
+                "tentativas": 0, "estado": "pendente", "resultado": ""}
+        fila.append(item)
+        self._gravar_fila(fila)
+        return item["id"]
+
+    def processar_fila(self) -> list[tuple[str, str]]:
+        """Tenta entregar os pendentes (o aparelho precisa responder ao ping). Devolve [(id, novo estado)]."""
+        fila, mudou = self._fila(), []
+        for x in fila:
+            if x["estado"] != "pendente":
+                continue
+            if self.agora() - x["criada"] > self.VALIDADE_FILA_S:
+                x["estado"] = "expirada"
+                mudou.append((x["id"], "expirada"))
+                continue
+            if x["peer"] not in self.peers() or not self.ping(x["peer"]):
+                x["tentativas"] += 1
+                continue
+            try:
+                texto = self.delegar(x["peer"], x["tool"], x["args"])
+            except Exception as e:
+                texto = f"[failed] {e}"
+            x["estado"] = "falhou" if texto.startswith("[failed]") else "feita"
+            x["resultado"] = texto[:2000]
+            mudou.append((x["id"], x["estado"]))
+        self._gravar_fila(fila[-60:])
+        return mudou
+
+    def resultados(self) -> list[dict]:
+        return [x for x in self._fila() if x["estado"] != "pendente"]
+
+    def sync_auto(self) -> bool:
+        return bool(self._cfg().get("sync_auto", False))
+
+    def definir_sync_auto(self, v: bool) -> None:
+        d = self._cfg()
+        d["sync_auto"] = bool(v)
+        self._gravar(d)
+
+    def sincronizar_todos(self, intervalo_s: float = 900) -> dict[str, str]:
+        """Sincroniza com cada aparelho online, no máximo a cada `intervalo_s`. Devolve {nome: resumo}."""
+        d = self._cfg()
+        res = {}
+        for pid, p in self.peers().items():
+            if self.agora() - float((d.get("ultima_sync") or {}).get(pid, 0)) < intervalo_s:
+                continue
+            if not self.ping(pid):
+                continue
+            try:
+                r = self.sincronizar(pid)
+                res[p["nome"]] = f"recebi {len(r['recebidos'])}, enviei {len(r['enviados'])}"
+            except Exception as e:
+                res[p["nome"]] = f"falhou: {e}"
+            d = self._cfg()
+            d.setdefault("ultima_sync", {})[pid] = self.agora()
+            self._gravar(d)
+        return res
+
     def _aud(self, o_que: str, motivo: str = "") -> None:
         if not self.auditar:
             return

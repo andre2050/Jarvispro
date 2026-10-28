@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 import unicodedata
 from collections import deque
 from pathlib import Path
@@ -39,7 +40,7 @@ class Grafo:
         if tipo not in TIPOS or len(nome) < 2 or len(self.nos) >= MAX_NOS and _id(tipo, nome) not in self.nos:
             return None
         i = _id(tipo, nome)
-        n = self.nos.setdefault(i, {"tipo": tipo, "nome": nome, "textos": [], "fontes": []})
+        n = self.nos.setdefault(i, {"tipo": tipo, "nome": nome, "textos": [], "fontes": [], "desde": 0, "novos": []})
         t = " ".join(str(texto or "").split())[:MAX_TEXTO]
         if t and t not in n["textos"] and len(n["textos"]) < 8:
             n["textos"].append(t)
@@ -52,7 +53,7 @@ class Grafo:
             return
         if any(e["a"] == a and e["b"] == b and e["rel"] == rel for e in self.arestas):
             return
-        self.arestas.append({"a": a, "rel": rel, "b": b, "fonte": fonte})
+        self.arestas.append({"a": a, "rel": rel, "b": b, "fonte": fonte, "desde": 0})
 
     def ligar_mencoes(self) -> int:
         """Se o texto de um nó cita o nome de outro (palavra inteira, sem acento), liga os dois."""
@@ -106,6 +107,28 @@ class Grafo:
         return {"achou": True, "no": {"tipo": n["tipo"], "nome": n["nome"], "textos": n["textos"], "fontes": n["fontes"]},
                 "fatos": fatos}
 
+    def novidades(self, consulta: str, dias: float = 7, agora: float | None = None) -> dict:
+        """O que mudou em torno de um nome nos últimos `dias`: ligações novas, textos novos e o próprio nó se for novo."""
+        ini = self.achar(consulta)
+        if not ini:
+            return {"achou": False, "consulta": consulta, "itens": []}
+        agora = time.time() if agora is None else agora
+        corte = agora - dias * 86400
+        raiz = ini[0]
+        n = self.nos[raiz]
+        itens = []
+        if n.get("desde", 0) > corte:
+            itens.append({"tipo": "novo", "texto": f"{n['nome']} entrou no seu mundo", "quando": n["desde"], "fonte": (n["fontes"] or [""])[0]})
+        for when, t in n.get("novos", []):
+            if when > corte:
+                itens.append({"tipo": "texto", "texto": t[:160], "quando": when, "fonte": (n["fontes"] or [""])[0]})
+        for e in self.arestas:
+            if raiz in (e["a"], e["b"]) and e.get("desde", 0) > corte:
+                itens.append({"tipo": "ligacao", "texto": f"{self.nos[e['a']]['nome']} {e['rel']} {self.nos[e['b']]['nome']}",
+                              "quando": e["desde"], "fonte": e["fonte"]})
+        itens.sort(key=lambda x: -x["quando"])
+        return {"achou": True, "no": n["nome"], "dias": dias, "itens": itens}
+
     def caminho(self, a: str, b: str) -> list[str] | None:
         ia, ib = self.achar(a), self.achar(b)
         if not ia or not ib:
@@ -146,8 +169,10 @@ class Grafo:
         return g
 
 
-def construir(fontes: dict | None = None) -> Grafo:
-    """Reconstrói o grafo do zero a partir das fontes (padrão: contatos, projetos, tarefas, preferências, diário)."""
+def construir(fontes: dict | None = None, anterior: "Grafo | None" = None, agora: float | None = None) -> Grafo:
+    """Reconstrói o grafo a partir das fontes (padrão: contatos, projetos, tarefas, preferências, diário).
+    Com `anterior`, o que NÃO existia antes ganha a data de hoje (`desde`): é a base de 'o que mudou sobre a Maria?'.
+    Sem `anterior` é a primeira montagem: tudo conta como base, nada é novidade."""
     fontes = fontes if fontes is not None else fontes_padrao()
     g = Grafo()
     for nome_fonte, fn in fontes.items():
@@ -159,6 +184,21 @@ def construir(fontes: dict | None = None) -> Grafo:
             if isinstance(it, dict):
                 g.adicionar(str(it.get("tipo")), it.get("nome", ""), it.get("texto", ""), it.get("fonte") or nome_fonte)
     g.ligar_mencoes()
+    if anterior is not None:
+        agora = time.time() if agora is None else agora
+        for i, n in g.nos.items():
+            antes = anterior.nos.get(i)
+            if antes is None:
+                n["desde"] = agora
+                n["novos"] = []
+            else:
+                n["desde"] = antes.get("desde", 0)
+                velhos = set(antes.get("textos", []))
+                ts = {t: when for when, t in antes.get("novos", [])}
+                n["novos"] = [[ts.get(t, agora), t] for t in n["textos"] if t not in velhos or t in ts]
+        velhas = {(e["a"], e["rel"], e["b"]): e.get("desde", 0) for e in anterior.arestas}
+        for e in g.arestas:
+            e["desde"] = velhas.get((e["a"], e["rel"], e["b"]), agora)
     return g
 
 
@@ -213,3 +253,40 @@ def texto(res: dict) -> str:
     if not res["fatos"]:
         linhas.append("Sem ligações ainda.")
     return "\n".join(linhas)
+
+
+def texto_novidades(r: dict) -> str:
+    if not r.get("achou"):
+        return f"Não conheço “{r.get('consulta')}” no grafo."
+    if not r["itens"]:
+        return f"Nada de novo sobre {r['no']} nos últimos {int(r['dias'])} dias."
+    return f"Novidades sobre {r['no']} (últimos {int(r['dias'])} dias):\n" + "\n".join(
+        f"- {i['texto']}" + (f" [fonte: {i['fonte']}]" if i["fonte"] else "") for i in r["itens"][:12])
+
+
+# ── atualização automática ───────────────────────────────────────────────────
+_FONTES_ARQ = ("contatos.json", "projetos.json", "tarefas.json", "long_term.json", "diario.json")
+
+
+def mtime_das_fontes(pasta: Path | None = None) -> float:
+    pasta = Path(pasta or (Path(__file__).resolve().parent.parent / "memory"))
+    return max([(pasta / n).stat().st_mtime for n in _FONTES_ARQ if (pasta / n).is_file()] or [0.0])
+
+
+def atualizar_se_mudou(arq: Path | None = None, fontes: dict | None = None, pasta: Path | None = None,
+                       agora: float | None = None) -> bool:
+    """True se reconstruiu. Compara a data das fontes com a do grafo salvo; mantém o `desde` do que já existia."""
+    arq = Path(arq or ARQUIVO)
+    if arq.is_file() and arq.stat().st_mtime >= mtime_das_fontes(pasta):
+        return False
+    reconstruir(arq, fontes, agora)
+    return True
+
+
+def reconstruir(arq: Path | None = None, fontes: dict | None = None, agora: float | None = None) -> Grafo:
+    """Reconstrói agora (forçado), preservando a data de entrada do que já existia."""
+    arq = Path(arq or ARQUIVO)
+    anterior = Grafo.carregar(arq) if arq.is_file() else None
+    g = construir(fontes, anterior if anterior and anterior.nos else None, agora)
+    g.salvar(arq)
+    return g

@@ -135,13 +135,34 @@ def _undo_ultimo() -> str:
     return undo.undo_last()
 
 
+def _auto_aprovar(tool: str, args: dict) -> bool:
+    try:
+        from core import aprovacoes
+        return aprovacoes.auto(tool, args)
+    except Exception:
+        return False
+
+
+def _aprendeu(tool: str, args: dict, aprovou: bool):
+    try:
+        from core import aprovacoes
+        sig = aprovacoes.registrar(tool, args, aprovou)
+        if sig:
+            return (f"Você já aprovou “{sig}” {aprovacoes.MINIMO} vezes seguidas. Quer que eu faça esse tipo de passo "
+                    "sem perguntar? Diga “sim, automático” (ou veja em aprovações).")
+    except Exception:
+        pass
+    return None
+
+
 def motor() -> M.Motor:
     global _motor
     with _LOCK:
         if _motor is None:
             _motor = M.Motor(_planejar, _executar, _conferir, existe=lambda t: t == "especialista" or t == M.ESPERAR
                              or bool(_registry and _registry.has(t)), avisar=_avisar,
-                             desfazer_info=_undo_info, desfazer_ultimo=_undo_ultimo)
+                             desfazer_info=_undo_info, desfazer_ultimo=_undo_ultimo,
+                             auto_aprovar=_auto_aprovar, aprendeu=_aprendeu)
         return _motor
 
 
@@ -170,7 +191,9 @@ def missao(parameters: dict, player=None, speak=None, **_kw) -> str:
         if acao in ("start", "iniciar"):
             if _registry is None:
                 return "[failed] As missões ainda não estão prontas (as ferramentas não foram ligadas)."
-            m = motor().criar(str(parameters.get("goal") or ""))
+            orc = {"horas": parameters.get("budget_hours"), "chamadas": parameters.get("budget_calls"),
+                   "sensiveis": parameters.get("budget_sensitive")}
+            m = motor().criar(str(parameters.get("goal") or ""), orcamento=orc, ensaiar=bool(parameters.get("rehearse")))
             gerente().iniciar(m["id"])
             if m["estado"] == "falhou":
                 return f"[failed] {m['relatorio']}"
@@ -211,6 +234,8 @@ def missao(parameters: dict, player=None, speak=None, **_kw) -> str:
             return "[done] Ok."
         if acao in ("undo", "desfazer"):
             return motor().desfazer(mid)
+        if acao in ("rehearse", "ensaiar"):
+            return "[done] Ensaio (leituras reais, escritas só simuladas): " + M.texto_ensaio(motor().ensaiar(mid))
         if acao in ("simulate", "simular"):
             from core import simulacao as SIM
             m = M.carregar(mid)
@@ -230,17 +255,19 @@ TOOL = {
     "description": ("LONG-RUNNING MISSIONS: goals that take hours ('organize meu mês', 'pesquise e monte o plano da viagem'). "
                     "action=start with goal: plans, simulates what would change and, if a step is sensitive, waits for the "
                     "user's approval; then works in the background (survives restarts), stops at decisions (send, move, delete, "
-                    "spend, control the PC) and reports at the end. Other actions: status (optional id), list, approve/deny "
+                    "spend, control the PC) and reports at the end. Optional budget (budget_hours, budget_calls, budget_sensitive) stops the mission when spent; rehearse=true shows a dry run first. Other actions: status (optional id), list, approve/deny "
                     "(optional id), cancel, pause, resume, undo (the last undoable step), simulate (id). Use instead of "
                     "agent_task when the goal is big, needs waiting or touches things that need approval. Never approve for the "
                     "user: only call approve after the user says yes. Answer in Portuguese."),
     "parameters": {
         "type": "OBJECT",
         "properties": {
-            "action": {"type": "STRING", "enum": ["start", "status", "list", "approve", "deny", "cancel", "pause", "resume", "undo", "simulate"]},
+            "action": {"type": "STRING", "enum": ["start", "status", "list", "approve", "deny", "cancel", "pause", "resume", "undo", "simulate", "rehearse"]},
             "goal": {"type": "STRING", "description": "start: the whole goal in the user's words"},
             "id": {"type": "STRING", "description": "mission id"},
             "decision": {"type": "STRING", "description": "approve/deny: decision id (default: the only pending one)"},
+            "rehearse": {"type": "BOOLEAN", "description": "start: dry-run first (reads real, writes simulated) and show it with the plan"},
+            "budget_hours": {"type": "NUMBER"}, "budget_calls": {"type": "INTEGER"}, "budget_sensitive": {"type": "INTEGER"},
         },
         "required": ["action"],
     },

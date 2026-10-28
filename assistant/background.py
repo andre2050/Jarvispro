@@ -246,6 +246,72 @@ class BackgroundMixin:
                 print(f"[Backup] ⚠️ {e}")
             await asyncio.sleep(3600)
 
+    # ── Rede de NEXUS (3.9) ─────────────────────────────────────────────────────
+
+    async def _run_rede(self) -> None:
+        """Entrega a fila de tarefas aos aparelhos que voltaram e, se ligado, sincroniza a memória a cada 15 min."""
+        try:
+            from actions import rede_nexus as _rn
+        except Exception as e:
+            print(f"[Rede] ⚠️ indisponível: {e}")
+            return
+        await asyncio.sleep(60)
+        while True:
+            try:
+                r = _rn.rede()
+                if r.peers():
+                    feitos = await asyncio.to_thread(r.processar_fila)
+                    for qid, estado in feitos:
+                        self.ui.write_log(f"SYS: 🌐 Pedido {qid} para outro NEXUS: {estado}.")
+                    if r.sync_auto():
+                        for nome, resumo in (await asyncio.to_thread(r.sincronizar_todos)).items():
+                            self.ui.write_log(f"SYS: 🌐 Memória sincronizada com {nome}: {resumo}.")
+            except Exception as e:
+                print(f"[Rede] ⚠️ {e}")
+            await asyncio.sleep(120)
+
+    # ── Missões recorrentes (3.9) ───────────────────────────────────────────────
+
+    async def _run_recorrentes(self) -> None:
+        """A cada minuto vê se alguma missão agendada está na hora e cria ela pelo caminho normal (com aprovações)."""
+        try:
+            import importlib
+            from core import missoes_recorrentes as _r
+            mod = importlib.import_module("actions.missao")
+        except Exception as e:
+            print(f"[Recorrentes] ⚠️ indisponível: {e}")
+            return
+        await asyncio.sleep(45)
+        while True:
+            try:
+                def _criar(meta, orc, ens):
+                    m = mod.motor().criar(meta, orcamento=orc, ensaiar=ens)
+                    mod.gerente().iniciar(m["id"])
+                    return m
+                feitos = await asyncio.to_thread(_r.disparar, _criar)
+                for rid, estado in feitos:
+                    self.ui.write_log(f"SYS: 🔁 Missão agendada {rid}: {estado}.")
+            except Exception as e:
+                print(f"[Recorrentes] ⚠️ {e}")
+            await asyncio.sleep(60)
+
+    # ── Grafo vivo (3.9) ────────────────────────────────────────────────────────
+
+    async def _run_grafo(self) -> None:
+        """Mantém o grafo de conhecimento em dia: quando uma fonte (contatos, tarefas, notas…) muda, reconstrói em segundo plano."""
+        try:
+            from core import grafo as _g
+        except Exception as e:
+            print(f"[Grafo] ⚠️ indisponível: {e}")
+            return
+        await asyncio.sleep(90)
+        while True:
+            try:
+                await asyncio.to_thread(_g.atualizar_se_mudou)
+            except Exception as e:
+                print(f"[Grafo] ⚠️ {e}")
+            await asyncio.sleep(600)
+
     # ── Contexto vivo (3.8) ─────────────────────────────────────────────────────
 
     async def _run_contexto_vivo(self) -> None:
@@ -275,7 +341,8 @@ class BackgroundMixin:
                     self.ui.write_log(f"SYS: 👁 {msg}")
                     await self.session.send_client_content(
                         turns={"role": "user", "parts": [{"text":
-                            f"[CONTEXTO] {msg} Avise o usuário em uma frase curta e natural, no idioma dele. Não chame ferramentas."}]},
+                            f"[CONTEXTO] {msg} Avise o usuário em uma frase curta e natural, no idioma dele. "
+                            "Se for um erro na tela e ele topar ver, chame live_context com action=fix; nunca aja na tela sem o sim dele."}]},
                         turn_complete=True)
             except Exception as e:
                 print(f"[Contexto] ⚠️ {e}")
@@ -771,6 +838,15 @@ class BackgroundMixin:
                     for f in feitos:
                         self.ui.write_log(f"SYS: 🛠 Auto-regeneração: {f}")
                 await asyncio.to_thread(_rede.garantir)
+                if n % 5 == 0:                              # 3.9 — missões que travaram
+                    try:
+                        import importlib
+                        from core import isa_autonomia as _auto
+                        _mis = importlib.import_module("actions.missao")
+                        for f in await asyncio.to_thread(_auto.religar_missoes, lambda mid: _mis.gerente().iniciar(mid)):
+                            self.ui.write_log(f"SYS: 🛠 Auto-regeneração: {f}")
+                    except Exception as e:
+                        print(f"[I.S.A.] ⚠️ missões: {e}")
             except Exception as e:
                 print(f"[I.S.A.] ⚠️ {e}")
             n += 1
