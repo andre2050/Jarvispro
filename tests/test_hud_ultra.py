@@ -9,7 +9,7 @@ def test_dez_visuais_novos_registrados():
     assert len(ULTRA_STYLES) == 10
     assert set(ULTRA_STYLES) == set(ULTRA_INFO)
     assert set(ULTRA_STYLES) <= set(HUD_STYLES) and set(ULTRA_STYLES) <= set(HUD_STYLE_INFO)
-    assert len(HUD_STYLES) == 34          # 9 clássicos + 10 Ultra + 15 do núcleo
+    assert len(HUD_STYLES) == 54          # 9 clássicos + 10 Ultra + 15 do núcleo + 20 novos
     assert set(HUD_STYLES) == set(HUD_STYLE_INFO)   # tudo que o menu mostra pode ser salvo
 
 
@@ -50,3 +50,38 @@ def test_visual_com_defeito_volta_ao_orbe(monkeypatch):
     h.hud_style = "atom"
     assert not h.grab().toImage().isNull()
     assert h.hud_style == "orb"
+
+
+def _novos():
+    from ui.hud_novos import NOVOS_STYLES
+    return list(NOVOS_STYLES)
+
+
+def test_vinte_visuais_novos_3_6_registrados_e_no_menu():
+    from memory.config_manager import HUD_STYLES
+    from ui.hud import HUD_STYLE_INFO
+    from ui.hud_novos import NOVOS_INFO, NOVOS_STYLES
+    assert len(NOVOS_STYLES) == 20 and set(NOVOS_STYLES) == set(NOVOS_INFO)
+    assert set(NOVOS_STYLES) <= set(HUD_STYLES) and set(NOVOS_STYLES) <= set(HUD_STYLE_INFO)
+
+
+@pytest.mark.parametrize("estilo", _novos())
+def test_cada_visual_novo_desenha_em_todos_os_estados_e_tamanhos(estilo):
+    from PyQt6.QtWidgets import QApplication
+    from ui.hud import HudCanvas
+    _app = QApplication.instance() or QApplication([])
+    h = HudCanvas("", "NEXUS")
+    h._tmr.stop()
+    h.hud_style = estilo
+    for (w, alt) in ((480, 420), (300, 300), (700, 360)):
+        h.resize(w, alt)
+        for estado, fala, mudo in (("SPEAKING", True, False), ("LISTENING", False, False),
+                                   ("THINKING", False, False), ("SLEEPING", False, True)):
+            h.state, h.speaking, h.muted = estado, fala, mudo
+            for amp in (0.0, 0.5, 1.0):
+                h._amp = amp
+                h._hist.append(amp)
+                h._fase += 0.7
+                h._tick += 1
+                assert not h.grab().toImage().isNull()
+            assert h.hud_style == estilo, f"{estilo} caiu para o orbe (erro de desenho)"

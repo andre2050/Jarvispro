@@ -142,7 +142,11 @@ HUD_STYLES = ("orb", "minimal", "aurora", "liquid", "holo", "globe", "hub", "mat
               "nebula", "gyro", "helix", "sonar", "spectrum", "hive", "atom", "plasma", "stars", "tunnel",
               # visuais do núcleo (ui/hud_core.py) — sem estar aqui, escolher um voltava ao orbe sem avisar
               "bubbles", "circuit", "corona", "crystal", "grid", "heartbeat", "lissajous", "mandala", "meteors",
-              "network", "orbits", "pendulum", "pulsar", "sparks", "vortex")
+              "network", "orbits", "pendulum", "pulsar", "sparks", "vortex",
+              # 3.6 (ui/hud_novos.py)
+              "prism", "origami", "drops", "saturn", "fireflies", "comets", "arcs", "fireworks", "rose",
+              "synthwave", "galaxy", "city", "gears", "strings", "tree", "kaleido", "blackhole", "shield",
+              "lotus", "storm")
 
 
 def get_hud_style() -> str:

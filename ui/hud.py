@@ -40,6 +40,7 @@ import time
 from ._qt import *  # noqa: F401,F403
 from ._base import C, FONT_MAIN, FONT_MONO, accent2, mix, qcol  # noqa: F401
 from .hud_core import CORE_INFO, CORE_STYLES
+from .hud_novos import NOVOS_INFO, NOVOS_STYLES
 from .hud_ultra import ULTRA_INFO, ULTRA_STYLES
 
 # Estados que o cérebro manda (em inglês, por dentro) e como aparecem na tela
@@ -66,6 +67,8 @@ HUD_STYLE_INFO = {
 HUD_STYLE_INFO.update(ULTRA_INFO)
 # NexusCore: quinze visuais novos (ui/hud_core.py), depois dos do Ultra
 HUD_STYLE_INFO.update(CORE_INFO)
+# 3.6: vinte visuais novos (ui/hud_novos.py)
+HUD_STYLE_INFO.update(NOVOS_INFO)
 
 _BARRAS = 36                 # por lado (espelhado = 72 no anel)
 
@@ -336,9 +339,9 @@ class HudCanvas(QWidget):
             self._matrix(p, W, H, cx, cy, R, main, acc, amp)
         elif estilo == "waves":
             self._ondas(p, W, H, cx, cy, R, main, acc, amp)
-        elif estilo in ULTRA_STYLES or estilo in CORE_STYLES:
+        elif estilo in ULTRA_STYLES or estilo in CORE_STYLES or estilo in NOVOS_STYLES:
             try:
-                (ULTRA_STYLES.get(estilo) or CORE_STYLES[estilo])[3](self, p, W, H, cx, cy, R, main, acc, amp)
+                (ULTRA_STYLES.get(estilo) or CORE_STYLES.get(estilo) or NOVOS_STYLES[estilo])[3](self, p, W, H, cx, cy, R, main, acc, amp)
             except Exception:           # um visual com defeito nunca derruba a janela: volta ao orbe
                 self.hud_style = "orb"
                 self._orbe(p, cx, cy, R, main, acc, amp)

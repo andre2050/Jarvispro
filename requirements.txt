@@ -135,3 +135,4 @@ pynvml                       # system_monitor + the HUD's GPU meter (NVIDIA)
 # packages are needed there — nothing Windows-specific is ever pulled in.
 tzdata>=2024.1
 python-dateutil               # agenda (.ics): eventos repetidos
+pywebpush>=2.0,<3

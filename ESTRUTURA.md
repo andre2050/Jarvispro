@@ -1,5 +1,5 @@
 # NEXUS ULTRA 2026
-### Assistente pessoal de voz — desenvolvido por André Luiz Lima Menezes · Versão 3.5.0
+### Assistente pessoal de voz — desenvolvido por André Luiz Lima Menezes · Versão 3.6.0
 
 Mapa de todas as pastas e arquivos do projeto, como estão hoje na pasta.
 Base: MARK LV — JARVIS (© FatihMakes, CC BY-NC 4.0) — veja `LICENSE` e `NOTICE.md`.
@@ -27,7 +27,7 @@ Nexus-Ultra-2026/
 ├── readme.md                            # Apresentação, funções e como usar
 ├── requirements.txt                     # Bibliotecas Python necessárias
 ├── setup.py                             # Instalação inicial (confere o Python e as bibliotecas)
-├── VERSION                              # Número da versão (3.5.0)
+├── VERSION                              # Número da versão (3.6.0)
 ├── actions/                             # Habilidades que controlam o computador — uma por arquivo, descobertas sozinhas ao iniciar
 │   ├── agent_task.py                    # Tarefas autônomas (modo agente): planeja, executa, confere e avisa no fim
 │   ├── agenda_google.py                 # Agenda: Google Calendar / .ics por voz (só leitura)

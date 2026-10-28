@@ -1,5 +1,23 @@
 # Mudanças
 
+## 3.6.0 — 28/10/2026
+
+### 🔧 Integração MCP (`core/mcp_cliente.py`, `actions/mcp_nexus.py`)
+* Cliente MCP (stdio, JSON-RPC, protocolo 2025-06-18): "adiciona o servidor MCP …", lista e chama as ferramentas deles.
+* Ferramenta que altera algo (sem `readOnlyHint`) pede **CONFIRMAR**; o resultado volta marcado como `<untrusted_content>`. 13 testes com servidor falso.
+
+### 📲 Avisos com o app fechado + acesso de fora de casa (`core/push_web.py`, `core/tunel.py`, `actions/tunel_painel.py`)
+* Push web com VAPID (`pywebpush`): o painel avisa no celular mesmo fechado. Túnel `cloudflared` (Quick Tunnel) dá https confiável fora de casa,
+  só ligado a pedido; o IP real vem de `cf-connecting-ip` apenas com o túnel ativo. Lista de destinos permitidos contra SSRF.
+
+### ✉️ E-mails na memória de documentos (`core/rag_emails.py`)
+* Opt-in ("coloca meus e-mails na memória"): cache local em `memory/emails_cache/`, indexado junto com as pastas. Cita "E-mail de Fulano · assunto · data",
+  marca o texto como não confiável, "esquece meus e-mails" apaga o cache e o índice. 5 testes com IMAP falso.
+
+### ✨ Hub e tema
+* 20 visuais novos em `ui/hud_novos.py`; menu do hub em Essenciais, Ultra 2026 e Novos 3.6 (antigos fora do menu; quem já usava um continua com ele).
+* Paleta refinada (contraste de texto ≥ 4,5:1 sobre os painéis) e 10 temas prontos, cada um com um visual do hub.
+
 ## 3.5.0 — 28/10/2026
 
 ### 🧩 Loja de plugins (`core/plugin_loja.py`, `actions/loja_plugins.py`, `ferramentas/assinar_plugin.py`)

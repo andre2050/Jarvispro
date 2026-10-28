@@ -139,3 +139,8 @@ memory/previsao_habitos.json
 memory/rostos.npz
 memory/modelos/
 memory/cerebro_local/
+
+memory/emails_cache/
+memory/push_subs.json
+memory/push_vapid.pem
+memory/mcp_*.json

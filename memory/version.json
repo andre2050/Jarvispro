@@ -1,8 +1,13 @@
 {
-  "version": "3.5.0",
+  "version": "3.6.0",
   "codename": "Nexus Ultra 2026",
   "released": "2026-10-28",
   "changelog": [
+    {
+      "version": "3.6.0",
+      "date": "2026-10-28",
+      "notes": "NEXUS ULTRA 2026 3.6 — MCP, AVISOS NO CELULAR, E-MAILS NA MEMÓRIA E HUB RENOVADO. MCP: use ferramentas da comunidade (servidores stdio) com CONFIRMAR para o que altera algo e texto de terceiros sempre marcado como não confiável. AVISOS COM O APP FECHADO: push web (VAPID) no painel do celular e ACESSO DE FORA DE CASA por túnel https confiável (cloudflared), só com o seu ok. E-MAILS NA MEMÓRIA DE DOCUMENTOS: opt-in, cache só no PC, resposta cita 'E-mail de Fulano · assunto · data' e 'esquece meus e-mails' apaga tudo. HUB: 20 visuais novos (Prisma, Saturno, Galáxia, Cidade, Engrenagens, Tempestade…) e lista organizada em Essenciais, Ultra 2026 e Novos; os antigos saíram do menu. TEMA ULTRA 2026 REFINADO: mais profundidade, contraste conferido e 10 temas prontos."
+    },
     {
       "version": "3.5.0",
       "date": "2026-10-28",
