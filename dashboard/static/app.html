@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NEXUS Ultra 2026 — por André Luiz Lima Menezes</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#07090f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="NEXUS">
+  <link rel="icon" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <script src="/static/crypto.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -136,10 +143,11 @@
 <body>
   <div id="toast"></div>
   <header>
-    <div class="logo"><em>J</em>ARVIS</div>
+    <div class="logo"><em>N</em>EXUS</div>
     <div class="pill" id="pill"><span class="dot"></span><span id="st">Connecting</span></div>
     <div class="enc-badge" id="enc">AES-256</div>
     <div class="spacer"></div>
+    <button id="bell" title="Avisos no celular" style="display:none;background:none;border:0;font-size:18px;cursor:pointer">🔔</button>
     <div class="url">__IP__:__PORT__</div>
   </header>
   <main id="feed"></main>
@@ -215,7 +223,7 @@
     ws.onerror   = () => sys('Connection error.');
     ws.onmessage = (e) => {
       const m = JSON.parse(e.data);
-      if (m.type === 'log')           append(m.speaker, m.text);
+      if (m.type === 'log')           { append(m.speaker, m.text); if (m.speaker === 'jarvis') _avisar(m.text); }
       if (m.type === 'status')        setStatus(m.state);
       if (m.type === 'wake')          sys('Wake word detected — connecting…');
       if (m.type === 'sys')           sys(m.text);
@@ -553,6 +561,37 @@
         if (w.readyState < 2) w.close();
       }
       _micIdle();
+    }
+
+    // ── PWA: instalar na tela inicial + avisos locais (3.5) ──────────────────────
+    // Service worker só funciona em contexto seguro (https confiável ou localhost).
+    if ('serviceWorker' in navigator && window.isSecureContext) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+    const _bell = document.getElementById('bell');
+    function _avisosLigados() { try { return localStorage.getItem('nexus_avisos') === '1'; } catch (e) { return false; } }
+    function _pintaSino() {
+      if (!_bell) return;
+      _bell.style.opacity = (_avisosLigados() && Notification.permission === 'granted') ? '1' : '0.4';
+    }
+    if (_bell && 'Notification' in window && window.isSecureContext) {
+      _bell.style.display = '';
+      _pintaSino();
+      _bell.onclick = async () => {
+        if (_avisosLigados()) { try { localStorage.setItem('nexus_avisos', '0'); } catch (e) {} _pintaSino(); toast('Avisos desligados'); return; }
+        const p = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
+        if (p === 'granted') { try { localStorage.setItem('nexus_avisos', '1'); } catch (e) {} toast('Avisos ligados'); }
+        else toast('Permissão negada no navegador');
+        _pintaSino();
+      };
+    }
+    // Aviso só quando a página está em segundo plano; texto cortado, nada é guardado.
+    function _avisar(texto) {
+      if (!document.hidden || !_avisosLigados() || !('Notification' in window) || Notification.permission !== 'granted') return;
+      const corpo = String(texto || '').slice(0, 160);
+      if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+        navigator.serviceWorker.ready.then((r) => r.showNotification('NEXUS', { body: corpo, icon: '/icons/icon-192.png', tag: 'nexus' })).catch(() => {});
+      } else { try { new Notification('NEXUS', { body: corpo, icon: '/icons/icon-192.png' }); } catch (e) {} }
     }
   </script>
 </body>

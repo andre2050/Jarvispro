@@ -127,7 +127,12 @@ class PluginRegistry:
     # -- called by ui.py's Plugin Manager overlay --
     def list_for_ui(self) -> list[dict]:
         out = []
+        try:
+            from core import plugin_loja as _loja
+        except Exception:
+            _loja = None
         for rec in self._all_records:
+            origem = _loja.origem_do_arquivo(rec.file) if _loja else None
             out.append({
                 "name": rec.name,
                 "description": rec.description,
@@ -135,6 +140,8 @@ class PluginRegistry:
                 "valid": rec.valid,
                 "error": rec.error,
                 "enabled": get_plugin_enabled(rec.name) if rec.valid else False,
+                # loja: de onde veio (None = arquivo local solto), quem assinou e o que pode usar
+                "store": origem,
             })
         return out
 
@@ -237,6 +244,15 @@ def discover_plugins(plugins_dir: Path, core_tool_names: set[str],
         if path.name.startswith("_"):
             continue
         try:
+            # Plugins instalados pela loja (core/plugin_loja.py): confere integridade e permissões ANTES de importar.
+            # Plugins soltos na pasta (sem manifesto) seguem como sempre.
+            try:
+                from core import plugin_loja as _loja
+                _ok, _motivo = _loja.conferir_arquivo(path.name, plugins_dir)
+            except Exception:
+                _ok, _motivo = True, ""
+            if not _ok:
+                raise ImportError(_motivo)
             module_name = f"plugins.{path.stem}"
             spec = importlib.util.spec_from_file_location(module_name, path)
             if spec is None or spec.loader is None:

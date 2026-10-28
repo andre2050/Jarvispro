@@ -20,7 +20,7 @@ from pathlib import Path
 
 _DEPS_OK = False
 try:
-    from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException
     from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
     import uvicorn
     _DEPS_OK = True
@@ -643,6 +643,27 @@ class DashboardServer:
                                     media_type="application/javascript")
             from fastapi.responses import RedirectResponse
             return RedirectResponse(_CRYPTOJS_CDN)
+
+        # ── PWA (3.5): só o "casco" público — nada aqui expõe dados nem comandos ──────────
+        @app.get("/manifest.webmanifest")
+        async def pwa_manifest():
+            return FileResponse(str(STATIC_DIR / "manifest.webmanifest"), media_type="application/manifest+json")
+
+        @app.get("/sw.js")
+        async def pwa_sw():
+            return FileResponse(str(STATIC_DIR / "sw.js"), media_type="application/javascript",
+                                headers={"Cache-Control": "no-cache", "Service-Worker-Allowed": "/"})
+
+        @app.get("/offline", response_class=HTMLResponse)
+        async def pwa_offline():
+            return HTMLResponse(_read("offline.html"))
+
+        @app.get("/icons/{nome}")
+        async def pwa_icone(nome: str):
+            if nome not in ("icon-192.png", "icon-512.png"):
+                raise HTTPException(status_code=404)
+            return FileResponse(str(STATIC_DIR / "icons" / nome), media_type="image/png",
+                                headers={"Cache-Control": "public, max-age=86400"})
 
         @app.get("/login", response_class=HTMLResponse)
         async def login_page():

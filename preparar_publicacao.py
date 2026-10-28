@@ -52,6 +52,10 @@ EXCLUDE = [
     # 3.4 — bem-estar, vigias, tempo de projeto e o núcleo I.S.A.
     "memory/bemestar.json", "memory/vigias.json", "memory/tempo_projetos.json", "memory/isa_series.json",
     "memory/regeneracao.json", "memory/regeneracao_copias/*", "memory/routines_sementes.json",
+    # estatísticas de uso e resumos da sua semana (3.2/3.3)
+    "memory/autoavaliacao.json", "memory/latencia.json", "memory/resumo_semanal.json",
+    # 3.5 — memória de documentos (RAG), plugins instalados pela loja e autores em quem você confia
+    "memory/rag_documentos.npz", "memory/rag_pastas.json", "memory/plugins_loja.json", "config/autores_confiaveis.json",
     # o Nexus.exe gerado no seu PC (gerar_exe.bat) — grande demais para o GitHub
     "Nexus.exe", "_internal/*", "build/*", "dist/*",
     "*.log", "*.tmp", "*.part",

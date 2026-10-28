@@ -1,8 +1,13 @@
 {
-  "version": "3.4.0",
+  "version": "3.5.0",
   "codename": "Nexus Ultra 2026",
-  "released": "2026-10-25",
+  "released": "2026-10-28",
   "changelog": [
+    {
+      "version": "3.5.0",
+      "date": "2026-10-28",
+      "notes": "NEXUS ULTRA 2026 3.5 — MAIS SEGURO, COM MEMÓRIA DE DOCUMENTOS E MAIS INTEGRADO. SEGURANÇA: apagar arquivos só com o CONFIRMAR da pessoa e caixa de areia do controle do desktop reforçada. MEMÓRIA DE DOCUMENTOS (RAG): 'indexa a pasta Contratos', 'o que o contrato diz sobre multa?' — lê PDF, Word, PowerPoint, texto e código das pastas que você escolher e responde citando a fonte (arquivo e página). LOJA DE PLUGINS: pacotes .nexusplugin assinados, com permissões declaradas e conferidas no código; instalar mostra CONFIRMAR e arquivo alterado depois não carrega. INTEGRAÇÕES: Telegram (só o seu chat), agenda do Google Calendar por link iCal (só leitura) e Notion (criar notas e buscar). PAINEL NO CELULAR VIRA APP (PWA): instala na tela inicial, tela offline e avisos quando o NEXUS responde. TEMA AUTOMÁTICO: a cor acompanha a hora do dia e o seu humor do diário. MENU SETUP em ordem lógica: Geral, Sistema e Personalizar."
+    },
     {
       "version": "3.4.0",
       "date": "2026-10-25",

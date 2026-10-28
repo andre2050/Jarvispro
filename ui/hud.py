@@ -11,7 +11,8 @@ Leve de propósito: o passo da animação roda num único QTimer cujo intervalo
 se adapta (ativo ~33 ms, ocioso ~66 ms, janela escondida ~400 ms) e o brilho
 de fundo é um pixmap em cache — nada de recalcular gradiente a cada quadro.
 
-Dezenove visuais (botão "Trocar visual" escolhe numa lista); os dez do Ultra 2026 estão em hud_ultra.py:
+Trinta e quatro visuais (botão "Trocar visual" escolhe numa lista); os dez do Ultra 2026 estão em
+hud_ultra.py e os quinze do NexusCore em hud_core.py:
   orb ...... o orbe de sempre (completo)
   minimal .. só o texto de estado e as barras — quase zero CPU
   aurora ... (2026) fitas de luz que ondulam com a voz
@@ -25,6 +26,10 @@ Dezenove visuais (botão "Trocar visual" escolhe numa lista); os dez do Ultra 20
   nebula, gyro, helix, sonar, spectrum, hive, atom, plasma, stars, tunnel
             (Ultra 2026) nebulosa, giroscópio, hélice, sonar, espectro, colmeia, átomo, plasma,
             constelação e túnel — ver ui/hud_ultra.py
+  pulsar, orbits, mandala, circuit, crystal, lissajous, vortex, sparks, corona, grid,
+  pendulum, meteors, bubbles, network, heartbeat
+            (NexusCore) pulsar, órbitas, mandala, circuito, cristal, lissajous, vórtice, faíscas,
+            coroa, grade, pêndulos, meteoros, bolhas, rede e batimento — ver ui/hud_core.py
 """
 from __future__ import annotations
 
@@ -34,6 +39,7 @@ import time
 
 from ._qt import *  # noqa: F401,F403
 from ._base import C, FONT_MAIN, FONT_MONO, accent2, mix, qcol  # noqa: F401
+from .hud_core import CORE_INFO, CORE_STYLES
 from .hud_ultra import ULTRA_INFO, ULTRA_STYLES
 
 # Estados que o cérebro manda (em inglês, por dentro) e como aparecem na tela
@@ -58,6 +64,8 @@ HUD_STYLE_INFO = {
 }
 # NEXUS Ultra 2026: dez visuais novos (ui/hud_ultra.py), na mesma lista
 HUD_STYLE_INFO.update(ULTRA_INFO)
+# NexusCore: quinze visuais novos (ui/hud_core.py), depois dos do Ultra
+HUD_STYLE_INFO.update(CORE_INFO)
 
 _BARRAS = 36                 # por lado (espelhado = 72 no anel)
 
@@ -328,9 +336,9 @@ class HudCanvas(QWidget):
             self._matrix(p, W, H, cx, cy, R, main, acc, amp)
         elif estilo == "waves":
             self._ondas(p, W, H, cx, cy, R, main, acc, amp)
-        elif estilo in ULTRA_STYLES:
+        elif estilo in ULTRA_STYLES or estilo in CORE_STYLES:
             try:
-                ULTRA_STYLES[estilo][3](self, p, W, H, cx, cy, R, main, acc, amp)
+                (ULTRA_STYLES.get(estilo) or CORE_STYLES[estilo])[3](self, p, W, H, cx, cy, R, main, acc, amp)
             except Exception:           # um visual com defeito nunca derruba a janela: volta ao orbe
                 self.hud_style = "orb"
                 self._orbe(p, cx, cy, R, main, acc, amp)

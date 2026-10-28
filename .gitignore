@@ -122,6 +122,13 @@ memory/voz_dono.npz
 memory/voz_dono.json
 memory/wake_nexus.npz
 memory/indice_semantico.npz
+memory/rag_documentos.npz
+memory/autoavaliacao.json
+memory/latencia.json
+memory/resumo_semanal.json
+memory/rag_pastas.json
+memory/plugins_loja.json
+config/autores_confiaveis.json
 memory/reconexoes.log
 memory/falhas.log
 memory/queda_nativa.log

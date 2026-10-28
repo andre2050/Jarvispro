@@ -245,6 +245,29 @@ def retheme_all_widgets(old: dict[str, str], new: dict[str, str]) -> None:
             pass
 
 
+def aplicar_tema_automatico(ultima: str | None, cor: str | None = None) -> str | None:
+    """Tema automático (core/tema_auto.py): aplica ao vivo a cor do momento e devolve a que ficou valendo.
+
+    `ultima` é a cor automática já aplicada antes (None se nunca). Sem cor automática (modo desligado), se havia
+    uma aplicada, devolve a interface à cor que a pessoa escolheu em Skin; nunca grava nada na configuração."""
+    try:
+        if cor is None:
+            from core import tema_auto
+            cor = tema_auto.cor_agora()
+        if cor == ultima:
+            return ultima
+        antes = current_palette()
+        if cor is None:                                   # desligou: volta à cor escolhida pela pessoa
+            escolhida = (_read_full_config().get("ui_color") or "").strip().lower() or DEFAULT_UI_COLOR
+            apply_ui_accent(escolhida)
+        elif not apply_ui_accent(cor):
+            return ultima
+        retheme_all_widgets(antes, current_palette())
+        return cor
+    except Exception:
+        return ultima
+
+
 def qcol(h: str, a: int = 255) -> QColor:
     c = QColor(h); c.setAlpha(a); return c
 

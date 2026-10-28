@@ -193,3 +193,31 @@ def test_tarefas_em_segundo_plano_ficam_presas_ate_acabar(painel, cli):
     token, pin = _entrar(painel, cli)
     time.sleep(0.2)
     assert painel._tarefas == set()                           # terminaram e foram soltas
+
+
+# ── PWA (3.5): instalar na tela inicial e tela offline ───────────────────────
+def test_pwa_manifest_sw_offline_e_icones(cli):
+    m = cli.get("/manifest.webmanifest")
+    assert m.status_code == 200 and "manifest+json" in m.headers["content-type"]
+    d = m.json()
+    assert d["display"] == "standalone" and d["start_url"] == "/" and {i["sizes"] for i in d["icons"]} == {"192x192", "512x512"}
+    sw = cli.get("/sw.js")
+    assert sw.status_code == 200 and "javascript" in sw.headers["content-type"]
+    assert sw.headers["service-worker-allowed"] == "/" and sw.headers["cache-control"] == "no-cache"
+    assert "/api/" in sw.text and "return;" in sw.text            # o SW não toca em /api, /ws nem /uploads
+    assert "NEXUS fora do ar" in cli.get("/offline").text
+    for n in ("icon-192.png", "icon-512.png"):
+        r = cli.get(f"/icons/{n}")
+        assert r.status_code == 200 and r.content[:4] == b"\x89PNG"
+    assert cli.get("/icons/../server.py").status_code in (404, 422)
+    assert cli.get("/icons/qualquer.png").status_code == 404
+
+
+def test_pwa_rotas_publicas_nao_expoem_nada_e_paginas_ligam_o_manifest(cli):
+    # sem token, as rotas privadas continuam fechadas
+    assert cli.get("/api/files").status_code in (401, 403)
+    assert cli.post("/api/command", json={"text": "oi"}).status_code in (401, 403, 422)
+    for caminho in ("/", "/login"):
+        html = cli.get(caminho).text
+        assert 'rel="manifest"' in html and "apple-touch-icon" in html
+    assert "serviceWorker" in cli.get("/").text and "NEXUS" in cli.get("/").text

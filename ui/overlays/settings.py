@@ -28,11 +28,28 @@ class SettingsPanelOverlay(_HudOverlay):
     # para trazer uma de volta, é só incluí-la em _TABS): RESETAR, GERENCIAR, SOBRE, COMANDO, LISTA,
     # AVANÇADO, AGENDA, BARRA, ATALHOS. Cada uma tem outro caminho: memória e log em STATUS, comandos
     # no F1, notas na central própria, barra/atalhos no editor de cada um, atualizar no SETUP.
-    # Menu SETUP enxuto: só o núcleo I.S.A. (o ATUALIZAR é adicionado em main_window).
-    # As demais seções continuam em _TABS, só não aparecem mais no menu.
-    MENU_LABELS = [
-        ("isa", "NÚCLEO I.S.A."),
+    # Menu SETUP em ordem lógica, agrupado por assunto (o ATUALIZAR fecha o menu, em main_window).
+    # Cada item é (chave, rótulo). A chave "usuario" abre a janela de preferências direto;
+    # "barra" e "atalhos" abrem o editor próprio; as demais abrem a aba de _TABS com o mesmo nome.
+    MENU_GROUPS = [
+        ("GERAL", [
+            ("usuario", "CONFIGURAÇÃO DO USUÁRIO"),
+            ("audio", "ÁUDIO"),
+            ("apis", "CHAVES E APIs"),
+        ]),
+        ("SISTEMA", [
+            ("status", "STATUS"),
+            ("isa", "NÚCLEO I.S.A."),
+            ("atuador", "ATUADOR"),
+            ("backup", "BACKUP"),
+        ]),
+        ("PERSONALIZAR", [
+            ("barra", "BARRA RÁPIDA"),
+            ("atalhos", "ATALHOS"),
+        ]),
     ]
+    # Lista plana (compatibilidade): todos os itens do menu, na ordem em que aparecem.
+    MENU_LABELS = [item for _, itens in MENU_GROUPS for item in itens]
     _DAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
     _test_done = pyqtSignal(str)   # resultado de "testar chave", vindo de outra thread
     _mic_done = pyqtSignal(bool, str)   # resultado do teste de microfone

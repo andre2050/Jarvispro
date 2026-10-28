@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from ._qt import *  # noqa: F401,F403
 from ._base import _base_dir  # noqa: F401
-from ._base import API_FILE, APP_PROTOCOL, APP_VERSION, C, CONFIG_DIR, DEFAULT_UI_COLOR, FONT_MAIN, FONT_MONO, _DEFAULT_H, _DEFAULT_W, _LEFT_W, _MIN_H, _MIN_W, _OS, _RIGHT_W, _bg_color, _dt_now, _metrics, _pref_key, _read_full_config, _shortcut_seq, agora, apply_ui_accent, current_palette, data_curta, retheme_all_widgets  # noqa: F401
+from ._base import API_FILE, APP_PROTOCOL, APP_VERSION, C, CONFIG_DIR, DEFAULT_UI_COLOR, FONT_MAIN, FONT_MONO, _DEFAULT_H, _DEFAULT_W, _LEFT_W, _MIN_H, _MIN_W, _OS, _RIGHT_W, _bg_color, _dt_now, _metrics, _pref_key, _read_full_config, _shortcut_seq, agora, aplicar_tema_automatico, apply_ui_accent, current_palette, data_curta, retheme_all_widgets  # noqa: F401
 from ._base import LEGACY_DEFAULT_COLORS, accent2, mix  # noqa: F401
 from .hud import HudCanvas, MetricBar  # noqa: F401
 from .overlays.customize import CustomizeOverlay  # noqa: F401
@@ -58,6 +58,15 @@ class MainWindow(QMainWindow):
         # (quem ainda tem a cor padrão antiga salva recebe o tema novo, não o velho)
         if _ui_color and _ui_color.lower() not in (DEFAULT_UI_COLOR, *LEGACY_DEFAULT_COLORS):
             apply_ui_accent(_ui_color)
+        # Tema automático (3.5): hora do dia e/ou humor do diário; sobrepõe a cor só enquanto o modo estiver ligado
+        self._tema_auto_cor = None
+        try:
+            from core import tema_auto as _TA
+            _cor_auto = _TA.cor_agora()
+            if _cor_auto and apply_ui_accent(_cor_auto):
+                self._tema_auto_cor = _cor_auto
+        except Exception:
+            pass
 
         self.setWindowTitle(f"{APP_VERSION} — desenvolvido por André Luiz Lima Menezes")
         self.setMinimumSize(_MIN_W, _MIN_H)
@@ -308,6 +317,10 @@ class MainWindow(QMainWindow):
         self._update_autostart_btn(self._check_autostart())
         from memory.config_manager import get_brief_enabled as _gbe
         self._update_brief_btn(_gbe())
+
+        self._tema_tmr = QTimer(self)
+        self._tema_tmr.timeout.connect(self._tick_tema_auto)
+        self._tema_tmr.start(60_000)
 
         self._clock_tmr = QTimer(self)
         self._clock_tmr.timeout.connect(self._tick_clock)
@@ -1403,11 +1416,22 @@ class MainWindow(QMainWindow):
                           f"border-bottom: 1px solid {C.BORDER}; padding-bottom: 5px;")
         lay.addWidget(hdr)
 
-        for tab, label in SettingsPanelOverlay.MENU_LABELS:
-            # a Configuração do usuário é a entrada principal: em destaque
-            b = MenuButton(ICONE_SETUP.get(tab, ""), label, "primario" if tab == "usuario" else "normal")
-            b.clicked.connect(lambda _=False, t=tab: self._pick_setup_option(t))
-            lay.addWidget(b)
+        for i, (grupo, itens) in enumerate(SettingsPanelOverlay.MENU_GROUPS):
+            # título de cada grupo (pequeno, discreto) para o menu ler em ordem
+            gl = QLabel(grupo)
+            _gf = QFont(FONT_MAIN, 6, QFont.Weight.Bold)
+            _gf.setLetterSpacing(QFont.SpacingType.AbsoluteSpacing, 1.8)
+            gl.setFont(_gf)
+            gl.setStyleSheet(f"color: {C.TEXT_DIM}; background: transparent; padding: 0 2px;")
+            lay.addSpacing(6 if i else 2)
+            lay.addWidget(gl)
+            for tab, label in itens:
+                # a Configuração do usuário é a entrada principal: em destaque
+                b = MenuButton(ICONE_SETUP.get(tab, ""), label, "primario" if tab == "usuario" else "normal")
+                b.clicked.connect(lambda _=False, t=tab: self._pick_setup_option(t))
+                lay.addWidget(b)
+
+        lay.addSpacing(8)
 
         upd = MenuButton(ICONE_SETUP["atualizar"], "ATUALIZAR", "destaque")
         upd.clicked.connect(self._pick_update)
@@ -2457,14 +2481,18 @@ class MainWindow(QMainWindow):
         titulo.setEnabled(False)
         menu.addAction(titulo)
         menu.addSeparator()
+        from .hud_core import CORE_INFO
         from .hud_ultra import ULTRA_INFO
         _primeiro_ultra = next(iter(ULTRA_INFO), "")
+        _primeiro_core = next(iter(CORE_INFO), "")
         for chave, (icone, nome, desc) in HUD_STYLE_INFO.items():
-            if chave == _primeiro_ultra:
-                menu.addSeparator()
-                _t2 = QAction("NOVOS · ULTRA 2026", menu)
-                _t2.setEnabled(False)
-                menu.addAction(_t2)
+            for _primeiro, _titulo in ((_primeiro_ultra, "NOVOS · ULTRA 2026"),
+                                       (_primeiro_core, "NOVOS · NEXUSCORE")):
+                if chave == _primeiro:
+                    menu.addSeparator()
+                    _t2 = QAction(_titulo, menu)
+                    _t2.setEnabled(False)
+                    menu.addAction(_t2)
             marca = "●" if chave == atual else "○"
             ac = QAction(f"{marca}  {icone}  {nome}   —   {desc}", menu)
             ac.triggered.connect(lambda _=False, k=chave: self._set_hud_style(k))
@@ -2779,6 +2807,12 @@ class MainWindow(QMainWindow):
         if tab == "usuario":
             self._open_preferences()
             return
+        if tab == "barra":
+            self._open_quickbar_editor()
+            return
+        if tab == "atalhos":
+            self._open_shortcuts_panel()
+            return
         self._open_settings_panel(tab)
 
     def _open_settings_panel(self, tab: str = "status"):
@@ -2898,6 +2932,10 @@ class MainWindow(QMainWindow):
         )
         ov.show()
         self._customize_overlay = ov
+
+    def _tick_tema_auto(self):
+        """A cada minuto: se o tema automático está ligado, acompanha a hora e o humor (sem gravar nada)."""
+        self._tema_auto_cor = aplicar_tema_automatico(getattr(self, "_tema_auto_cor", None))
 
     def _preview_ui_color(self, hex_color: str):
         """Live preview — paints the whole interface the new colour (does NOT write to config)."""
