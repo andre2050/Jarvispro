@@ -1,5 +1,10 @@
 # Mudanças
 
+## 4.1.1 — 28/10/2026
+
+### 🧹 Hub
+* O visual de rosto (“Rosto · Real”) saiu da interface do hub e do menu de visuais. Quem o tinha escolhido volta ao visual padrão (Galáxia) sozinho. Os visuais são os 20 da 3.6.
+
 ## 4.1.0 — 28/10/2026
 
 ### ⏪ Checkpoints e replay das missões (`core/missoes_checkpoint.py`)

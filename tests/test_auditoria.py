@@ -32,9 +32,9 @@ def test_corrente_integra_e_detecta_adulteracao(tmp_path):
 def test_segredos_e_corpos_nao_entram(tmp_path):
     arq = tmp_path / "a.jsonl"
     A.registrar("acao", "nexus", "usou send_message", {"api_key": "AIzaSEGREDO", "message": "oi " * 100,
-                "to": "Ana", "nested": {"password": "123", "ok": 1}}, arq=arq)
+                "to": "Ana", "nested": {"password": "SENHA-XYZ", "ok": 1}}, arq=arq)
     bruto = arq.read_text(encoding="utf-8")
-    assert "AIzaSEGREDO" not in bruto and "123" not in bruto and "oi oi oi oi oi oi oi oi oi oi oi oi oi oi" not in bruto
+    assert "AIzaSEGREDO" not in bruto and "SENHA-XYZ" not in bruto and "oi oi oi oi oi oi oi oi oi oi oi oi oi oi" not in bruto
     d = A.ler(1, arq)[0]
     assert d["params"]["api_key"] == "[oculto]" and d["params"]["to"] == "Ana" and "texto de 300" in d["params"]["message"]
 

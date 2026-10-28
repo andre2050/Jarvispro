@@ -152,3 +152,12 @@ def test_acoes_missao_checkpoints_rewind_e_novas_ferramentas(amb, monkeypatch):
     assert r.startswith("[done]") and "NÃO foi desfeito" in r
     assert AM.missao({"action": "rewind", "id": mid}).startswith("[failed]")
     assert AM.missao({"action": "rewind", "id": mid, "checkpoint": 1, "step": "p2", "new_args": "{ruim"}).startswith("[failed]")
+
+
+def test_escolha_salva_do_visual_rosto_removido_cai_no_padrao_sem_quebrar_o_hub(monkeypatch):
+    """4.1.1 — quem tinha escolhido o 'Rosto · Real' (face_real) não fica com o hub quebrado depois da atualização."""
+    from memory import config_manager as CM
+    for antigo in ("face_real", "face_contour", "holo", "robot"):
+        monkeypatch.setattr(CM, "load_api_keys", lambda a=antigo: {"hud_style": a})
+        assert CM.get_hud_style() == CM.HUD_PADRAO
+    assert not any(k.startswith("face_") for k in CM.HUD_STYLES)
