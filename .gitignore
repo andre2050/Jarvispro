@@ -49,6 +49,12 @@ memory/competicao.json
 memory/historico_longo.jsonl
 memory/adaptacao.json
 memory/isa_modularizacao.json
+# 4.1 — trace local, regras de guardrail suas e a foto do rosto do hub
+memory/trace.jsonl
+config/guardrails.json
+config/rosto_hub.png
+config/rosto_hub.jpg
+config/rosto_hub.json
 # 3.9 — aprovações aprendidas, missões recorrentes, conectores (tokens!), calibração da voz, regras, scripts, viagem, rotina aprendida
 config/aprovacoes.json
 config/missoes_recorrentes.json

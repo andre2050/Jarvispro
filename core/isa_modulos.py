@@ -38,6 +38,8 @@ MODULOS = {
     "historico_longo": ("core.historico_longo", "memória de longo prazo das conversas"),
     "equipe": ("core.equipe_agentes", "agentes especializados com quadro compartilhado"),
     "adaptacao": ("core.adaptacao", "ajustes automáticos ao seu modo de uso"),
+    "guardrails": ("core.guardrails", "regras de segurança de entrada e saída das ferramentas"),
+    "trace": ("core.trace_local", "linha do tempo local das ferramentas e missões"),
 }
 
 

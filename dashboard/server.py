@@ -1075,6 +1075,19 @@ class DashboardServer:
                 itens = []
             return JSONResponse({"itens": itens})
 
+        @app.get("/api/trace")
+        async def trace_lista(req: Request):
+            if not _auth(req):
+                return JSONResponse({"error": "Unauthorized"}, status_code=401)
+            from core import trace_local as _TR
+            qp = req.query_params
+            try:
+                itens = _TR.linha_do_tempo(missao=qp.get("missao", "")[:16], minutos=float(qp.get("minutos", 0) or 0), limite=min(200, int(qp.get("limite", 60) or 60)))
+                st = _TR.estatisticas(minutos=float(qp.get("minutos", 0) or 0))
+            except Exception:
+                itens, st = [], {}
+            return JSONResponse({"itens": list(reversed(itens)), "por_ferramenta": st})
+
         @app.get("/api/auditoria/verificar")
         async def auditoria_verificar(req: Request):
             if not _auth(req):

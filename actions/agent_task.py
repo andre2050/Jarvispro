@@ -36,7 +36,7 @@ _PROIBIDAS = {"agent_task", "orchestrate", "dev_agent", "send_message", "compute
               "video_player", "youtube_video", "flight_finder",
               "plugin_factory", "computer_use", "rede_nexus",
               "recurring_mission", "approvals", "connectors", "advanced_mode", "organize_folder", "travel_mode", "isa_nucleo", "routine_learning",
-              "immunity", "long_history", "adaptation"}
+              "immunity", "long_history", "adaptation", "guardrails"}
 _ACOES_PROIBIDAS = {
     "file_controller": {"delete", "move", "rename", "clean_temp", "limpar_temp", "hidden_files",
                         "copy"},

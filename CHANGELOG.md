@@ -1,5 +1,18 @@
 # Mudanças
 
+## 4.1.0 — 28/10/2026
+
+### ⏪ Checkpoints e replay das missões (`core/missoes_checkpoint.py`)
+* Cada passo concluído guarda um **checkpoint** (até 30). `missao action=checkpoints` lista; `action=rewind checkpoint=N [step=pX new_args={…json}]` volta ao ponto, deixa a missão **pausada** e refaz dali — opcionalmente por outro caminho.
+* Honesto: voltar a missão **não desfaz** o que os passos já fizeram fora dela (arquivo movido, mensagem enviada); o NEXUS lista esses passos.
+### 🚧 Guardrails (`core/guardrails.py`, `config/guardrails.json`)
+* Entrada: bloqueia chave de API saindo em mensagens, pastas do sistema e comandos destrutivos. Saída: oculta cartão, CPF e chaves nos resultados. Regras suas (bloquear / redigir / avisar) via ferramenta `guardrails`; as padrão não podem ser desligadas; missões e agentes não editam regras.
+* Auditoria e trace passaram a mascarar chaves de API mesmo no meio de um texto.
+### 🔍 Trace local (`core/trace_local.py`)
+* Linha do tempo de cada ferramenta (quem pediu, duração, ok/falha), só em `memory/trace.jsonl` (máx. 5000). Ferramenta `trace` e `GET /api/trace`.
+### 🙂 Visual “Rosto · Real”
+* Com **sua foto** em `config/rosto_hub.png`: ao falar, a boca abre (maxilar, lábio, dentes, língua), a íris se mexe, os olhos piscam, as sobrancelhas sobem e a cabeça acena; varredura e dados caindo por cima. Sem foto, usa um rosto desenhado por código (mais simples). Ajuste de posição em `config/rosto_hub.json`.
+
 ## 4.0.0 — 28/10/2026
 
 ### 🛡️ Auto-regeneração com imunidade (`core/imunidade.py`)

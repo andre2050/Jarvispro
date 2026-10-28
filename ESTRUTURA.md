@@ -516,3 +516,7 @@ Veja `actions/focus_mode.py` como exemplo curto.
 | `core/historico_longo.py`, `actions/historico_longo.py` | Memória permanente e pesquisável |
 | `core/equipe_agentes.py` | Quadro compartilhado e equipe paralela |
 | `core/adaptacao.py`, `actions/adaptacao.py` | Adaptação contínua (opt-in) |
+| `core/missoes_checkpoint.py` | 4.1 — checkpoints e rewind das missões (ações `checkpoints` / `rewind` em `actions/missao.py`) |
+| `core/guardrails.py`, `actions/guardrails.py` | 4.1 — regras de entrada/saída das ferramentas (padrão + suas em `config/guardrails.json`) |
+| `core/trace_local.py`, `actions/trace.py` | 4.1 — linha do tempo local (`memory/trace.jsonl`, `GET /api/trace`) |
+| `ui/hud_rostos.py` | 4.1 — visual de hub “Rosto · Real” (foto sua em `config/rosto_hub.png`, ou rosto desenhado) |

@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Callable
 
 from core import simulacao as SIM
+from core import missoes_checkpoint as CP
 
 PASTA = Path(__file__).resolve().parent.parent / "memory" / "missoes"
 MAX_PASSOS_PLANO = 25
@@ -35,7 +36,7 @@ MAX_LOG = 200
 PROIBIDAS = {"missao", "agent_task", "orchestrate", "dev_agent", "game_updater", "system_update", "desktop_control",
              "neural_core", "fabrica_plugins", "plugin_factory", "computer_use", "rede_nexus", "loja_plugins", "backup_cripto", "shortcut_manager", "focus_mode",
              "recurring_mission", "approvals", "connectors", "advanced_mode", "organize_folder", "travel_mode", "isa_nucleo", "routine_learning",
-             "immunity", "long_history", "adaptation"}
+             "immunity", "long_history", "adaptation", "guardrails"}
 ESPERAR = "_esperar"
 
 ESTADOS_FINAIS = ("concluida", "falhou", "cancelada")
@@ -319,6 +320,19 @@ class Motor:
             salvar(m, self.pasta)
             return m
 
+    def voltar(self, mid: str, n: int, args_novos: dict | None = None) -> dict:
+        """4.1 — volta a missão ao checkpoint n (com a missão parada) e deixa pausada para você retomar."""
+        with self._trava:
+            m = carregar(mid, self.pasta)
+            try:
+                r = CP.voltar(m, n, args_novos, risco=SIM.risco)
+            except ValueError as e:
+                raise ErroMissao(str(e))
+            _log(m, f"Voltei ao checkpoint #{n}" + (" com argumentos novos" if args_novos else "") + ".")
+            salvar(m, self.pasta)
+            self._auditar(m, "voltou ao checkpoint", f"#{n}", tipo="decisao", ator="usuario")
+            return r
+
     def cancelar(self, mid: str) -> dict:
         with self._trava:
             m = carregar(mid, self.pasta)
@@ -461,6 +475,8 @@ class Motor:
             p["estado"] = "pendente" if p["tentativas"] < MAX_TENTATIVAS else "falhou"
             _log(m, f"✘ {p['titulo']}: {str(texto)[:100]}" + (" — vou tentar de novo." if p["estado"] == "pendente" else ""))
         self._auditar(m, f"executou {p['tool']}", p["titulo"], resultado=f"[{status}] {str(texto)[:120]}")
+        if p["estado"] == "ok":
+            CP.registrar(m, p)                                  # 4.1 — checkpoint depois de cada passo concluído
         salvar(m, self.pasta)
         return "trabalhou"
 
