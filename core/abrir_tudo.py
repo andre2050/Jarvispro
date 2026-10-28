@@ -116,5 +116,5 @@ def abrir(alvo: str, abridor=None, app=None, casa: Path | None = None) -> str:
     return str(app(alvo))
 
 
-def saude() -> str:
-    return "ok"
+def saude() -> tuple[bool, str]:
+    return True, "ok"

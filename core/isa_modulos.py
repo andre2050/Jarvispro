@@ -79,7 +79,13 @@ def checar(nome: str) -> dict:
     fn = getattr(mod, "saude", None)
     if callable(fn):
         try:
-            ok, msg = fn()
+            r = fn()
+            if isinstance(r, (tuple, list)) and len(r) >= 2:
+                ok, msg = r[0], r[1]
+            elif isinstance(r, bool):
+                ok, msg = r, "ok" if r else "com problema"
+            else:
+                ok, msg = True, r                                  # aceita só um texto: não derruba a checagem
             return {"nome": nome, "ok": bool(ok), "mensagem": str(msg)[:160], "ms": ms}
         except Exception as e:
             return {"nome": nome, "ok": False, "mensagem": f"saude() falhou: {str(e)[:100]}", "ms": ms}

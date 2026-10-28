@@ -122,5 +122,5 @@ def perguntar_local(texto: str, local=None) -> str:
     return resp or "O modelo local não respondeu."
 
 
-def saude() -> str:
-    return f"{len(_ler())} script(s)"
+def saude() -> tuple[bool, str]:
+    return True, f"{len(_ler())} script(s)"

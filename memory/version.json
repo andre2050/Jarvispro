@@ -1,8 +1,13 @@
 {
-  "version": "3.9.0",
+  "version": "3.9.1",
   "codename": "Nexus Ultra 2026",
   "released": "2026-10-28",
   "changelog": [
+    {
+      "version": "3.9.1",
+      "date": "2026-10-28",
+      "notes": "CORREÇÃO: a checagem de saúde do Núcleo I.S.A. dava “too many values to unpack (expected 2)” porque 6 módulos novos da 3.9 devolviam texto em vez de (ok, mensagem). Os módulos foram corrigidos e a checagem agora aceita qualquer formato."
+    },
     {
       "version": "3.9.0",
       "date": "2026-10-28",

@@ -65,5 +65,5 @@ def preparar(ev: dict | None, contatos: list[dict], llm=None, tz=None) -> str:
     return base + ("\nPara preparar: " + extra if extra else "\n(Não consegui gerar os tópicos agora.)")
 
 
-def saude() -> str:
-    return "ok"
+def saude() -> tuple[bool, str]:
+    return True, "ok"

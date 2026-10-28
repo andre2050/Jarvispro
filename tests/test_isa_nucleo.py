@@ -153,3 +153,19 @@ def test_missao_travada_e_religada_mas_espera_marcada_nao(limpa, tmp_path):
     assert "religuei a missão parada" in AU.religar_missoes(religadas.append, tmp_path, agora)[0] and religadas == ["parada"]
     AU.nivel = lambda: "avisar"
     assert "não mexi" in AU.religar_missoes(religadas.append, tmp_path, agora)[0] and religadas == ["parada"]
+
+
+def test_checar_aceita_qualquer_formato_de_saude(monkeypatch):
+    import sys
+    import types
+    from core import isa_modulos as M
+    monkeypatch.setitem(M.MODULOS, "falso", ("fake_mod_isa", "teste"))
+    for retorno, ok in (("tudo certo, texto longo", True), (True, True), (False, False), ((True, "x", "y"), True), ((False, "ruim"), False)):
+        monkeypatch.setitem(sys.modules, "fake_mod_isa", types.SimpleNamespace(saude=lambda r=retorno: r))
+        assert M.checar("falso")["ok"] is ok
+
+
+def test_todos_os_modulos_do_nucleo_checam_sem_erro_de_formato():
+    from core import isa_modulos as M
+    for r in M.todos():
+        assert "saude() falhou" not in r["mensagem"], r

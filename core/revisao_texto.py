@@ -83,5 +83,5 @@ def revisar(texto: str, tom: str = "", llm=None) -> str:
     return "\n".join(partes)
 
 
-def saude() -> str:
-    return "ok"
+def saude() -> tuple[bool, str]:
+    return True, "ok"
