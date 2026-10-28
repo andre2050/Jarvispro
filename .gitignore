@@ -43,6 +43,12 @@ config/rede_nexus.json
 config/agentes.json
 config/hibrido.json
 plugins_gerados/
+# 4.0 — imunidade, placar de variantes, histórico longo, adaptação, plano de modularização
+memory/imunidade.json
+memory/competicao.json
+memory/historico_longo.jsonl
+memory/adaptacao.json
+memory/isa_modularizacao.json
 # 3.9 — aprovações aprendidas, missões recorrentes, conectores (tokens!), calibração da voz, regras, scripts, viagem, rotina aprendida
 config/aprovacoes.json
 config/missoes_recorrentes.json

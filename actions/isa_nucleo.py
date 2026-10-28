@@ -35,6 +35,18 @@ def isa_nucleo(parameters: dict, **_kw) -> str:
             return "[done] " + texto + (f" [{len(arqs)} arquivos analisados]" if len(arqs) > 150 else "")
         if acao in ("architecture", "arquitetura"):
             return "[done] " + AR.texto(AR.rodar())
+        if acao in ("modularization", "modularizacao", "modularização"):
+            from core import isa_modularizacao as MZ
+            return "[done] " + MZ.texto(MZ.rodar())
+        if acao in ("immunity", "imunidade"):
+            from core import imunidade as IM
+            return "[done] " + IM.relatorio()
+        if acao in ("competition", "competicao", "competição"):
+            from core import competicao as CP
+            cap, var = str(parameters.get("capability") or ""), str(parameters.get("variant") or "")
+            if cap and parameters.get("pin") is not None:
+                return "[done] " + CP.fixar(cap, var if parameters.get("pin") else "")
+            return "[done] " + CP.relatorio()
         return "[failed] Ação desconhecida."
     except Exception as e:
         return f"[failed] I.S.A.: {e}"
@@ -46,8 +58,8 @@ TOOL = {
                     "import_cost (module) | autonomy (optional level avisar|seguros) | code (days or since last mark; mark=true saves the baseline): "
                     "static review of recently changed code | architecture: structure analysis with ranked improvement PROPOSALS (never applies them)."),
     "parameters": {"type": "OBJECT", "properties": {
-        "action": {"type": "STRING", "enum": ["modules", "reload", "import_cost", "autonomy", "code", "architecture"]},
-        "module": {"type": "STRING"}, "level": {"type": "STRING"}, "days": {"type": "NUMBER"}, "mark": {"type": "BOOLEAN"}},
+        "action": {"type": "STRING", "enum": ["modules", "reload", "import_cost", "autonomy", "code", "architecture", "modularization", "immunity", "competition"]},
+        "module": {"type": "STRING"}, "capability": {"type": "STRING"}, "variant": {"type": "STRING"}, "pin": {"type": "BOOLEAN"}, "level": {"type": "STRING"}, "days": {"type": "NUMBER"}, "mark": {"type": "BOOLEAN"}},
         "required": ["action"]},
     "handler": isa_nucleo,
 }

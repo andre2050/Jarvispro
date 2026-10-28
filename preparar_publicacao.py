@@ -59,6 +59,8 @@ EXCLUDE = [
     # 3.8 — auditoria, missões, grafo, rede de NEXUS, agentes, modo do modelo, plugins gerados
     "memory/auditoria.jsonl", "memory/missoes/*", "memory/grafo.json", "memory/rede_backup/*", "config/rede_nexus.json",
     "config/agentes.json", "config/hibrido.json", "plugins_gerados/*",
+    # 4.0 — dados pessoais novos
+    "memory/imunidade.json", "memory/competicao.json", "memory/historico_longo.jsonl", "memory/adaptacao.json", "memory/isa_modularizacao.json",
     # 3.9 — dados pessoais novos (conectores guardam tokens)
     "config/aprovacoes.json", "config/missoes_recorrentes.json", "config/conectores.json", "config/voz_calibracao.json", "config/regras_organizacao.json", "config/scripts_avancados.json", "memory/pacote_viagem.json", "memory/isa_codigo.json", "memory/isa_arquitetura.json", "memory/aprendizado.json", "memory/organizacao_inteligente.json",
     # o Nexus.exe gerado no seu PC (gerar_exe.bat) — grande demais para o GitHub

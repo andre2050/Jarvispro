@@ -137,6 +137,17 @@ class SessionMixin:
                         tentativas = 0
                 except Exception:
                     pass
+                try:                                        # 4.0 — vacina: se esta falha já tem remédio que funcionou, aplica e espera o que ele manda
+                    from core import autoregeneracao as _ar
+                    from core import imunidade as _imu
+                    nome_f = getattr(funcao, "__name__", "?")
+                    _seguros = {k: _ar.REMEDIOS[k][1] for k in ("liberar_memoria", "limpar_sobras") if k in _ar.REMEDIOS}
+                    _imu.tratar(traceback.format_exc(), f"tarefa:{nome_f}", _seguros)
+                    _v = _imu.antes_de(f"tarefa:{nome_f}")
+                    if _v and _v.get("espera_s") and espera is not None:
+                        espera = max(espera, _imu.espera_crescente(_v["vacina"], tentativas) or 0)
+                except Exception:
+                    pass
                 if espera is None:
                     return
                 await asyncio.sleep(espera)
@@ -385,6 +396,13 @@ class SessionMixin:
                 parts.append(_pb)
         except Exception as e:
             print(f"[Perfis] ⚠️ {e}")
+        try:                                           # 4.0 — adaptação contínua (opt-in): tom/tamanho aprendidos do seu uso
+            from core.adaptacao import bloco_prompt as _adapt_bloco
+            _ab = _adapt_bloco()
+            if _ab:
+                parts.append(_ab)
+        except Exception as e:
+            print(f"[Adaptação] ⚠️ {e}")
         if mem_str:
             parts.append(mem_str)
         if _threads_ctx:

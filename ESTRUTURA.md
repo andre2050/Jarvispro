@@ -1,5 +1,5 @@
 # NEXUS ULTRA 2026
-### Assistente pessoal de voz — desenvolvido por André Luiz Lima Menezes · Versão 3.9.1
+### Assistente pessoal de voz — desenvolvido por André Luiz Lima Menezes · Versão 4.0.0
 
 Mapa de todas as pastas e arquivos do projeto, como estão hoje na pasta.
 Base: MARK LV — JARVIS (© FatihMakes, CC BY-NC 4.0) — veja `LICENSE` e `NOTICE.md`.
@@ -27,7 +27,7 @@ Nexus-Ultra-2026/
 ├── readme.md                            # Apresentação, funções e como usar
 ├── requirements.txt                     # Bibliotecas Python necessárias
 ├── setup.py                             # Instalação inicial (confere o Python e as bibliotecas)
-├── VERSION                              # Número da versão (3.9.1)
+├── VERSION                              # Número da versão (4.0.0)
 ├── actions/                             # Habilidades que controlam o computador — uma por arquivo, descobertas sozinhas ao iniciar
 │   ├── agent_task.py                    # Tarefas autônomas (modo agente): planeja, executa, confere e avisa no fim
 │   ├── agenda_google.py                 # Agenda: Google Calendar / .ics por voz (só leitura)
@@ -503,3 +503,16 @@ Veja `actions/focus_mode.py` como exemplo curto.
 | `core/revisao_texto.py`, `actions/revisao_texto.py` | Revisão de texto em português |
 | `core/abrir_tudo.py`, `actions/abrir_tudo.py` | Abrir pasta, arquivo ou programa pelo nome |
 | `core/modo_avancado.py`, `actions/modo_avancado.py` | Scripts seus em isolamento |
+
+
+## 4.0.0 — arquivos novos
+| Arquivo | O que faz |
+|---|---|
+| `core/imunidade.py`, `actions/imunidade.py` | Vacinas contra falhas conhecidas e relatório de bugs |
+| `core/competicao.py` | Variantes competem; a melhor vence |
+| `core/isa_modularizacao.py` | Plano para dividir módulos grandes |
+| `core/desempenho_proativo.py`, `actions/desempenho_agora.py` | Avisos de programa pesado |
+| `core/contexto_projeto.py`, `actions/contexto_projeto.py` | Andamento e contexto dos projetos |
+| `core/historico_longo.py`, `actions/historico_longo.py` | Memória permanente e pesquisável |
+| `core/equipe_agentes.py` | Quadro compartilhado e equipe paralela |
+| `core/adaptacao.py`, `actions/adaptacao.py` | Adaptação contínua (opt-in) |
