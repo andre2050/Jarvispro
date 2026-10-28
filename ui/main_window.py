@@ -2488,8 +2488,9 @@ class MainWindow(QMainWindow):
         titulo.setEnabled(False)
         menu.addAction(titulo)
         menu.addSeparator()
-        from .hud_novos import NOVOS_INFO
-        grupos = (("NOVOS · 3.6", tuple(NOVOS_INFO)),)
+        from .hud_novos import NOVOS_INFO, NOVOS_ORIGINAIS
+        grupos = (("NOVOS · 3.6", NOVOS_ORIGINAIS),
+                  ("ROSTOS · 4.1", tuple(k for k in NOVOS_INFO if k not in NOVOS_ORIGINAIS)))
         for titulo_g, chaves in grupos:
             menu.addSeparator()
             _t2 = QAction(titulo_g, menu)

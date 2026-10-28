@@ -106,15 +106,54 @@ class ActionRegistry:
         if not allowed:
             self._logger(f"Action '{name}' blocked by actuator permissions.")
             return reason
+        import time as _t
+        _g = _guardrail_entrada(name, parameters, ctx)
+        if _g:
+            _trace(name, ctx, 0.0, False, parameters, _g, "guardrail")
+            _auditar(name, parameters, _g, ctx)
+            return _g
+        _t0 = _t.perf_counter()
         try:
             res = _call_handler(rec.handler, parameters, ctx or {}) or "Done."
+            res = _guardrail_saida(name, res)
+            _trace(name, ctx, (_t.perf_counter() - _t0) * 1000, not str(res).startswith(("[failed]", "Tool '")), parameters, res)
             _auditar(name, parameters, res, ctx)
             return res
         except Exception as e:
             self._logger(f"Action '{name}' crashed during run(): {e}")
             traceback.print_exc()
+            _trace(name, ctx, (_t.perf_counter() - _t0) * 1000, False, parameters, f"ERRO: {e}")
             _auditar(name, parameters, f"ERRO: {e}", ctx)
             return f"Tool '{name}' failed: {e}"
+
+
+def _guardrail_entrada(nome: str, parametros: dict, ctx: dict | None) -> str:
+    """4.1 — guardrails: '' = pode executar; senão a frase de recusa. Nunca derruba a ferramenta por defeito próprio."""
+    try:
+        from core import guardrails
+        acao, regra, motivo = guardrails.checar_entrada(nome, parametros)
+        if acao == "bloquear":
+            return f"[failed] Guardrail “{regra}”: {motivo}. A chamada não foi feita."
+    except Exception:
+        pass
+    return ""
+
+
+def _guardrail_saida(nome: str, res):
+    try:
+        from core import guardrails
+        return guardrails.filtrar_saida(nome, res)[0]
+    except Exception:
+        return res
+
+
+def _trace(nome: str, ctx: dict | None, ms: float, ok: bool, parametros, resultado, extra: str = "") -> None:
+    try:
+        from core import trace_local
+        c = ctx or {}
+        trace_local.registrar(nome, str(c.get("ator") or "nexus"), str(c.get("missao") or ""), ms, ok, parametros, str(resultado), extra)
+    except Exception:
+        pass
 
 
 _NAO_AUDITAR = {"memoria_semantica", "resumo_diario", "tarefas", "quick_notes", "perfil", "auditoria"}

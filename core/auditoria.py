@@ -20,6 +20,7 @@ ARQUIVO = Path(__file__).resolve().parent.parent / "memory" / "auditoria.jsonl"
 MAX_LINHAS = 20000
 _TRAVA = threading.RLock()
 _SEGREDO = re.compile(r"(key|token|password|senha|secret|passphrase|frase|authorization|cookie)", re.I)
+_VALOR_SEGREDO = re.compile(r"(?:AIza[0-9A-Za-z_\-]{20,}|sk-[A-Za-z0-9_\-]{20,}|ghp_[A-Za-z0-9]{30,}|xox[baprs]-[A-Za-z0-9\-]{10,}|AKIA[0-9A-Z]{16})")
 _CORPO = re.compile(r"^(body|text|message|content|corpo|texto|mensagem|html)$", re.I)
 GENESE = "0" * 64
 
@@ -34,13 +35,14 @@ def _enxugar(v, nivel: int = 0):
             if _SEGREDO.search(str(k)):
                 out[str(k)] = "[oculto]"
             elif _CORPO.match(str(k)) and isinstance(x, str):
-                out[str(k)] = f"[texto de {len(x)} caracteres: {x[:40]!r}…]"
+                out[str(k)] = f"[texto de {len(x)} caracteres: {_VALOR_SEGREDO.sub('[oculto]', x)[:40]!r}…]"
             else:
                 out[str(k)] = _enxugar(x, nivel + 1)
         return out
     if isinstance(v, (list, tuple)):
         return [_enxugar(x, nivel + 1) for x in list(v)[:15]]
     if isinstance(v, str):
+        v = _VALOR_SEGREDO.sub("[oculto]", v)                                   # chave de API no meio do texto também some
         return v if len(v) <= 160 else v[:160] + f"…(+{len(v) - 160})"
     if isinstance(v, (int, float, bool)) or v is None:
         return v

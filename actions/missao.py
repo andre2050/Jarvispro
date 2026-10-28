@@ -234,6 +234,26 @@ def missao(parameters: dict, player=None, speak=None, **_kw) -> str:
             return "[done] Ok."
         if acao in ("undo", "desfazer"):
             return motor().desfazer(mid)
+        if acao in ("checkpoints", "pontos"):
+            from core import missoes_checkpoint as CP
+            return CP.texto(M.carregar(mid))
+        if acao in ("rewind", "voltar"):
+            from core import missoes_checkpoint as CP
+            try:
+                n = int(parameters.get("checkpoint"))
+            except (TypeError, ValueError):
+                return "[failed] Diga o número do checkpoint (veja com action=checkpoints)."
+            novos = None
+            if parameters.get("step") and parameters.get("new_args"):
+                import json as _j
+                try:
+                    novos = {str(parameters["step"]): _j.loads(str(parameters["new_args"]))}
+                except ValueError:
+                    return "[failed] new_args precisa ser um JSON com os argumentos novos do passo."
+            r = motor().voltar(mid, n, novos)
+            ef = r["efeitos_que_ficam"]
+            return (f"[done] Voltei ao checkpoint #{n}; {len(r['reiniciados'])} passo(s) vão rodar de novo (missão pausada: diga 'retomar' para continuar)."
+                    + (f" Atenção: o que estes passos já fizeram no mundo NÃO foi desfeito: {', '.join(ef)}." if ef else ""))
         if acao in ("rehearse", "ensaiar"):
             return "[done] Ensaio (leituras reais, escritas só simuladas): " + M.texto_ensaio(motor().ensaiar(mid))
         if acao in ("simulate", "simular"):
@@ -256,16 +276,19 @@ TOOL = {
                     "action=start with goal: plans, simulates what would change and, if a step is sensitive, waits for the "
                     "user's approval; then works in the background (survives restarts), stops at decisions (send, move, delete, "
                     "spend, control the PC) and reports at the end. Optional budget (budget_hours, budget_calls, budget_sensitive) stops the mission when spent; rehearse=true shows a dry run first. Other actions: status (optional id), list, approve/deny "
-                    "(optional id), cancel, pause, resume, undo (the last undoable step), simulate (id). Use instead of "
+                    "(optional id), cancel, pause, resume, undo (the last undoable step), simulate (id), checkpoints (id: list restore points) and rewind (id, checkpoint, optional step+new_args: go back to a checkpoint and try another path; real-world effects of steps already done are NOT undone). Use instead of "
                     "agent_task when the goal is big, needs waiting or touches things that need approval. Never approve for the "
                     "user: only call approve after the user says yes. Answer in Portuguese."),
     "parameters": {
         "type": "OBJECT",
         "properties": {
-            "action": {"type": "STRING", "enum": ["start", "status", "list", "approve", "deny", "cancel", "pause", "resume", "undo", "simulate", "rehearse"]},
+            "action": {"type": "STRING", "enum": ["start", "status", "list", "approve", "deny", "cancel", "pause", "resume", "undo", "simulate", "rehearse", "checkpoints", "rewind"]},
             "goal": {"type": "STRING", "description": "start: the whole goal in the user's words"},
             "id": {"type": "STRING", "description": "mission id"},
             "decision": {"type": "STRING", "description": "approve/deny: decision id (default: the only pending one)"},
+            "checkpoint": {"type": "INTEGER", "description": "rewind: checkpoint number to go back to"},
+            "step": {"type": "STRING", "description": "rewind: optional pending step id whose arguments change on the new path"},
+            "new_args": {"type": "STRING", "description": "rewind: JSON with the new arguments for `step`"},
             "rehearse": {"type": "BOOLEAN", "description": "start: dry-run first (reads real, writes simulated) and show it with the plan"},
             "budget_hours": {"type": "NUMBER"}, "budget_calls": {"type": "INTEGER"}, "budget_sensitive": {"type": "INTEGER"},
         },

@@ -427,4 +427,9 @@ NOVOS_STYLES: dict = {
     "storm":     ("⛈", "Tempestade", "Nuvem de energia com relâmpagos", tempestade),
 }
 
+# 4.1 — cinco rostos (ui/hud_rostos.py) entram no mesmo registro
+from .hud_rostos import ROSTOS_INFO, ROSTOS_STYLES  # noqa: E402
+
+NOVOS_ORIGINAIS = tuple(NOVOS_STYLES)                    # os vinte da 3.6
+NOVOS_STYLES.update(ROSTOS_STYLES)
 NOVOS_INFO = {k: v[:3] for k, v in NOVOS_STYLES.items()}

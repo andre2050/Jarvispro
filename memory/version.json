@@ -1,8 +1,13 @@
 {
-  "version": "4.0.0",
+  "version": "4.1.0",
   "codename": "Nexus Ultra 2026",
   "released": "2026-10-28",
   "changelog": [
+    {
+      "version": "4.1.0",
+      "date": "2026-10-28",
+      "notes": "NEXUS ULTRA 2026 4.1 — MISSÕES COM VOLTA, FERRAMENTAS COM GRADES, TUDO COM RASTRO. CHECKPOINTS E REWIND: cada passo concluído guarda um ponto de restauração; volte a qualquer um e tente outro caminho (trocando os argumentos de um passo) — o NEXUS avisa que o que já foi feito no mundo real não é desfeito. GUARDRAILS: regras de entrada (bloquear chave de API saindo, pasta do sistema, comando destrutivo) e de saída (ocultar cartão, CPF, chaves) em TODA ferramenta, com regras suas em config/guardrails.json; as padrão não se desligam. TRACE LOCAL: linha do tempo de tudo que rodou (quem, qual ferramenta, quanto demorou, onde falhou), só no PC, também em /api/trace. VISUAL ROSTO · REAL: rosto humano de frente com sua foto (config/rosto_hub.png) ou desenhado; ao falar, boca abre (maxilar, dentes, língua), olhos se mexem e piscam, sobrancelhas sobem e a cabeça acena."
+    },
     {
       "version": "4.0.0",
       "date": "2026-10-28",
