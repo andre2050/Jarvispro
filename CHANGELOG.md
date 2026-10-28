@@ -1,5 +1,28 @@
 # Mudanças
 
+## 3.9.0 — 28/10/2026
+
+### 🎯 Missões
+* **Modo ensaio**: mostra o que faria, passo a passo, sem tocar em nada. **Orçamento** por missão (horas, chamadas, passos sensíveis), com aviso aos 80%.
+* **Aprovações aprendidas** (`core/aprovacoes.py`): depois de 5 aprovações iguais de uma ação que só escreve, o NEXUS *sugere* uma regra automática; só vale se você aceitar, e dá para revogar. Nunca vale para enviar, apagar, gastar ou controlar o PC.
+* **Missões recorrentes** (`core/missoes_recorrentes.py`): "toda segunda organize minha semana"; até 10, com recuperação de até 6 h de atraso.
+* 🧾 **Painel de auditoria no celular**: busca, período, tipo e "verificar integridade" da cadeia de hashes.
+### 🕸️ Grafo · 🏭 Plugins · 🌐 Rede · 🎙️ Voz · 👁️ Tela · ✈️ Viagem
+* Grafo se atualiza sozinho e responde "o que mudou nos últimos N dias". Plugins gerados têm **versões** (comparar, melhorar, voltar).
+* Rede: **fila de tarefas** (24 h) e sincronização automática opcional. Voz: **calibração guiada** (6 amostras). Copiloto de tela: diagnostica o erro e oferece corrigir (com CONFIRMAR).
+* **Modo viagem/offline** (`core/viagem.py`): pacote local de agenda/contatos/notas. Não baixa mapas nem clima.
+### 🧠 Núcleo I.S.A. (`core/isa_*.py`, ferramenta `isa_nucleo`)
+* Módulos com **saúde** e **recarga a quente** (testa antes), custo de importação; **análise de código recente**; **relatório de arquitetura** (ciclos, arquivos grandes, propostas — só sugere); **autonomia** que religa tarefas caídas e missões travadas (nível "avisar" ou "seguros").
+### 🔌 Novidades
+* **Conectores** (`core/conectores.py`): Todoist, Trello, ntfy, Discord, IFTTT, cena do Home Assistant. O modelo só dá o texto; o endereço vem da receita; só https, sem redirecionar, sem endereços internos; o que mexe no mundo pede CONFIRMAR.
+* **Aprendizado da rotina** (`core/aprendizado.py`): desligado por padrão; só contagens por horário, neste PC, com esquecimento gradual; exportar e esquecer.
+* **Estatísticas do PC** (`core/estatisticas_pc.py`): CPU por núcleo, memória, discos, processos agregados, bateria, temperatura e sugestões.
+* **Organizador de pastas** (`core/organizador_inteligente.py`): qualquer pasta, regras suas, nunca sobrescreve, CONFIRMAR e desfazer.
+* **Reunião** (`core/reuniao.py`), **revisão de texto** (`core/revisao_texto.py`), **abrir qualquer coisa** (`core/abrir_tudo.py`; não abre .exe/.bat/.lnk/macros por caminho) e **modo avançado** (`core/modo_avancado.py`; scripts só de cálculo/texto, isolados, aprovação por hash).
+### 🐞 Correções
+* **Plugins gerados que importavam `urllib`/`requests` não carregavam na caixa de areia da 3.8** (o bloqueio de rede trocava a classe `socket`); corrigido.
+* Trava ao iniciar missão pela voz (bloqueio reentrante); detecção de import não usado; cache velho de `.pyc` na recarga a quente.
+
 ## 3.8.0 — 28/10/2026
 
 ### 🎯 Missões de longa duração (`core/missoes.py`, `actions/missao.py`)

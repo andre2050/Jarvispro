@@ -36,3 +36,20 @@ def test_observador_cooldown_silencio_e_fonte_quebrada():
     assert len(o.passo(AGORA)) == 2                      # passou o cooldown
     assert CV.Observador(agenda=lambda: [ev(3)], silencio=lambda: "foco").passo(AGORA) == []
     assert CV.Observador(agenda=lambda: 1 / 0, janela=lambda: 1 / 0, tela=lambda: 1 / 0).passo(AGORA) == []
+
+
+def test_acao_fix_diagnostica_oferece_e_so_aceita_com_oferta(monkeypatch):
+    import json
+    from actions import contexto_vivo as AC
+    from core import copiloto
+    copiloto.ofertas.limpar()
+    llm = lambda p: json.dumps({"causa": "Sem permissão.", "correcao": "Salve em Documentos.",
+                                "objetivo": "Clicar em Salvar como", "risco": "baixo"})
+    r = AC.contexto_vivo({"action": "fix"}, llm=llm, tela=lambda: "Erro: Acesso negado ao salvar o arquivo no disco C")
+    assert r.startswith("[done]") and "Quer?" in r and "não faça nada" in r
+    assert "failed" in AC.contexto_vivo({"action": "fix"}, llm=llm, tela=lambda: "")
+    iniciados = []
+    from actions import uso_computador
+    monkeypatch.setattr(uso_computador, "uso_computador", lambda p, **k: iniciados.append(p) or "[done] começando")
+    assert AC.contexto_vivo({"action": "accept_fix"}) == "[done] começando" and iniciados[0]["goal"] == "Clicar em Salvar como"
+    assert "Não há" in AC.contexto_vivo({"action": "accept_fix"})              # a oferta vale uma vez

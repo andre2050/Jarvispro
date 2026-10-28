@@ -211,3 +211,51 @@ def test_gerente_roda_em_segundo_plano(ambiente):
     g.parar()
     assert M.carregar(m["id"], mo.pasta)["estado"] == "concluida"
     assert g.retomar_todas() == 0
+
+
+def test_ensaio_le_de_verdade_e_simula_o_que_escreve(ambiente):
+    f = Fake(PLANO_SEGURO)
+    mo = f.motor(ambiente)
+    m = mo.criar("monte o plano da viagem", ensaiar=True)
+    assert m["estado"] == "plano_pronto" and "ENSAIO" in m["decisoes"][0]["pergunta"]
+    modos = {e["tool"]: e["modo"] for e in m["ensaio"]}
+    assert modos["web_search"].startswith("real") and modos["quick_notes"] == "simulado"
+    assert [e[0] for e in f.exec] == ["web_search", "web_search"]          # nada de escrita rodou
+    assert all(e[2]["ator"] == "ensaio" for e in f.exec)
+    assert all(p["estado"] == "pendente" for p in M.carregar(m["id"], mo.pasta)["plano"])   # o plano continua intacto
+
+
+def test_orcamento_de_chamadas_para_e_avisa_aos_80(ambiente):
+    f = Fake([{"tool": "web_search", "args": {"query": str(i)}, "titulo": f"b{i}"} for i in range(6)])
+    mo = f.motor(ambiente)
+    m = mo.criar("pesquisar muita coisa", orcamento={"chamadas": 5})
+    assert m["estado"] == "executando"
+    assert mo.rodar_ate_parar(m["id"]) == "fim"
+    m = M.carregar(m["id"], mo.pasta)
+    assert m["estado"] == "falhou" and "esgotado" in m["relatorio"] and len(f.exec) == 5
+    assert any("80%" in str(l) for l in m["log"])
+    assert any("orçamento" in t for t, _ in f.avisos)
+
+
+def test_orcamento_de_passos_sensiveis(ambiente):
+    f = Fake([{"tool": "quick_notes", "args": {"action": "add", "text": "a"}, "titulo": "n1"},
+              {"tool": "quick_notes", "args": {"action": "add", "text": "b"}, "titulo": "n2"}])
+    mo = f.motor(ambiente)
+    m = mo.criar("anotar duas coisas", orcamento={"sensiveis": 1})
+    mo.decidir(m["id"], "plano", True)
+    for _ in range(6):
+        mo.rodar_ate_parar(m["id"])
+        mm = M.carregar(m["id"], mo.pasta)
+        for d in mm["decisoes"]:
+            if d["estado"] == "pendente":
+                mo.decidir(m["id"], d["id"], True)
+    mm = M.carregar(m["id"], mo.pasta)
+    estados = [p["estado"] for p in mm["plano"]]
+    assert estados.count("ok") == 1 and estados.count("negado") == 1
+    assert "esgotado" in mm["plano"][1]["resultado"]
+
+
+def test_limpar_orcamento_ignora_lixo():
+    assert M.limpar_orcamento({"horas": "abc", "chamadas": -3, "sensiveis": 2.9, "x": 1}) == {"sensiveis": 2}
+    assert M.limpar_orcamento({"horas": 99, "chamadas": 99999})["horas"] == M.LIMITE_HORAS
+    assert M.limpar_orcamento(None) == {}

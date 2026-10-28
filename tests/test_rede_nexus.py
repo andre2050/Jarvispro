@@ -109,3 +109,49 @@ def test_chave_nao_fica_em_texto_claro_no_codigo_e_esquecer(tmp_path):
     m = Mundo(tmp_path)
     pid = m.parear()
     assert m.nos["celular"].esquecer(pid) and not m.nos["celular"].peers()
+
+
+def test_fila_entrega_quando_o_outro_volta_e_expira(tmp_path):
+    m = Mundo(tmp_path)
+    pid = m.parear()
+    cel, casa = m.nos["celular"], m.nos["casa"]
+    casa.definir_aceitar_tarefas(True)
+    with pytest.raises(R.ErroRede):
+        cel.enfileirar(pid, "send_message", {})                     # escrita nem entra na fila
+    qid = cel.enfileirar(pid, "web_search", {"query": "x"})
+    ligado = cel.enviar
+    def desligado(url, rem, blob):
+        raise OSError("sem rede")
+    cel.enviar = desligado                                          # a casa está desligada
+    assert cel.processar_fila() == [] and cel._fila()[0]["tentativas"] == 1
+    cel.enviar = ligado                                             # a casa voltou
+    assert cel.processar_fila() == [(qid, "feita")]
+    assert "web_search ok" in cel.resultados()[0]["resultado"]
+    q2 = cel.enfileirar(pid, "web_search", {"query": "y"})
+    m.t[0] += R.Rede.VALIDADE_FILA_S + 10
+    cel.enviar = desligado
+    assert cel.processar_fila() == [(q2, "expirada")]
+
+
+def test_fila_tem_limite_e_recusa_do_outro_lado_vira_falha(tmp_path):
+    m = Mundo(tmp_path)
+    pid = m.parear()
+    cel = m.nos["celular"]
+    for i in range(R.Rede.MAX_FILA):
+        cel.enfileirar(pid, "web_search", {"query": str(i)})
+    with pytest.raises(R.ErroRede):
+        cel.enfileirar(pid, "web_search", {})
+    assert {e for _, e in cel.processar_fila()} == {"falhou"}       # a casa não aceita tarefas (desligado)
+
+
+def test_sync_automatico_respeita_intervalo_e_so_com_online(tmp_path):
+    m = Mundo(tmp_path)
+    pid = m.parear()
+    cel = m.nos["celular"]
+    (m.nos["casa"].pasta_mem / "tarefas.json").write_text("[1]")
+    assert not cel.sync_auto()
+    r = cel.sincronizar_todos()
+    assert "casa" in r and "recebi 1" in r["casa"]
+    assert cel.sincronizar_todos() == {}                            # dentro do intervalo
+    m.t[0] += 1000
+    assert "casa" in cel.sincronizar_todos()

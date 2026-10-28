@@ -8,6 +8,19 @@ def voz_natural(parameters: dict, **_kw) -> str:
     acao = str(parameters.get("action") or "status").strip().lower()
     rec = str(parameters.get("feature") or "").strip().lower()
     k = CM.load_api_keys()
+    if acao in ("calibrate", "calibrar"):
+        from core import voz_emocao as VE
+        try:
+            return "[done] " + VE.tracker.iniciar_calibracao(rec or "neutro") + " Quando terminar, peça para concluir a calibração."
+        except ValueError as e:
+            return f"[failed] {e}"
+    if acao in ("finish_calibration", "concluir"):
+        from core import voz_emocao as VE
+        return VE.tracker.concluir_calibracao()
+    if acao in ("reset_calibration", "limpar"):
+        from core import voz_emocao as VE
+        VE.tracker.limpar_calibracao()
+        return "[done] Calibração apagada; volto a usar a sua média."
     if acao in ("on", "off", "ligar", "desligar"):
         chave = _CHAVES.get(rec)
         if not chave:
@@ -28,9 +41,10 @@ TOOL = {
     "name": "natural_voice",
     "description": ("Settings of the natural-voice features (local, off by default): feature=emotion reads stress/tiredness/hesitation "
                     "in the user's voice to adapt answers; feature=interrupt lets the user cut NEXUS off by talking. "
-                    "action=status|on|off."),
+                    "action=status|on|off. Guided calibration: calibrate (feature=neutro|cansado|agitado: the user speaks ~8 short phrases in that state), finish_calibration, reset_calibration; 2 minutes make the emotion reading use the user's OWN limits."),
     "parameters": {"type": "OBJECT", "properties": {
-        "action": {"type": "STRING", "enum": ["status", "on", "off"]}, "feature": {"type": "STRING", "enum": ["emotion", "interrupt"]}},
+        "action": {"type": "STRING", "enum": ["status", "on", "off", "calibrate", "finish_calibration", "reset_calibration"]},
+        "feature": {"type": "STRING", "enum": ["emotion", "interrupt", "neutro", "cansado", "agitado"]}},
         "required": ["action"]},
     "handler": voz_natural,
 }

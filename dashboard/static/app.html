@@ -147,12 +147,29 @@
     </div>
     <div id="mis-lista"></div>
   </div>
+  <div id="aud-painel" style="display:none;position:fixed;inset:0;z-index:51;background:var(--bg);overflow:auto;padding:14px;color:var(--text)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <b>🧾 O que o NEXUS fez</b><button onclick="_audFechar()" style="background:none;border:0;color:var(--text);font-size:20px;cursor:pointer">✕</button>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+      <input id="aud-q" placeholder="buscar (ex.: e-mail, apagou)" style="flex:1;min-width:140px;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text)">
+      <select id="aud-dias" style="padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text)">
+        <option value="1">hoje</option><option value="7">7 dias</option><option value="0">tudo</option></select>
+      <select id="aud-tipo" style="padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text)">
+        <option value="">todos</option><option value="acao">ações</option><option value="decisao">decisões</option><option value="modelo">modelo</option><option value="sistema">sistema</option></select>
+      <button onclick="_audAtualizar()" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--adim);color:var(--text);cursor:pointer">Buscar</button>
+      <button onclick="_audVerificar()" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer">Verificar integridade</button>
+    </div>
+    <div id="aud-status" style="font-size:13px;margin-bottom:8px;color:var(--muted)"></div>
+    <div id="aud-lista"></div>
+  </div>
   <div id="toast"></div>
   <header>
     <div class="logo"><em>N</em>EXUS</div>
     <div class="pill" id="pill"><span class="dot"></span><span id="st">Connecting</span></div>
     <div class="enc-badge" id="enc">AES-256</div>
     <div class="spacer"></div>
+    <button id="aud-btn" onclick="_audAbrir()" title="Auditoria" style="background:none;border:0;font-size:18px;cursor:pointer">🧾</button>
     <button id="mis-btn" onclick="_missoesAbrir()" title="Missões" style="background:none;border:0;font-size:18px;cursor:pointer">🎯</button>
     <button id="bell" title="Avisos no celular" style="display:none;background:none;border:0;font-size:18px;cursor:pointer">🔔</button>
     <div class="url">__IP__:__PORT__</div>
@@ -679,6 +696,30 @@
       _missoesAtualizar(); clearInterval(_misTimer); _misTimer = setInterval(_missoesAtualizar, 5000);
     }
     function _missoesFechar() { document.getElementById('mis-painel').style.display = 'none'; clearInterval(_misTimer); }
+
+    // Auditoria: linha do tempo do que o NEXUS fez (texto sempre por textContent) e conferência da cadeia de hashes.
+    async function _audAtualizar() {
+      const box = document.getElementById('aud-lista'); if (!box) return;
+      const q = encodeURIComponent(document.getElementById('aud-q').value || '');
+      const dias = document.getElementById('aud-dias').value, tipo = encodeURIComponent(document.getElementById('aud-tipo').value);
+      let it = [];
+      try { it = (await (await _authFetch('/api/auditoria?q=' + q + '&dias=' + dias + '&tipo=' + tipo + '&limite=80')).json()).itens || []; } catch (e) { return; }
+      box.textContent = '';
+      if (!it.length) { box.appendChild(_el('p', 'Nada encontrado.', 'color:var(--muted)')); return; }
+      for (const d of it) {
+        const l = _el('div', null, 'border-bottom:1px solid var(--border);padding:8px 0;font-size:14px');
+        l.appendChild(_el('div', d.texto));
+        l.appendChild(_el('div', d.tipo + (d.missao ? ' · missão ' + d.missao : '') + ' · #' + d.h, 'color:var(--muted);font-size:12px'));
+        box.appendChild(l);
+      }
+    }
+    async function _audVerificar() {
+      const st = document.getElementById('aud-status');
+      try { const d = await (await _authFetch('/api/auditoria/verificar')).json(); st.textContent = (d.integro ? '✅ ' : '⚠️ ') + d.mensagem; }
+      catch (e) { st.textContent = 'Sem conexão'; }
+    }
+    function _audAbrir() { document.getElementById('aud-painel').style.display = 'block'; _audAtualizar(); }
+    function _audFechar() { document.getElementById('aud-painel').style.display = 'none'; }
   </script>
 </body>
 </html>
