@@ -1,6 +1,6 @@
 """NEXUS Ultra 2026 · 3.6 — vinte visuais novos para o hub (HUD).
 
-Mesma assinatura de hud_ultra.py:  f(cv, p, W, H, cx, cy, R, main, acc, amp).
+Assinatura dos visuais:  f(cv, p, W, H, cx, cy, R, main, acc, amp).
 Só QPainter, sem arquivos de imagem, sem estado fora do canvas (`cv._ux`), leves.
 A voz faz o visual crescer, brilhar ou acelerar; mudo deixa tudo quase parado.
 Para criar o seu: escreva a função, ponha em NOVOS_STYLES e a chave em HUD_STYLES.
@@ -14,7 +14,7 @@ from PyQt6.QtGui import QLinearGradient, QPolygonF
 
 from ._qt import *  # noqa: F401,F403
 from ._base import C, qcol  # noqa: F401
-from .hud_ultra import _calmo, _est, _glow, _nucleo, _rgba
+from .hud_util import _calmo, _est, _glow, _nucleo, _rgba
 
 _BRANCO = "#ffffff"
 TAU = math.tau

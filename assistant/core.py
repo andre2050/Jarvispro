@@ -142,6 +142,13 @@ class NexusLive(WakeMixin, TypedCommandsMixin, AudioMixin, SessionMixin, ToolsMi
         except Exception as e:
             print(f"[Orquestrador] ⚠️ could not bind the action registry: {e}")
 
+        try:   # 3.8 — 🎯 missões de longa duração usam as mesmas ferramentas
+            _mis = sys.modules.get("actions.missao")
+            if _mis is not None:
+                _mis.bind(self._action_registry)
+        except Exception as e:
+            print(f"[Missões] ⚠️ could not bind the action registry: {e}")
+
         # Local neural network for typed commands (core/intent_net.py). It
         # loads its saved model, or trains in the background on first run —
         # never blocks the start. Anything it is unsure about goes to Gemini.

@@ -75,7 +75,7 @@ def test_hub_tem_seis_visuais_e_todos_desenham():
     from ui.hud import HUD_STYLE_INFO, HudCanvas
     _app = QApplication.instance() or QApplication([])
     assert set(HUD_STYLES) == set(HUD_STYLE_INFO)
-    assert {"aurora", "liquid", "holo", "globe"} <= set(HUD_STYLES)
+    assert {"galaxy", "saturn", "storm"} <= set(HUD_STYLES)
     for estilo in HUD_STYLES:
         h = HudCanvas("", "NEXUS")
         h.resize(480, 420)

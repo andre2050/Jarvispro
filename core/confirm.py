@@ -112,6 +112,15 @@ def request(key: str, title: str, detail: str, run: Callable[[], str]) -> str:
     )
 
 
+def _auditar_decisao(p, o_que: str) -> None:
+    """3.8 — a decisão da pessoa entra no registro verificável (core/auditoria.py)."""
+    try:
+        from core import auditoria
+        auditoria.registrar("decisao", "usuario", f"{o_que}: {p.title}", {"detalhe": p.detail}, motivo=p.key)
+    except Exception:
+        pass
+
+
 def resolve(accepted: bool) -> None:
     """Called by the UI when the user presses CONFIRM or CANCEL.
 
@@ -134,11 +143,14 @@ def resolve(accepted: bool) -> None:
 
     if time.monotonic() - p.at > TIMEOUT_SECONDS:
         _log(f"SYS: Confirmation expired — {p.title}")
+        _auditar_decisao(p, "expirou")
         return
 
     if not accepted:
         _log(f"SYS: Cancelled — {p.title}")
+        _auditar_decisao(p, "recusou")
         return
+    _auditar_decisao(p, "aprovou")
 
     def _worker():
         try:

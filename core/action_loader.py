@@ -107,11 +107,31 @@ class ActionRegistry:
             self._logger(f"Action '{name}' blocked by actuator permissions.")
             return reason
         try:
-            return _call_handler(rec.handler, parameters, ctx or {}) or "Done."
+            res = _call_handler(rec.handler, parameters, ctx or {}) or "Done."
+            _auditar(name, parameters, res, ctx)
+            return res
         except Exception as e:
             self._logger(f"Action '{name}' crashed during run(): {e}")
             traceback.print_exc()
+            _auditar(name, parameters, f"ERRO: {e}", ctx)
             return f"Tool '{name}' failed: {e}"
+
+
+_NAO_AUDITAR = {"memoria_semantica", "resumo_diario", "tarefas", "quick_notes", "perfil", "auditoria"}
+
+
+def _auditar(nome: str, parametros: dict, resultado, ctx: dict | None) -> None:
+    """3.8 — registra a chamada no registro verificável (core/auditoria.py). Nunca atrapalha a ferramenta."""
+    try:
+        if nome in _NAO_AUDITAR:
+            return
+        from core import auditoria
+        c = ctx or {}
+        auditoria.registrar("acao", str(c.get("ator") or "nexus"), f"usou {nome}", parametros,
+                            motivo=str(c.get("motivo") or ""), modelo=str(c.get("modelo") or ""),
+                            resultado=str(resultado)[:200], missao=str(c.get("missao") or ""))
+    except Exception:
+        pass
 
 
 def _call_handler(fn: Callable, parameters: dict, ctx: dict) -> str:

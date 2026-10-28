@@ -1,5 +1,5 @@
 # NEXUS ULTRA 2026
-### Assistente pessoal de voz — desenvolvido por André Luiz Lima Menezes · Versão 3.7.0
+### Assistente pessoal de voz — desenvolvido por André Luiz Lima Menezes · Versão 3.8.0
 
 Mapa de todas as pastas e arquivos do projeto, como estão hoje na pasta.
 Base: MARK LV — JARVIS (© FatihMakes, CC BY-NC 4.0) — veja `LICENSE` e `NOTICE.md`.
@@ -27,7 +27,7 @@ Nexus-Ultra-2026/
 ├── readme.md                            # Apresentação, funções e como usar
 ├── requirements.txt                     # Bibliotecas Python necessárias
 ├── setup.py                             # Instalação inicial (confere o Python e as bibliotecas)
-├── VERSION                              # Número da versão (3.7.0)
+├── VERSION                              # Número da versão (3.8.0)
 ├── actions/                             # Habilidades que controlam o computador — uma por arquivo, descobertas sozinhas ao iniciar
 │   ├── agent_task.py                    # Tarefas autônomas (modo agente): planeja, executa, confere e avisa no fim
 │   ├── agenda_google.py                 # Agenda: Google Calendar / .ics por voz (só leitura)
@@ -208,7 +208,7 @@ Nexus-Ultra-2026/
 │   ├── test_dev_projeto.py              # Testes de core/dev_projeto.py — as conferências do agente de programação
 │   ├── test_diagnostico.py              # Testes do diagnóstico: lê o registro de ações e não vaza nada que não deve
 │   ├── test_funcoes_22.py               # Testes das funções novas da 2.2: compras, hábitos, contatos, manutenção do PC, texto/dev e diário
-│   ├── test_hud_ultra.py                # Os dez visuais novos: registro, desenho em todos os estados e volta ao orbe se falhar
+│   ├── test_hud_ultra.py                # Os 20 visuais: registro, desenho em todos os estados, migração e volta ao orbe se falhar
 │   ├── test_ia_23.py                    # Testes da 2.3: reconexão, embeddings/memória semântica, roteador, voz do dono
 │   ├── test_ia_23_memoria.py            # Embeddings, memória semântica e verificador do roteador
 │   ├── test_keras_engine.py             # Motor Keras/TensorFlow (core/keras_engine.py, core/keras_intent.py) e o seletor de motor
@@ -227,8 +227,9 @@ Nexus-Ultra-2026/
     ├── app.py                           # Ponte entre o cérebro e a janela (NexusUI)
     ├── comandos_pt.py                   # Descrição e exemplo de cada função, em português (lista F1)
     ├── hub_geom.py                      # Geometria do visual Hub
-    ├── hud.py                           # O HUD central: orbe, barras de métricas e os 9 visuais clássicos
-    ├── hud_ultra.py                     # Dez visuais novos do hub (Ultra 2026): nebulosa, giroscópio, hélice, sonar, espectro, colmeia, átomo, plasma, constelação, túnel
+    ├── hud.py                           # O HUD central: orbe de reserva e o despacho para os 20 visuais Novos 3.6
+    ├── hud_novos.py                     # Os 20 visuais do hub (Prisma, Saturno, Galáxia, Cidade, Tempestade…)
+    ├── hud_util.py                      # Ajudas de desenho dos visuais (cores, brilho, núcleo)
     ├── main_window.py                   # A janela principal: layout, botões, atalhos, bandeja, vídeo
     ├── modern.py                        # Conversa em balões, medidores, cartões e barra rápida
     ├── quickbar.py                      # Catálogo da barra rápida e dos atalhos
@@ -285,7 +286,7 @@ e `main.py` com 2.900); agora cada área tem o seu arquivo.
 |---|---|
 | `main_window.py` | A janela principal (layout, botões, atalhos, bandeja, vídeo) |
 | `hud.py` | O desenho central e as barras de métricas. Nove visuais clássicos (`HUD_STYLE_INFO`): orbe, mínimo, aurora, líquido, holograma, globo neural, Hub, Matrix e Ondas |
-| `hud_ultra.py` | (Ultra 2026) Dez visuais novos: nebulosa, giroscópio, hélice, sonar, espectro, colmeia, átomo, plasma, constelação e túnel. Cada um é uma função de desenho em `ULTRA_STYLES` |
+| `hud_novos.py` | Os 20 visuais do hub; cada um é uma função de desenho registrada em `NOVOS_STYLES` |
 | `widgets.py` | Peças reutilizáveis: log da conversa, área de arquivo, câmera, roda de cores |
 | `app.py` | A ponte entre o cérebro e a janela (`NexusUI`) |
 | `_base.py` | Cores do tema ("Aurora", com `accent2()` para os degradês), fontes, caminhos, coletor de métricas (CPU, RAM, rede, GPU, temperatura, processos, histórico) |
@@ -469,3 +470,18 @@ Veja `actions/focus_mode.py` como exemplo curto.
 | `core/rede_colaborativa.py` | Troca do placar de reparos com outros NEXUS da rede (opcional, assinada) |
 | `actions/orquestrador.py` | Equipe de agentes com revisor e uma rodada de "refaz isso" |
 | `actions/agent_task.py` | Modo agente com conferência do resultado antes de terminar |
+
+
+## 3.8.0 — arquivos novos
+| Arquivo | O que faz |
+|---|---|
+| `core/missoes.py`, `actions/missao.py` | Missões de longa duração: plano, simulação, decisões, execução em segundo plano e retomada |
+| `core/simulacao.py` | Simulação "e se": o efeito de cada passo antes de agir |
+| `core/auditoria.py`, `actions/auditoria.py` | Registro com cadeia de hashes: por que o NEXUS fez cada coisa |
+| `core/computer_use.py`, `actions/uso_computador.py` | Operar a tela em passos visíveis, com freios |
+| `core/grafo.py`, `actions/grafo_conhecimento.py` | Memória em grafo com a fonte de cada ligação |
+| `core/hibrido.py`, `actions/modelo_hibrido.py` | Roteador de modelo local/nuvem |
+| `core/fabrica_plugins.py`, `actions/fabrica_plugins.py` | Plugins por conversa: revisão, caixa de areia, CONFIRMAR |
+| `core/voz_emocao.py`, `actions/voz_natural.py` | Emoção/correção/interrupção na voz (opt-in) |
+| `core/contexto_vivo.py`, `actions/contexto_vivo.py` | Avisos de contexto: reunião, anexo, erro (opt-in) |
+| `core/rede_nexus.py`, `actions/rede_nexus.py` | Rede de NEXUS pareados, cifrada |

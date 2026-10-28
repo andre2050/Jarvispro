@@ -1,5 +1,29 @@
 # Mudanças
 
+## 3.8.0 — 28/10/2026
+
+### 🎯 Missões de longa duração (`core/missoes.py`, `actions/missao.py`)
+* "Missão: organize meu mês": o NEXUS planeja, **simula o que mudaria**, pede a sua aprovação do plano quando há passo sensível e trabalha em segundo plano por horas.
+  Confere o resultado, para nas decisões (enviar, mover, apagar, gastar, controlar o PC) e avisa por voz e push. Sobrevive a reiniciar; até 3 ativas, 25 passos de plano, 8 h.
+* Painel do celular: botão 🎯 com lista, **Aprovar / Negar**, pausar, cancelar e desfazer o último passo.
+### 🤝 Especialistas (`actions/orquestrador.py`)
+* Novos agentes **agenda** e **finanças**; cada agente tem suas ferramentas (`config/agentes.json`), nunca as proibidas.
+### 🔮 Simulação "e se" (`core/simulacao.py`) e 🧾 Auditoria (`core/auditoria.py`)
+* Mostra o efeito de cada passo (inspeciona o disco: sobrescrever, apagar N itens). Toda ação e decisão entra num registro com **cadeia de hashes** (segredos mascarados): "por que você fez isso?" e "verifica o registro".
+### 🖱️ Computer-use (`core/computer_use.py`)
+* Vê a tela e opera passo a passo: CONFIRMAR para começar, máx. 25 passos / 5 min, teclas perigosas e janelas de banco/senha bloqueadas, segredos pedem aprovação, `parar` interrompe.
+### 🕸️ Grafo de conhecimento (`core/grafo.py`) · 🧠 Modelo híbrido (`core/hibrido.py`) · 🏭 Fábrica de plugins (`core/fabrica_plugins.py`)
+* Grafo: pessoas/projetos/compromissos/preferências ligados **com a fonte**. Híbrido: dado sensível fica no PC; modos auto/privado/rápido/econômico/offline.
+  Fábrica: escreve, revisa permissões, testa em processo isolado sem rede e instala só com CONFIRMAR (plugin gerado não executa programas).
+### 🎙️ Voz natural (`core/voz_emocao.py`) · 👁️ Contexto vivo (`core/contexto_vivo.py`) — ambos opt-in e locais
+* Emoção/hesitação/correção e interrupção falando; reunião em 3 min, anexo esquecido, erro na tela (respeita o modo foco).
+### 🌐 Rede de NEXUS (`core/rede_nexus.py`)
+* Pareamento por código (20 caracteres, 10 min, uma vez), AES-256-GCM com anti-repetição; memória compartilhada (lista fixa, o mais novo vence, com backup) e tarefas de **leitura** entre aparelhos (só se ligar `aceitar_tarefas`).
+### 🌌 Hub
+* Ficam só os **20 visuais "Novos 3.6"** (mais o orbe de reserva); escolhas antigas migram para a Galáxia.
+### 🐞 Correções internas
+* Trava (deadlock) ao iniciar missão pela voz, achada nos testes de rota.
+
 ## 3.7.0 — 28/10/2026
 
 ### 🔎 OCR na memória de documentos (`core/ocr.py`)

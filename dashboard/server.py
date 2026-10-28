@@ -22,7 +22,7 @@ from pathlib import Path
 _DEPS_OK = False
 try:
     from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException
-    from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
+    from fastapi.responses import HTMLResponse, JSONResponse, FileResponse, Response
     import uvicorn
     _DEPS_OK = True
 except ImportError:
@@ -986,6 +986,81 @@ class DashboardServer:
                     {"error": "File uploads require: pip install python-multipart"},
                     status_code=503,
                 )
+
+        # ── Missões de longa duração (3.8) ───────────────────────────────────
+        def _missao_mod():
+            import importlib
+            return importlib.import_module("actions.missao")
+
+        @app.get("/api/missoes")
+        async def missoes_lista(req: Request):
+            if not _auth(req):
+                return JSONResponse({"error": "Unauthorized"}, status_code=401)
+            try:
+                from core import missoes as _M
+                return JSONResponse({"missoes": [_M.resumo(m) for m in _M.todas()][:30]})
+            except Exception:
+                return JSONResponse({"missoes": []})
+
+        @app.get("/api/missoes/{mid}")
+        async def missoes_detalhe(mid: str, req: Request):
+            if not _auth(req):
+                return JSONResponse({"error": "Unauthorized"}, status_code=401)
+            try:
+                from core import missoes as _M
+                m = _M.carregar(mid)
+                return JSONResponse({"missao": m, "simulacao": _M.simular_plano(m)})
+            except Exception:
+                return JSONResponse({"error": "Não encontrada"}, status_code=404)
+
+        @app.post("/api/missoes/{mid}/{acao}")
+        async def missoes_acao(mid: str, acao: str, req: Request):
+            if not _auth(req):
+                return JSONResponse({"error": "Unauthorized"}, status_code=401)
+            try:
+                body = await req.json()
+            except Exception:
+                body = {}
+            body = body if isinstance(body, dict) else {}
+            try:
+                mod = _missao_mod()
+                mot, ger = mod.motor(), mod.gerente()
+                if acao in ("aprovar", "negar"):
+                    mot.decidir(mid, str(body.get("decisao") or ""), acao == "aprovar")
+                    ger.iniciar(mid)
+                elif acao == "cancelar":
+                    mot.cancelar(mid)
+                elif acao in ("pausar", "retomar"):
+                    mot.pausar(mid, acao == "pausar")
+                    ger.iniciar(mid)
+                elif acao == "desfazer":
+                    return JSONResponse({"ok": True, "texto": mot.desfazer(mid)})
+                else:
+                    return JSONResponse({"error": "Ação inválida"}, status_code=400)
+            except Exception as e:
+                return JSONResponse({"error": str(e)[:200]}, status_code=400)
+            return JSONResponse({"ok": True})
+
+        # ── Rede de NEXUS (3.8): mensagens cifradas entre aparelhos pareados (sem Bearer: a chave do par é a prova) ──
+        _rede_falhas: dict[str, list[float]] = {}
+
+        @app.post("/api/rede")
+        async def rede_nexus_rota(req: Request):
+            ip = _ip(req)
+            agora = time.time()
+            falhas = [t for t in _rede_falhas.get(ip, []) if agora - t < 60]
+            if len(falhas) >= 8:
+                return JSONResponse({"error": "Muitas tentativas"}, status_code=429)
+            try:
+                blob = await req.body()
+                if not blob or len(blob) > 3_500_000:
+                    raise ValueError("tamanho")
+                from actions import rede_nexus as _rn
+                resp = await asyncio.to_thread(_rn.rede().tratar, req.headers.get("x-nexus-peer", "")[:40], blob)
+                return Response(content=resp, media_type="application/octet-stream")
+            except Exception:
+                _rede_falhas[ip] = falhas + [agora]
+                return JSONResponse({"error": "Recusado"}, status_code=400)
 
         @app.get("/api/files")
         async def list_files(req: Request):

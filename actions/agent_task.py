@@ -33,7 +33,8 @@ _ativas: dict[str, threading.Thread] = {}
 _PROIBIDAS = {"agent_task", "orchestrate", "dev_agent", "send_message", "computer_control", "game_updater",
               "system_update", "shortcut_manager", "price_alert", "email_reader",
               "routines", "desktop_control", "neural_core", "focus_mode", "notepad",
-              "video_player", "youtube_video", "flight_finder"}
+              "video_player", "youtube_video", "flight_finder",
+              "plugin_factory", "computer_use", "rede_nexus"}
 _ACOES_PROIBIDAS = {
     "file_controller": {"delete", "move", "rename", "clean_temp", "limpar_temp", "hidden_files",
                         "copy"},

@@ -1,8 +1,13 @@
 {
-  "version": "3.7.0",
+  "version": "3.8.0",
   "codename": "Nexus Ultra 2026",
   "released": "2026-10-28",
   "changelog": [
+    {
+      "version": "3.8.0",
+      "date": "2026-10-28",
+      "notes": "NEXUS ULTRA 2026 3.8 — AGENTES, MEMÓRIA EM GRAFO E REDE. MISSÕES DE LONGA DURAÇÃO: meta → plano → simulação do que muda → executa por horas em segundo plano (sobrevive a reiniciar), confere o resultado e só chama nas decisões importantes (aprovar/negar no painel do celular, desfazer o último passo). ESPECIALISTAS: pesquisa, código, finanças e agenda em paralelo, cada um com permissões próprias. SIMULAÇÃO 'E SE' antes de agir. AUDITORIA verificável (cadeia de hashes): 'por que você fez isso?'. COMPUTER-USE: vê a tela e opera mouse/teclado em passos visíveis, com CONFIRMAR, limites e bloqueio de banco/senha. GRAFO DE CONHECIMENTO: pessoas, projetos, compromissos e preferências ligados, com a fonte de cada ligação. MODELO LOCAL/HÍBRIDO: roteador por sensibilidade, complexidade, internet e modo (dado sensível nunca vai para a nuvem no automático). FÁBRICA DE PLUGINS: o NEXUS escreve, revisa permissões, testa em caixa de areia e só instala com CONFIRMAR. VOZ NATURAL (opt-in): emoção na sua voz, correção/hesitação e interrupção falando. CONTEXTO VIVO (opt-in): reunião em 3 min, anexo esquecido, erro na tela. REDE DE NEXUS: aparelhos pareados por código, memória compartilhada cifrada e tarefas de leitura divididas. HUB: só os 20 visuais Novos 3.6."
+    },
     {
       "version": "3.7.0",
       "date": "2026-10-28",

@@ -56,6 +56,9 @@ EXCLUDE = [
     "memory/autoavaliacao.json", "memory/latencia.json", "memory/resumo_semanal.json",
     # 3.5 — memória de documentos (RAG), plugins instalados pela loja e autores em quem você confia
     "memory/rag_documentos.npz", "memory/rag_pastas.json", "memory/emails_cache/*", "memory/backup_chave.json", "memory/presenca.json", "memory/rag_config.json", "memory/perfil.json", "config/focus_state.json", "memory/push_subs.json", "memory/push_vapid.pem", "memory/plugins_loja.json", "config/autores_confiaveis.json",
+    # 3.8 — auditoria, missões, grafo, rede de NEXUS, agentes, modo do modelo, plugins gerados
+    "memory/auditoria.jsonl", "memory/missoes/*", "memory/grafo.json", "memory/rede_backup/*", "config/rede_nexus.json",
+    "config/agentes.json", "config/hibrido.json", "plugins_gerados/*",
     # o Nexus.exe gerado no seu PC (gerar_exe.bat) — grande demais para o GitHub
     "Nexus.exe", "_internal/*", "build/*", "dist/*",
     "*.log", "*.tmp", "*.part",

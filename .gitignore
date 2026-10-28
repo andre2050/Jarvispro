@@ -34,6 +34,15 @@ memory/projetos.json
 memory/update_state.json
 memory/price_alerts.json
 # 3.4 — bem-estar, vigias, tempo de projeto, núcleo I.S.A. (medidas, reparos e cópias boas)
+# 3.8 — auditoria de decisões, missões, grafo de conhecimento e rede de NEXUS (chaves dos pares!)
+memory/auditoria.jsonl
+memory/missoes/
+memory/grafo.json
+memory/rede_backup/
+config/rede_nexus.json
+config/agentes.json
+config/hibrido.json
+plugins_gerados/
 memory/bemestar.json
 memory/vigias.json
 memory/tempo_projetos.json

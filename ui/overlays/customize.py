@@ -9,7 +9,7 @@ from ..widgets import HueWheel  # noqa: F401
 
 # Temas prontos: um clique troca a cor da interface (e, se quiser, o visual do hub).
 TEMAS = (
-    ("Ultra 2026", "#8a9bff", "nebula"),
+    ("Ultra 2026", "#8a9bff", "prism"),
     ("Aurora",      "#3ee0ff", "galaxy"),
     ("Pôr do sol",  "#ff7a45", "synthwave"),
     ("Matrix",      "#2dff7a", "city"),
