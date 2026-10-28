@@ -1,5 +1,10 @@
 # Mudanças
 
+## 3.9.1 — 28/10/2026
+
+### 🐞 Correção
+* Auto-regeneração/Núcleo I.S.A.: erro “too many values to unpack (expected 2)” na checagem de saúde dos módulos. Seis módulos da 3.9 devolviam texto no lugar de `(ok, mensagem)`; corrigidos, e a checagem passou a aceitar qualquer formato.
+
 ## 3.9.0 — 28/10/2026
 
 ### 🎯 Missões

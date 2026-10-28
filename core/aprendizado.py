@@ -121,5 +121,5 @@ def esquecer(arq=None) -> None:
     _gravar({"ligado": d.get("ligado", False), "contagens": {}, "visto_ate": time.time(), "atualizado": time.time()}, arq)
 
 
-def saude() -> str:
-    return "ligado" if ligado() else "desligado (opt-in)"
+def saude() -> tuple[bool, str]:
+    return True, "ligado" if ligado() else "desligado (opt-in)"

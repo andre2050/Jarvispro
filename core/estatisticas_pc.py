@@ -112,9 +112,9 @@ def texto(d: dict) -> str:
     return " ".join(l)
 
 
-def saude() -> str:
+def saude() -> tuple[bool, str]:
     try:
         import psutil  # noqa: F401
-        return "ok"
+        return True, "ok"
     except Exception:
-        return "psutil ausente"
+        return False, "psutil ausente"
