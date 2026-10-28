@@ -10,8 +10,6 @@
 * Auditoria e trace passaram a mascarar chaves de API mesmo no meio de um texto.
 ### 🔍 Trace local (`core/trace_local.py`)
 * Linha do tempo de cada ferramenta (quem pediu, duração, ok/falha), só em `memory/trace.jsonl` (máx. 5000). Ferramenta `trace` e `GET /api/trace`.
-### 🙂 Visual “Rosto · Real”
-* Com **sua foto** em `config/rosto_hub.png`: ao falar, a boca abre (maxilar, lábio, dentes, língua), a íris se mexe, os olhos piscam, as sobrancelhas sobem e a cabeça acena; varredura e dados caindo por cima. Sem foto, usa um rosto desenhado por código (mais simples). Ajuste de posição em `config/rosto_hub.json`.
 
 ## 4.0.0 — 28/10/2026
 
