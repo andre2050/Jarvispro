@@ -103,33 +103,33 @@ FONT_MONO = "Consolas"
 
 
 class C:
-    # ── NEXUS Ultra 2026 · tema "Ultra 2026" ─────────────────────────────────
+    # ── NEXUS Ultra 2026 · tema "Ultra 2026" (refinado na 3.6: mais profundidade e contraste) ─────────────────────────────────
     # Grafite profundo com leve tom azul-violeta, bordas de vidro fosco e um
     # acento periwinkle luminoso que se desfaz em violeta/magenta nos degradês
     # (ver accent2()). As cores de estado são fixas: violeta = falando,
     # âmbar = pensando, verde = ouvindo.
-    BG        = "#05060d"
-    PANEL     = "#0a0c18"
-    PANEL2    = "#12152c"
-    BORDER    = "#242850"
-    BORDER_B  = "#4a52b4"
-    BORDER_A  = "#303888"
-    PRI       = "#7b8cff"
-    PRI_DIM   = "#5563d6"
-    PRI_GHO   = "#11153a"
-    ACC       = "#ffc46b"
-    ACC2      = "#ffe2a8"
-    VIOLET    = "#c4a5ff"
-    GREEN     = "#5af5c8"
+    BG        = "#070814"
+    PANEL     = "#0e1124"
+    PANEL2    = "#171b38"
+    BORDER    = "#2a3066"
+    BORDER_B  = "#6f7cff"
+    BORDER_A  = "#3d46a0"
+    PRI       = "#8a9bff"
+    PRI_DIM   = "#5f6fe6"
+    PRI_GHO   = "#151a45"
+    ACC       = "#ffc970"
+    ACC2      = "#ffe6b3"
+    VIOLET    = "#c9adff"
+    GREEN     = "#61f7cf"
     GREEN_D   = "#2dd4bf"
     RED       = "#ff6b86"
     MUTED_C   = "#ff5c7a"
-    TEXT      = "#eef0ff"
-    TEXT_DIM  = "#707699"
-    TEXT_MED  = "#adb4dc"
-    WHITE     = "#fafaff"
-    DARK      = "#03040a"
-    BAR_BG    = "#1a1e44"
+    TEXT      = "#f1f3ff"
+    TEXT_DIM  = "#7d83a8"
+    TEXT_MED  = "#b8bfe6"
+    WHITE     = "#fcfcff"
+    DARK      = "#04050c"
+    BAR_BG    = "#1e2352"
 
 
 # Keys tied to the accent colour — status colours (ACC, GREEN, RED…) stay fixed
@@ -143,7 +143,7 @@ _PALETTE_DEFAULTS: dict[str, str] = {k: getattr(C, k) for k in _HUE_LINKED}
 DEFAULT_UI_COLOR = _PALETTE_DEFAULTS["PRI"]
 # Cores padrão das versões anteriores: quem tinha uma delas salva na
 # configuração continua recebendo o tema novo (só cor escolhida de verdade vale).
-LEGACY_DEFAULT_COLORS = ("#5cc8ff", "#3ee0ff")  # padrões antigos (Aurora) migram para o Ultra 2026
+LEGACY_DEFAULT_COLORS = ("#5cc8ff", "#3ee0ff", "#7b8cff")  # padrões antigos (Aurora) migram para o Ultra 2026
 
 
 def accent2(base: str | None = None, shift: float = 0.13) -> str:

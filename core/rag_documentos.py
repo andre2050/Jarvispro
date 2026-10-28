@@ -32,6 +32,7 @@ from core import embeddings as E
 _BASE = Path(__file__).resolve().parent.parent
 ARQUIVO = _BASE / "memory" / "rag_documentos.npz"
 ARQ_PASTAS = _BASE / "memory" / "rag_pastas.json"
+CACHE_EMAILS = _BASE / "memory" / "emails_cache"       # e-mails opt-in (core/rag_emails.py)
 
 EXTENSOES = {
     ".txt", ".md", ".rst", ".csv", ".json", ".log",
@@ -52,6 +53,11 @@ _TRAVA = threading.RLock()
 
 
 # ── pastas escolhidas pela pessoa ────────────────────────────────────────────
+def pastas_extras() -> list[str]:
+    """Fontes internas lidas junto com as pastas do usuário (hoje: o cache de e-mails, só se ele ligou)."""
+    return [str(CACHE_EMAILS)] if (CACHE_EMAILS / "_indice.json").is_file() else []
+
+
 def listar_pastas(arq: Path | None = None) -> list[str]:
     try:
         d = json.loads(Path(arq or ARQ_PASTAS).read_text(encoding="utf-8"))
@@ -275,7 +281,7 @@ class IndiceDocumentos:
     def atualizar(self, preferir: str = "auto", forcar: bool = False, pastas: list[str] | None = None) -> dict:
         """Lê só o que mudou. Devolve {arquivos, trechos, novos_arquivos, alterados, removidos, motor}."""
         with _TRAVA:
-            pastas = pastas if pastas is not None else listar_pastas(self.arq_pastas)
+            pastas = pastas if pastas is not None else listar_pastas(self.arq_pastas) + pastas_extras()
             emb = E.get_embedder(preferir)
             motor_mudou = forcar or emb.nome != self.motor
             atuais = {str(p): p for p in _arquivos(pastas)}
@@ -386,4 +392,6 @@ def indice() -> IndiceDocumentos:
 
 def citacao(t: dict) -> str:
     """'contrato.pdf, p. 3' — a fonte como o NEXUS deve citar."""
+    if str(t["nome"]).startswith("E-mail de "):
+        return re.sub(r" #\d+\.txt$", "", t["nome"])           # “E-mail de Ana · Reunião · 12-10”
     return f"{t['nome']}, {t['loc']}"

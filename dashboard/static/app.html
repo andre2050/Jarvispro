@@ -578,12 +578,39 @@
       _bell.style.display = '';
       _pintaSino();
       _bell.onclick = async () => {
-        if (_avisosLigados()) { try { localStorage.setItem('nexus_avisos', '0'); } catch (e) {} _pintaSino(); toast('Avisos desligados'); return; }
+        if (_avisosLigados()) { try { localStorage.setItem('nexus_avisos', '0'); } catch (e) {} _cancelarPush(); _pintaSino(); toast('Avisos desligados'); return; }
         const p = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
-        if (p === 'granted') { try { localStorage.setItem('nexus_avisos', '1'); } catch (e) {} toast('Avisos ligados'); }
+        if (p === 'granted') { try { localStorage.setItem('nexus_avisos', '1'); } catch (e) {} toast('Avisos ligados'); _assinarPush(); }
         else toast('Permissão negada no navegador');
         _pintaSino();
       };
+    }
+    // Web Push (avisos com o app FECHADO): o celular entrega uma assinatura ao NEXUS; precisa de https confiável (túnel).
+    function _b64uParaBytes(b) {
+      const p = '='.repeat((4 - b.length % 4) % 4), s = (b + p).replace(/-/g, '+').replace(/_/g, '/');
+      return Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+    }
+    async function _assinarPush() {
+      try {
+        if (!('PushManager' in window) || !navigator.serviceWorker) return;
+        const r = await _authFetch('/api/push/chave'); const d = await r.json();
+        if (!d.ok || !d.disponivel) { toast('Avisos com o app fechado: falta o pacote pywebpush no PC'); return; }
+        const reg = await navigator.serviceWorker.ready;
+        const sub = (await reg.pushManager.getSubscription()) ||
+          await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: _b64uParaBytes(d.key) });
+        await _authFetch('/api/push/assinar', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                                 body: JSON.stringify({ subscription: sub.toJSON() }) });
+        toast('Avisos com o app fechado: ligados');
+      } catch (e) { toast('Não consegui ligar os avisos com o app fechado'); }
+    }
+    async function _cancelarPush() {
+      try {
+        const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription();
+        if (!sub) return;
+        await _authFetch('/api/push/cancelar', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                                  body: JSON.stringify({ endpoint: sub.endpoint }) });
+        await sub.unsubscribe();
+      } catch (e) {}
     }
     // Aviso só quando a página está em segundo plano; texto cortado, nada é guardado.
     function _avisar(texto) {

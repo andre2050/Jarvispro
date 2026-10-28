@@ -15,6 +15,7 @@ import re
 import secrets
 import socket
 import string
+import threading
 import time
 from pathlib import Path
 
@@ -488,6 +489,12 @@ class DashboardServer:
         self._tarefas: set = set()                   # referências às tarefas em segundo plano
         self._phone_audio_queue: asyncio.Queue    = asyncio.Queue(maxsize=200)
         self._uploads_dir                 = UPLOADS_DIR
+        self._public_base                 = ""       # URL do túnel (https), quando aberto — core/tunel.py
+        try:
+            from core import tunel as _tn
+            _tn.tunel().ao_mudar(self.set_public_base)
+        except Exception:
+            pass
         self._login_html                  = _read("login.html")
         self._app_html                    = _read("app.html")
         self.app                          = self._build_app()
@@ -506,12 +513,20 @@ class DashboardServer:
         certs = BASE_DIR / "config" / "certs"
         return (certs / "jarvis.key").exists() and (certs / "jarvis.crt").exists()
 
+    def set_public_base(self, url: str) -> None:
+        """Endereço público (túnel https) ou vazio para voltar ao endereço da rede local."""
+        self._public_base = str(url or "").rstrip("/")
+
     def get_url(self) -> str:
+        if self._public_base:
+            return self._public_base
         proto = "https" if self._ssl_enabled() else "http"
         return f"{proto}://{self._ip}:{PORT}"
 
     def get_manual_url(self) -> str:
         """URL for manual browser entry. When HTTPS active, points to alias port (also HTTPS)."""
+        if self._public_base:
+            return self._public_base.removeprefix("https://")
         if self._ssl_enabled():
             return f"{self._ip}:{PORT + 1}"
         return f"{self._ip}:{PORT}"
@@ -608,6 +623,20 @@ class DashboardServer:
             except Exception:
                 dead.add(ws)
         self._clients -= dead
+        self._avisar_celular_fechado(msg)
+
+    def _avisar_celular_fechado(self, msg: dict) -> None:
+        """Resposta do NEXUS e nenhum painel aberto: aviso por Web Push (core/push_web.py), em outra thread."""
+        try:
+            if self._clients or msg.get("type") != "log" or msg.get("speaker") != "jarvis":
+                return
+            from core import push_web as _pw
+            if not _pw.quantas():
+                return
+            threading.Thread(target=_pw.enviar, args=("NEXUS", str(msg.get("text") or "")), daemon=True,
+                             name="push-web").start()
+        except Exception:
+            pass
 
     # ── FastAPI app ───────────────────────────────────────────────────────
 
@@ -619,7 +648,14 @@ class DashboardServer:
             return self._token_ok(tok)
 
         def _ip(req: Request) -> str:
-            return req.client.host if req.client else "?"
+            host = req.client.host if req.client else "?"
+            # Atrás do túnel todo pedido chega de 127.0.0.1: o IP de quem pediu vem no cabeçalho do túnel.
+            # Só vale quando o túnel está aberto E o pedido veio do próprio PC (ninguém de fora consegue forjar).
+            if self._public_base and host in ("127.0.0.1", "::1"):
+                real = req.headers.get("cf-connecting-ip", "").strip()
+                if re.fullmatch(r"[0-9a-fA-F:.]{3,45}", real):
+                    return real
+            return host
 
         def _espere(seg: int):
             return JSONResponse({"ok": False, "error": f"Muitas tentativas. Aguarde {seg} s."},
@@ -664,6 +700,43 @@ class DashboardServer:
                 raise HTTPException(status_code=404)
             return FileResponse(str(STATIC_DIR / "icons" / nome), media_type="image/png",
                                 headers={"Cache-Control": "public, max-age=86400"})
+
+        # ── Web Push (3.6): o celular entrega a assinatura; só com o painel autenticado ──
+        @app.get("/api/push/chave")
+        async def push_chave(req: Request):
+            if not _auth(req):
+                return JSONResponse({"error": "Unauthorized"}, status_code=401)
+            try:
+                from core import push_web as _pw
+                return JSONResponse({"ok": True, "key": _pw.chave_publica(), "disponivel": _pw.disponivel()})
+            except Exception:
+                return JSONResponse({"ok": False, "error": "Push indisponível neste PC."}, status_code=503)
+
+        @app.post("/api/push/assinar")
+        async def push_assinar(req: Request):
+            if not _auth(req):
+                return JSONResponse({"error": "Unauthorized"}, status_code=401)
+            try:
+                body = await req.json()
+                from core import push_web as _pw
+                n = _pw.assinar(body.get("subscription") if isinstance(body, dict) else None)
+            except ValueError as e:
+                return JSONResponse({"ok": False, "error": str(e)}, status_code=400)
+            except Exception:
+                return JSONResponse({"ok": False, "error": "Pedido inválido."}, status_code=400)
+            return JSONResponse({"ok": True, "celulares": n})
+
+        @app.post("/api/push/cancelar")
+        async def push_cancelar(req: Request):
+            if not _auth(req):
+                return JSONResponse({"error": "Unauthorized"}, status_code=401)
+            try:
+                body = await req.json()
+                from core import push_web as _pw
+                n = _pw.cancelar(str(body.get("endpoint") or "") if isinstance(body, dict) else "")
+            except Exception:
+                return JSONResponse({"ok": False, "error": "Pedido inválido."}, status_code=400)
+            return JSONResponse({"ok": True, "celulares": n})
 
         @app.get("/login", response_class=HTMLResponse)
         async def login_page():

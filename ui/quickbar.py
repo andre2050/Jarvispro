@@ -30,7 +30,7 @@ FERRAMENTAS: dict[str, tuple[str, str, str, str]] = {
     "config":     ("⚙", "Configurações", "_open_settings_panel", "Todas as configurações"),
     "usuario":    ("👤", "Meu perfil", "_open_preferences", "Nome, voz, cores e preferências"),
     "telacheia":  ("⛶", "Tela cheia", "_toggle_fullscreen", "Entrar ou sair da tela cheia"),
-    "hud":        ("✨", "Trocar visual", "_toggle_hud_style", "Escolher o visual do hub (6 modelos)"),
+    "hud":        ("✨", "Trocar visual", "_toggle_hud_style", "Escolher o visual do hub (30 modelos)"),
     "atalhos":    ("⌨", "Atalhos", "_open_shortcuts_panel", "Personalizar as teclas de atalho"),
 }
 

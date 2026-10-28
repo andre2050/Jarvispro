@@ -2459,7 +2459,7 @@ class MainWindow(QMainWindow):
         atual = get_hud_style()
         icone, nome, desc = HUD_STYLE_INFO.get(atual, HUD_STYLE_INFO["orb"])
         self._hud_btn.setText(f"{icone}  VISUAL DO HUB: {nome}")
-        self._hud_btn.setToolTip(f"{desc}.\nClique para escolher entre os {len(HUD_STYLE_INFO)} visuais do hub.")
+        self._hud_btn.setToolTip(f"{desc}.\nClique para escolher entre os visuais do hub (Ultra 2026 e os novos da 3.6).")
         self._hud_btn.setStyleSheet(style)
 
     def _toggle_hud_style(self):
@@ -2481,22 +2481,26 @@ class MainWindow(QMainWindow):
         titulo.setEnabled(False)
         menu.addAction(titulo)
         menu.addSeparator()
-        from .hud_core import CORE_INFO
+        from .hud_novos import NOVOS_INFO
         from .hud_ultra import ULTRA_INFO
-        _primeiro_ultra = next(iter(ULTRA_INFO), "")
-        _primeiro_core = next(iter(CORE_INFO), "")
-        for chave, (icone, nome, desc) in HUD_STYLE_INFO.items():
-            for _primeiro, _titulo in ((_primeiro_ultra, "NOVOS · ULTRA 2026"),
-                                       (_primeiro_core, "NOVOS · NEXUSCORE")):
-                if chave == _primeiro:
-                    menu.addSeparator()
-                    _t2 = QAction(_titulo, menu)
-                    _t2.setEnabled(False)
-                    menu.addAction(_t2)
-            marca = "●" if chave == atual else "○"
-            ac = QAction(f"{marca}  {icone}  {nome}   —   {desc}", menu)
-            ac.triggered.connect(lambda _=False, k=chave: self._set_hud_style(k))
-            menu.addAction(ac)
+        # Só os visuais atuais aparecem na lista; os antigos continuam funcionando se já estavam escolhidos.
+        grupos = (("ESSENCIAIS", ("orb", "minimal")),
+                  ("ULTRA 2026", tuple(ULTRA_INFO)),
+                  ("NOVOS · 3.6", tuple(NOVOS_INFO)))
+        visiveis = {k for _, ks in grupos for k in ks}
+        if atual not in visiveis and atual in HUD_STYLE_INFO:
+            grupos = (("ESCOLHIDO (antigo)", (atual,)),) + grupos
+        for titulo_g, chaves in grupos:
+            menu.addSeparator()
+            _t2 = QAction(titulo_g, menu)
+            _t2.setEnabled(False)
+            menu.addAction(_t2)
+            for chave in chaves:
+                icone, nome, desc = HUD_STYLE_INFO[chave]
+                marca = "●" if chave == atual else "○"
+                ac = QAction(f"{marca}  {icone}  {nome}   —   {desc}", menu)
+                ac.triggered.connect(lambda _=False, k=chave: self._set_hud_style(k))
+                menu.addAction(ac)
         if self._hud_btn.isVisible():
             pos = self._hud_btn.mapToGlobal(QPoint(0, self._hud_btn.height()))
         else:

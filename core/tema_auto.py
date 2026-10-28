@@ -26,7 +26,7 @@ ARQ_DIARIO = _BASE / "memory" / "diario.json"
 FAIXAS = (
     (0, "madrugada", "#8a7bff"),
     (6, "manhã", "#4fb8ff"),
-    (12, "tarde", "#7b8cff"),      # o próprio azul-violeta do Ultra 2026
+    (12, "tarde", "#8a9bff"),      # o próprio azul-violeta do Ultra 2026
     (18, "noite", "#b57bff"),
 )
 COR_HUMOR_BAIXO = "#4fd1c0"        # verde-água: calmo
