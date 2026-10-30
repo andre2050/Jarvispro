@@ -1,5 +1,17 @@
 # Mudanças
 
+## 4.2.0 — 30/10/2026
+
+### 🔨 Nexus Forge (`actions/forge_app.py`, `core/forge_engine.py`)
+* Construtor de apps em etapas, para quando você diz **“usa o Forge”**: o Nexus conversa com você, o **arquiteto** monta o plano e você aprova antes de qualquer arquivo ser escrito.
+* O **construtor** (Claude) escreve o código e roda o que escreveu num `.venv` do projeto. O próprio Forge roda o comando de teste do plano e manda corrigir (até 3 rodadas); um **revisor** separado procura bugs e falhas de segurança e o que for grave é corrigido.
+* Cada etapa vira um **checkpoint em git**: “desfazer a última alteração” volta, guardando antes o que você tinha mexido à mão (recuperável pelo `git reflog`). Projetos em `Desktop\NexusForge\<nome>`; depois dá para pedir mudanças (“no app, adiciona…”), revisar, empacotar em zip, gerar o .exe e publicar no GitHub.
+* Publicar no GitHub passa pelo botão **CONFIRMAR** da tela (`core/confirm.py`); o repositório é privado por padrão.
+* Limite de tokens por missão (1,5 milhão) e por dia (6 milhões), ajustáveis por variável de ambiente. Os comandos rodam sem shell, com lista de permitidos, e a chave da API não é passada ao programa gerado.
+* O `dev_agent` continua sendo o padrão para “cria um site / faz um jogo”; o Forge só entra quando você pede.
+* Honesto: o app gerado é código escrito por IA e roda com as permissões do seu usuário — não é uma caixa isolada de verdade; revise o que você não conhece. Usa a chave `anthropic_api_key` (a mesma do `claude_voice`) e cada app gasta créditos.
+* 42 testes novos (`tests/test_forge.py`).
+
 ## 4.1.1 — 28/10/2026
 
 ### 🧹 Hub

@@ -1,8 +1,13 @@
 {
-  "version": "4.1.1",
+  "version": "4.2.0",
   "codename": "Nexus Ultra 2026",
-  "released": "2026-10-28",
+  "released": "2026-10-30",
   "changelog": [
+    {
+      "version": "4.2.0",
+      "date": "2026-10-30",
+      "notes": "NOVO: Nexus Forge (ação forge_app) — construtor de apps em etapas para quando você pede o Forge: você aprova o plano, ele constrói, roda o teste do plano, um revisor separado procura bugs e falhas de segurança, cada etapa vira um checkpoint com “desfazer”, e dá para empacotar em zip, gerar o .exe e publicar no GitHub (com CONFIRMAR na tela). Tem limite de tokens por missão e por dia. O dev_agent continua sendo o padrão para “cria um site / faz um jogo”."
+    },
     {
       "version": "4.1.1",
       "date": "2026-10-28",
