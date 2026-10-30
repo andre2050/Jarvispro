@@ -1,8 +1,13 @@
 {
-  "version": "4.2.1",
+  "version": "4.3.0",
   "codename": "Nexus Ultra 2026",
   "released": "2026-10-30",
   "changelog": [
+    {
+      "version": "4.3.0",
+      "date": "2026-10-30",
+      "notes": "NOVO: o Forge agora cria aplicativos ANDROID de verdade (Kotlin + Jetpack Compose): escreve o código, compila o APK com o Gradle, roda os testes, instala no seu celular por USB (adb) e entrega o APK de teste. Precisa do Android Studio (SDK + JDK 17) no PC; ações novas: android_check, install, apk."
+    },
     {
       "version": "4.2.1",
       "date": "2026-10-30",

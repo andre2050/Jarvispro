@@ -1,5 +1,16 @@
 # Mudanças
 
+## 4.3.0 — 30/10/2026
+
+### 📱 Forge para Android (`core/forge_android.py`, `core/forge_engine.py`, `actions/forge_app.py`)
+* O Forge agora cria **aplicativos Android nativos** (Kotlin + Jetpack Compose): o arquiteto marca a plataforma `android`, o construtor escreve o projeto Gradle, o próprio Forge **compila o APK de teste** (`gradlew assembleDebug`), roda os testes unitários e o revisor lê o código com atenção a permissões e segredos.
+* **Instala no seu celular** (“instala no celular”): acha o aparelho por USB (adb), compila antes se ainda não há APK, instala e abre o app. Também entrega o APK em `NexusForge\_entregas` (“gera o apk”).
+* **Confere o PC antes de gastar tokens** (“ambiente android” / ação `android_check`): procura JDK 17+, Android SDK (com licenças), adb e Gradle e diz em português o que falta. Sem isso o plano fica guardado e nada é construído.
+* Versões fixas que funcionam juntas (Gradle 8.9, AGP 8.5.2, Kotlin 2.0.20, SDK 34, minSdk 26). O Forge cria `local.properties`, `gradle.properties` e o `gradlew` sozinho; `local.properties` (caminho do seu PC) fica fora do git.
+* Segurança: `gradlew` só roda `assembleDebug`, `testDebugUnitTest`, `lintDebug` e `clean`; o `adb` só aceita listar aparelhos, instalar APK **da pasta do projeto**, `logcat -d`, abrir/parar o app e desinstalar o pacote do projeto. A chave da API continua sem ser passada aos processos filhos.
+* Só **APK de depuração**: assinar para a Play Store não está incluído.
+* Honesto: os 71 testes novos (`tests/test_forge_android.py`) usam um Android Studio de mentira (scripts que fingem JDK, SDK, Gradle e adb). Eles provam a lógica do Forge, **não** que um build Android real passa; isso só se vê no seu PC, e o primeiro build baixa muita coisa e demora. O Gradle executa o script do projeto, que foi escrito por IA e roda com as suas permissões: revise o que você não conhece.
+
 ## 4.2.1 — 30/10/2026
 
 ### 🐞 Correção — o Forge não achava a chave do Claude

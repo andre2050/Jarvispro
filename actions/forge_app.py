@@ -173,6 +173,11 @@ def forge_app(
         if m.plano_pendente is None:
             return "[failed] There is no plan waiting for approval. Make one first with action=plan."
         titulo = m.plano_pendente.get("titulo", "app")
+        bloqueio = m._bloqueio_android(m.plano_pendente)
+        if bloqueio:
+            return (f"[failed] {bloqueio} The plan is kept. Tell the user clearly, in their language, what is missing "
+                    "and how to fix it (install Android Studio and open it once, accept the SDK licenses, JDK 17+), "
+                    "then they can ask you to build again.")
         return _rodar(f"build: {titulo}", m.construir_pendente, speak)
 
     if acao in ("list", "listar"):
@@ -185,6 +190,9 @@ def forge_app(
             return "[failed] I could not find that Forge project. Use action=list to see the names."
         m.abrir_projeto(nome or descricao)
         return "[done] " + _drenar()
+
+    if acao in ("android_check", "android", "ambiente_android"):
+        return "[done] " + m.checar_ambiente_android() + " Tell the user this briefly, in their language."
 
     if acao in ("usage", "uso", "gasto"):
         m.falar_uso()
@@ -204,6 +212,17 @@ def forge_app(
 
     if acao in ("undo", "desfazer"):
         m.desfazer()
+        return "[done] " + _drenar()
+
+    if acao in ("install", "instalar"):
+        if not m._eh_android():
+            return "[failed] This project is not an Android app."
+        return _rodar(f"install {m.pasta.name} on the phone", m.instalar_no_celular, speak)
+
+    if acao in ("apk",):
+        if not m._eh_android():
+            return "[failed] This project is not an Android app."
+        m.entregar_apk()
         return "[done] " + _drenar()
 
     if acao in ("package", "empacotar", "zip"):
@@ -229,7 +248,7 @@ def forge_app(
             run=_publicar)
 
     return ("[failed] Unknown action. Use plan, build, modify, review, undo, package, executable, publish, "
-            "list, open, usage or check.")
+            "list, open, usage, check, android_check, install or apk.")
 
 
 # ── Tool declaration (auto-discovered by core/action_loader.py) ──────────────
@@ -240,6 +259,8 @@ TOOL = {
         "undo checkpoints and a token budget). Use it ONLY when the user explicitly asks for the Forge ('use the Forge', "
         "'forge', 'plan it first and build it with review and tests'), or to keep working on a project the Forge made. "
         "For an ordinary 'create / make me a site, app, game or script' use dev_agent instead. "
+        "For a real Android app (APK) the Forge writes native Kotlin + Jetpack Compose, compiles with Gradle and installs on the phone by adb; "
+        "it needs Android Studio (SDK + JDK 17) on the PC. "
         "Flow: first talk to the user to learn what the app does, where it runs (PC, browser or Android), the main "
         "screens and a name; call action=plan with all of that in description; read the plan back and ask for approval; "
         "only after a clear yes call action=build (runs in the background, the user is told when it is ready). "
@@ -247,13 +268,14 @@ TOOL = {
         "code for bugs and security problems and fixes the serious ones), action=undo (back to before the last Forge "
         "change), action=package (zip in NexusForge\\_entregas), action=executable (PyInstaller .exe for Python apps), "
         "action=publish (GitHub, private repo by default; the user must press CONFIRM on screen), action=list, "
-        "action=open, action=usage (tokens spent), action=check (tests the Anthropic key without spending anything; "
+        "action=open, action=usage (tokens spent), action=android_check (is this PC ready to build Android apps: JDK, SDK, adb, phone connected), "
+        "action=install (Android projects: build the debug APK and install it on the USB-connected phone), action=apk (copy the debug APK to NexusForge\\_entregas), action=check (tests the Anthropic key without spending anything; "
         "use it when the Forge fails because of the key, the package or the account)."),
     "parameters": {
         "type": "OBJECT",
         "properties": {
             "action": {"type": "STRING",
-                       "description": "plan (default) | build | modify | review | undo | package | executable | publish | list | open | usage | check"},
+                       "description": "plan (default) | build | modify | review | undo | package | executable | publish | list | open | usage | check | android_check | install | apk"},
             "description": {"type": "STRING",
                             "description": "For plan: the full brief in the user's words (what it does, where it runs, screens, name). For modify: the change to make."},
             "project_name": {"type": "STRING",

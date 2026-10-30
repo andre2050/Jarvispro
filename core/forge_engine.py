@@ -69,6 +69,8 @@ from datetime import date
 from pathlib import Path
 from typing import Callable, Optional
 
+from core import forge_android as AND
+
 try:
     import anthropic
 except ImportError:  # tratado em _cliente()
@@ -100,7 +102,9 @@ ARQUIVOS_MAX = 300         # arquivos por projeto
 COMANDOS_PERMITIDOS = {"python", "python3", "py", "pip", "pip3", "pytest", "node", "npm", "npx"}
 EXT_BLOQUEADAS = {".exe", ".dll", ".msi", ".scr", ".com"}
 PASTAS_INTERNAS = {".git", ".forge", ".venv"}
-PASTAS_IGNORADAS = PASTAS_INTERNAS | {"__pycache__", "node_modules", "dist", "build", ".pytest_cache"}
+PASTAS_IGNORADAS = PASTAS_INTERNAS | {"__pycache__", "node_modules", "dist", "build", ".pytest_cache", ".gradle", ".idea"}
+TIMEOUT_GRADLE = 1500      # segundos para um build do Gradle (o primeiro baixa muita coisa)
+PALAVRAS_ANDROID = re.compile(r"\b(android|apk|celular|smartphone|play store)\b")
 
 GATILHO_CRIAR = re.compile(
     r"\b(criar|cria|fazer|faz|construir|constroi|desenvolver)\b.{0,25}\b(aplicativo|app|programa|software)\b"
@@ -110,7 +114,7 @@ RECEITAS = """\
 Receitas de stack (escolha a que melhor serve ao pedido):
 - PC com janela: Python + Tkinter (sem dependências extras quando possível).
 - Navegador: HTML/CSS/JS puro, ou Python + Flask para app com servidor.
-- Android: PWA instalável (manifest + service worker). Alternativa: Kivy, explicando no README como gerar o APK.
+- Android: se o usuário quer um aplicativo de celular de verdade (APK), plataforma "android": Kotlin + Jetpack Compose nativo, build com Gradle (o Forge compila e instala no celular por adb). Só use PWA se ele pedir algo que funcione no navegador do celular.
 - Linha de comando: Python + argparse.
 - Jogo simples: Python + pygame.
 Prefira o que roda direto no PC do usuário sem toolchains pesadas."""
@@ -122,8 +126,10 @@ Responda SOMENTE com um JSON válido, sem texto fora dele, neste formato:
   "resumo": "2 frases em português simples, para ser lido em voz alta",
   "stack": "tecnologias escolhidas",
   "arquivos": ["lista", "de", "arquivos", "planejados"],
+  "plataforma": "android | desktop | web | cli | jogo",
+  "pacote": "só para android: applicationId em minúsculas, ex: com.nexus.oitovias",
   "entrada": "arquivo principal para executar (ex: main.py) ou \\"\\" se não se aplica",
-  "comando_teste": "um comando curto que valida o app SEM abrir janela nem servidor (ex: python -m pytest -q, ou python -m py_compile main.py)",
+  "comando_teste": "um comando curto que valida o app SEM abrir janela nem servidor (ex: python -m pytest -q, ou python -m py_compile main.py; no android: gradlew testDebugUnitTest assembleDebug)",
   "como_executar": "comando para rodar o app",
   "riscos": ["limitações ou coisas que o usuário deve saber"]}}"""
 
@@ -201,7 +207,8 @@ T_ESCREVER = _tool("escrever_arquivo", "Cria ou sobrescreve um arquivo do projet
 T_LER = _tool("ler_arquivo", "Lê um arquivo do projeto.", {"caminho": {"type": "string"}}, ["caminho"])
 T_LISTAR = _tool("listar_arquivos", "Lista os arquivos do projeto.", {}, [])
 T_CMD = _tool("executar_comando",
-              "Executa um comando na pasta do projeto (python, pip, pytest, node, npm, npx). "
+              "Executa um comando na pasta do projeto (python, pip, pytest, node, npm, npx; em projeto Android também gradlew e adb, "
+              "nas formas permitidas). "
               "Sem shell, sem pipes. python/pip usam o venv do projeto.",
               {"comando": {"type": "string"}}, ["comando"])
 T_CONCLUIR = _tool("concluir", "Chame quando o trabalho estiver pronto.",
@@ -215,7 +222,11 @@ T_REPORTAR = _tool("reportar_revisao", "Entrega o resultado da revisão.",
                         "required": ["gravidade", "descricao"]}}},
                    ["nota", "problemas"])
 
+T_ANDROID = _tool("android_preparar",
+                  "Só em projetos Android: depois de escrever settings.gradle.kts e os build.gradle.kts, cria local.properties, "
+                  "gradle.properties e o gradlew (Gradle do PC). Chame antes de rodar gradlew.", {}, [])
 TOOLS_CONSTRUTOR = [T_ESCREVER, T_LER, T_LISTAR, T_CMD, T_CONCLUIR]
+TOOLS_CONSTRUTOR_ANDROID = TOOLS_CONSTRUTOR + [T_ANDROID]
 TOOLS_REVISOR = [T_LER, T_LISTAR, T_REPORTAR]
 
 
@@ -314,6 +325,15 @@ class NexusForge:
         if re.search(r"\bpublic(ar|a)\b.*\bgithub\b", n):
             self.publicar()
             return True
+        if re.search(r"\b(instal(ar|a)|manda(r)?)\b.*\b(celular|telefone|android)\b", n):
+            self._bg(self.instalar_no_celular)
+            return True
+        if re.search(r"\b(gera(r)?|entrega(r)?|pega(r)?)\b.*\bapk\b", n):
+            self.entregar_apk()
+            return True
+        if re.search(r"\b(ambiente|ferramentas)\b.*\bandroid\b", n):
+            self.checar_ambiente_android()
+            return True
         if re.search(r"\babr(ir|a)\b.*\bpasta\b", n):
             self.abrir_pasta()
             return True
@@ -352,6 +372,10 @@ class NexusForge:
             self._fala("Combinado, não vou construir agora. Quando quiser, é só pedir de novo.")
             return
 
+        bloqueio = self._bloqueio_android(plano)
+        if bloqueio:
+            self._fala(bloqueio + " Resolva isso e peça de novo; não construí nada.")
+            return
         self.pasta = self._pasta_nova(plano.get("titulo", "app"))
         self.plano = plano
         self._iniciar_projeto(plano, brief)
@@ -371,6 +395,10 @@ class NexusForge:
         if not self._pendente:
             return False
         plano, brief = self._pendente
+        bloqueio = self._bloqueio_android(plano)
+        if bloqueio:
+            self._fala(bloqueio + " O plano continua guardado; resolva e peça para construir de novo.")
+            return False
         self._pendente = None
         self.pasta = self._pasta_nova(plano.get("titulo", "app"))
         self.plano = plano
@@ -391,13 +419,163 @@ class NexusForge:
         plano.setdefault("arquivos", [])
         plano.setdefault("comando_teste", "")
         plano.setdefault("entrada", "")
+        self._normalizar_android(plano, brief)
         return plano
+
+    # ------------------------------------------------------------ Android
+    @staticmethod
+    def _plano_android(plano: Optional[dict]) -> bool:
+        return str((plano or {}).get("plataforma", "")).strip().lower() == "android"
+
+    def _eh_android(self) -> bool:
+        return self._plano_android(self.plano)
+
+    def _normalizar_android(self, plano: dict, brief: str):
+        """Fecha o que o arquiteto deixou aberto: plataforma, pacote válido e comando de teste do Gradle."""
+        plat = str(plano.get("plataforma", "")).strip().lower()
+        if plat not in ("android", "desktop", "web", "cli", "jogo"):
+            plat = "android" if PALAVRAS_ANDROID.search(_norm(f"{plano.get('stack', '')} {plano.get('titulo', '')}")) \
+                and re.search(r"kotlin|compose|gradle", _norm(str(plano.get("stack", "")))) else ""
+        plano["plataforma"] = plat
+        if plat != "android":
+            return
+        pacote = str(plano.get("pacote") or "").strip().lower()
+        if not AND.PACOTE.match(pacote):
+            pacote = AND.pacote_padrao(str(plano.get("titulo", "app")))
+        plano["pacote"] = pacote
+        plano["apk"] = AND.APK_PADRAO
+        if "gradlew" not in str(plano.get("comando_teste", "")):
+            plano["comando_teste"] = "gradlew testDebugUnitTest assembleDebug"
+        plano["entrada"] = ""
+        riscos = list(plano.get("riscos") or [])
+        riscos.append("O primeiro build baixa o Gradle e as bibliotecas do Android e pode levar vários minutos.")
+        plano["riscos"] = riscos
+
+    def _sistema(self, base: str) -> str:
+        """Acrescenta as regras de Android ao papel (construtor, editor ou revisor) quando o projeto é Android."""
+        if not self._eh_android():
+            return base
+        extra = AND.SISTEMA_REVISOR_ANDROID if base is SISTEMA_REVISOR else AND.SISTEMA_ANDROID
+        return base + "\n\n" + extra
+
+    def _tools(self) -> list:
+        return TOOLS_CONSTRUTOR_ANDROID if self._eh_android() else TOOLS_CONSTRUTOR
+
+    def _toolchain(self) -> "AND.Toolchain":
+        return AND.detectar()
+
+    def _bloqueio_android(self, plano: Optional[dict]) -> Optional[str]:
+        """Frase dizendo o que falta no PC para construir um app Android, ou None se pode seguir."""
+        if not self._plano_android(plano):
+            return None
+        falta = self._toolchain().faltando_para(self.pasta)
+        if not falta:
+            return None
+        return "Para construir um app Android neste PC falta: " + "; ".join(falta) + "."
+
+    def checar_ambiente_android(self) -> str:
+        tc = self._toolchain()
+        texto = AND.resumo(tc, self.pasta)
+        if tc.adb and not tc.faltando_para(self.pasta):
+            try:
+                dev = AND.listar_dispositivos(tc.adb, AND.ambiente(tc, self._env_limpo()))
+            except Exception:
+                dev = []
+            prontos = [d for d, e in dev if e == "device"]
+            texto += (f" Celular conectado: {len(prontos)}." if prontos else
+                      " Nenhum celular conectado (ligue a Depuração USB e plugue o cabo).")
+        self._fala(texto)
+        return texto
+
+    def android_preparar(self) -> str:
+        tc = self._toolchain()
+        falta = tc.faltando_para(self.pasta)
+        if tc.base:
+            return "ERRO: " + "; ".join(tc.base)
+        msgs = AND.preparar_projeto(self.pasta, tc, AND.ambiente(tc, self._env_limpo()))
+        if falta and not (self.pasta / ("gradlew.bat" if AND.WIN else "gradlew")).is_file():
+            msgs.append("AVISO: " + "; ".join(falta))
+        return " ".join(msgs)
+
+    def _apk(self) -> Optional[Path]:
+        rel = str((self.plano or {}).get("apk") or AND.APK_PADRAO)
+        try:
+            apk = (self.pasta / rel).resolve()
+            if self.pasta.resolve() in apk.parents and apk.is_file():
+                return apk
+        except Exception:
+            pass
+        return None
+
+    def entregar_apk(self) -> Optional[Path]:
+        apk = self._apk()
+        if not apk:
+            self._fala("Ainda não existe um APK deste projeto. Peça para construir ou rode o build primeiro.")
+            return None
+        destino_dir = self.raiz / "_entregas"
+        destino_dir.mkdir(exist_ok=True)
+        destino = destino_dir / f"{self.pasta.name}-debug.apk"
+        shutil.copy2(apk, destino)
+        self._fala(f"O APK de teste está em {destino.name}, na pasta de entregas. É um APK de depuração, para instalar no seu celular.")
+        return destino
+
+    def _adb(self, args):
+        """Roda o adb já validado. Devolve (código, saída)."""
+        tc = self._toolchain()
+        if not tc.adb:
+            return 127, "o adb não foi encontrado; instale o Android Studio (platform-tools)."
+        try:
+            final = AND.validar_adb(args, self.pasta, str((self.plano or {}).get("pacote", "")))
+        except ValueError as e:
+            return 126, str(e)
+        return self._executar([str(tc.adb)] + final, AND.ambiente(tc, self._env_limpo()), TIMEOUT_CMD)
+
+    def instalar_no_celular(self) -> bool:
+        if not self._eh_android():
+            self._fala("Este projeto não é um app Android.")
+            return False
+        tc = self._toolchain()
+        if not tc.adb:
+            self._fala("Não achei o adb. Instale o Android Studio, que traz o platform-tools.")
+            return False
+        try:
+            dev = AND.listar_dispositivos(tc.adb, AND.ambiente(tc, self._env_limpo()))
+        except Exception as e:
+            self._fala(f"Não consegui falar com o adb: {e}")
+            return False
+        prontos = [d for d, e in dev if e == "device"]
+        if not prontos:
+            if any(e == "unauthorized" for _, e in dev):
+                self._fala("O celular está conectado mas não autorizou este computador. Desbloqueie o aparelho e toque em Permitir.")
+            else:
+                self._fala("Não achei nenhum celular. Ligue a Depuração USB nas opções do desenvolvedor e plugue o cabo.")
+            return False
+        if len(prontos) > 1:
+            self._fala("Há mais de um aparelho conectado. Deixe só um e peça de novo.")
+            return False
+        if not self._apk():
+            self._fala("Ainda não há APK; vou compilar primeiro.")
+            codigo, saida = self._comando("gradlew assembleDebug")
+            if codigo != 0 or not self._apk():
+                self._fala("A compilação falhou, então não instalei nada. O erro ficou no registro do projeto.")
+                self._rastro("instalar_build_falhou", saida=saida[-1500:])
+                return False
+        codigo, saida = self._adb(["-s", prontos[0], "install", "-r", str((self.plano or {}).get("apk") or AND.APK_PADRAO)])
+        self._rastro("instalar", codigo=codigo, saida=saida[-500:])
+        if codigo != 0 or "Success" not in saida:
+            self._fala("A instalação no celular falhou. " + saida.strip().splitlines()[-1][:160] if saida.strip() else "A instalação falhou.")
+            return False
+        pacote = str((self.plano or {}).get("pacote", ""))
+        if AND.PACOTE.match(pacote):
+            self._adb(["-s", prontos[0], "shell", "monkey", "-p", pacote, "-c", "android.intent.category.LAUNCHER", "1"])
+        self._fala("Instalei e abri o app no seu celular.")
+        return True
 
     def _construir(self, plano: dict, brief: str):
         self._marcar("início do projeto")
         inicio = (f"Construa este aplicativo do zero.\n\nPedido do usuário:\n{brief}\n\n"
                   f"Plano aprovado:\n{json.dumps(plano, ensure_ascii=False, indent=2)}")
-        r = self._agente(SISTEMA_CONSTRUTOR, inicio, MODELO_PADRAO, TOOLS_CONSTRUTOR, "concluir")
+        r = self._agente(self._sistema(SISTEMA_CONSTRUTOR), inicio, MODELO_PADRAO, self._tools(), "concluir")
         self._checkpoint("construção inicial")
         ok = self._verificar(plano)
         self._fala("Código escrito. Chamando o revisor.")
@@ -427,7 +605,7 @@ class NexusForge:
         inicio = (f"Pedido de alteração: {pedido}\n\nPlano original:\n"
                   f"{json.dumps(self.plano, ensure_ascii=False)}\n\nPedidos anteriores:\n{hist}\n\n"
                   f"Arquivos atuais:\n{self._listar()}")
-        r = self._agente(SISTEMA_EDITOR, inicio, MODELO_PADRAO, TOOLS_CONSTRUTOR, "concluir")
+        r = self._agente(self._sistema(SISTEMA_EDITOR), inicio, MODELO_PADRAO, self._tools(), "concluir")
         self._checkpoint(f"edição: {pedido[:60]}")
         ok = self._verificar(self.plano)
         self._checkpoint("edição verificada")
@@ -448,16 +626,16 @@ class NexusForge:
             if rodada == MAX_RODADAS_VERIF - 1:
                 break
             self._fala("Os testes falharam. Mandando o construtor corrigir.")
-            self._agente(SISTEMA_EDITOR,
+            self._agente(self._sistema(SISTEMA_EDITOR),
                          f"O comando de teste `{cmd}` falhou (código {codigo}). Saída:\n{saida}\n\n"
                          f"Arquivos:\n{self._listar()}\n\nCorrija o código (não apague os testes só para passar).",
-                         MODELO_PADRAO, TOOLS_CONSTRUTOR, "concluir")
+                         MODELO_PADRAO, self._tools(), "concluir")
             self._checkpoint(f"correção {rodada + 1}")
         return False
 
     def _revisar_e_corrigir(self) -> Optional[int]:
         try:
-            rev = self._agente(SISTEMA_REVISOR,
+            rev = self._agente(self._sistema(SISTEMA_REVISOR),
                                f"Pedido e plano do projeto:\n{json.dumps(self.plano, ensure_ascii=False)}\n\n"
                                f"Arquivos:\n{self._listar()}",
                                MODELO_REVISOR, TOOLS_REVISOR, "reportar_revisao", max_passos=30)
@@ -472,9 +650,9 @@ class NexusForge:
         if graves:
             self._fala(f"O revisor achou {len(graves)} problema grave. Corrigindo.")
             lista = "\n".join(f"- [{p.get('arquivo', '?')}] {p.get('descricao')}" for p in graves)
-            self._agente(SISTEMA_EDITOR, f"O revisor apontou problemas graves. Corrija:\n{lista}\n\n"
-                                         f"Arquivos:\n{self._listar()}",
-                         MODELO_PADRAO, TOOLS_CONSTRUTOR, "concluir")
+            self._agente(self._sistema(SISTEMA_EDITOR), f"O revisor apontou problemas graves. Corrija:\n{lista}\n\n"
+                                                        f"Arquivos:\n{self._listar()}",
+                         MODELO_PADRAO, self._tools(), "concluir")
             self._checkpoint("correções do revisor")
         self._gravar_revisao(rev)
         return rev.get("nota")
@@ -621,6 +799,10 @@ class NexusForge:
             if nome == "executar_comando":
                 codigo, saida = self._comando(args["comando"])
                 return f"[código {codigo}]\n{saida}"
+            if nome == "android_preparar":
+                if not self._eh_android():
+                    return "ERRO: este projeto não é Android."
+                return self.android_preparar()
             return f"ERRO: ferramenta desconhecida {nome}"
         except Exception as e:
             return f"ERRO: {e}"
@@ -650,8 +832,25 @@ class NexusForge:
         if not args:
             return 2, "comando vazio"
         nome = Path(args[0]).name.lower()
-        if nome.endswith(".exe"):
+        if nome.endswith((".exe", ".bat")):
             nome = nome[:-4]
+        if nome in ("gradlew", "adb"):
+            if not self._eh_android():
+                return 126, f"'{nome}' só vale em projetos Android."
+            if nome == "adb":
+                return self._adb(args[1:])
+            erro = AND.validar_gradle(args[1:])
+            if erro:
+                return 126, erro
+            wrapper = self.pasta / ("gradlew.bat" if AND.WIN else "gradlew")
+            if not wrapper.is_file():
+                return 127, "o gradlew ainda não existe; chame a ferramenta android_preparar primeiro."
+            tc = self._toolchain()
+            if tc.base:
+                return 127, "falta no PC: " + "; ".join(tc.base)
+            extra = [] if "--console=plain" in args else ["--console=plain"]
+            return self._executar([str(wrapper)] + args[1:] + extra, AND.ambiente(tc, self._env_limpo()),
+                                  TIMEOUT_GRADLE, cauda=True)
         if nome not in COMANDOS_PERMITIDOS:
             return 126, f"comando '{nome}' não permitido. Permitidos: {', '.join(sorted(COMANDOS_PERMITIDOS))}"
         resto = args[1:]
@@ -677,17 +876,24 @@ class NexusForge:
                 if not exe:
                     return 127, f"'{nome}' não está instalado neste computador."
                 cmd = [exe] + resto
-            r = subprocess.run(cmd, cwd=self.pasta, capture_output=True, text=True, encoding="utf-8",
-                               errors="replace", timeout=TIMEOUT_CMD, env=self._env_limpo(),
-                               stdin=subprocess.DEVNULL)
-            saida = (r.stdout or "") + (r.stderr or "")
-            if len(saida) > SAIDA_MAX:
-                saida = saida[:SAIDA_MAX // 2] + "\n[...cortado...]\n" + saida[-SAIDA_MAX // 2:]
-            return r.returncode, saida.strip() or "(sem saída)"
-        except subprocess.TimeoutExpired:
-            return 124, f"tempo esgotado ({TIMEOUT_CMD}s); o processo foi encerrado."
+            return self._executar(cmd, self._env_limpo(), TIMEOUT_CMD)
         except Exception as e:
             return 1, f"erro ao executar: {e}"
+
+    def _executar(self, cmd, env, timeout, cauda: bool = False):
+        """Roda `cmd` na pasta do projeto, sem shell. `cauda`: guarda o FIM da saída (erros do Gradle vêm no fim)."""
+        try:
+            r = subprocess.run(cmd, cwd=self.pasta, capture_output=True, text=True, encoding="utf-8",
+                               errors="replace", timeout=timeout, env=env, stdin=subprocess.DEVNULL)
+        except subprocess.TimeoutExpired:
+            return 124, f"tempo esgotado ({timeout}s); o processo foi encerrado."
+        except Exception as e:
+            return 1, f"erro ao executar: {e}"
+        saida = (r.stdout or "") + (r.stderr or "")
+        if len(saida) > SAIDA_MAX:
+            saida = ("[...início cortado...]\n" + saida[-SAIDA_MAX:]) if cauda else \
+                saida[:SAIDA_MAX // 2] + "\n[...cortado...]\n" + saida[-SAIDA_MAX // 2:]
+        return r.returncode, saida.strip() or "(sem saída)"
 
     # ------------------------------------------------------------ git: checkpoints e desfazer
     def _git(self, *a):
@@ -811,7 +1017,8 @@ class NexusForge:
 
     def _iniciar_projeto(self, plano: dict, brief: str):
         (self.pasta / ".forge").mkdir(exist_ok=True)
-        (self.pasta / ".gitignore").write_text(".venv/\n.forge/\n__pycache__/\n*.pyc\nnode_modules/\ndist/\nbuild/\n",
+        extra = "\n".join(["local.properties", ".gradle/", ".idea/", "*.apk"]) + "\n" if self._plano_android(plano) else ""
+        (self.pasta / ".gitignore").write_text(".venv/\n.forge/\n__pycache__/\n*.pyc\nnode_modules/\ndist/\nbuild/\n" + extra,
                                                encoding="utf-8")
         (self.pasta / ".forge" / "plano.json").write_text(json.dumps(plano, ensure_ascii=False, indent=2),
                                                           encoding="utf-8")
