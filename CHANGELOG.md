@@ -1,5 +1,14 @@
 # Mudanças
 
+## 4.2.1 — 30/10/2026
+
+### 🐞 Correção — o Forge não achava a chave do Claude
+* O Forge procurava a chave só em `anthropic_api_key` (`config/api_keys.json`), mas a tela de Configurações guarda a chave do Claude em outro lugar (`llm_keys.claude`: MOTOR DE VOZ → **Chave do provedor**). Quem colou a chave na tela ouvia o Forge reclamar da chave. Agora ele acha nos dois lugares: a da tela vale mais que a do json, que vale mais que a variável `ANTHROPIC_API_KEY`.
+* Os erros agora dizem **o que fazer**: sem chave (e onde colar), chave recusada, conta sem crédito, sem internet, pacote `anthropic` ausente. Antes quase tudo virava “Confira a chave da API.” e a falta de crédito virava um texto cortado de código.
+* Nova ação `check` (“testa a chave do Forge”): confere o pacote, a chave e a resposta da Anthropic sem gastar tokens e diz de onde a chave veio (nunca a mostra). O saldo da conta só aparece quando o Forge gasta.
+* Bom saber (pelo `core/gemini.py`): ter `anthropic_api_key` no json também faz as chamadas rápidas do próprio NEXUS irem para o Claude e gastarem crédito; a chave só em `llm_keys` não faz isso.
+* 18 testes novos em `tests/test_forge.py`, inclusive um que grava a chave pelo mesmo caminho da tela.
+
 ## 4.2.0 — 30/10/2026
 
 ### 🔨 Nexus Forge (`actions/forge_app.py`, `core/forge_engine.py`)

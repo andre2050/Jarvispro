@@ -153,6 +153,11 @@ def forge_app(
     m = _motor()
     _msgs.clear()
 
+    if acao in ("check", "test_key", "testar", "chave"):
+        ok, frase = m.testar_chave()
+        return (("[done] " if ok else "[failed] ") + frase +
+                " Tell the user this in their language, short and clear.")
+
     if acao in ("plan", "planejar", "create", "criar"):
         if not descricao:
             return ("[failed] Ask the user what the app should do, where it runs (PC, browser or Android), the "
@@ -160,7 +165,8 @@ def forge_app(
         try:
             plano = m.planejar(descricao)
         except Exception as e:
-            return f"[failed] I could not make the plan: {FE.NexusForge._msg_erro(e)}"
+            return (f"[failed] I could not make the plan: {FE.NexusForge._msg_erro(e)} "
+                    "Tell the user this clearly, in their language, including what they need to do.")
         return _texto_do_plano(plano)
 
     if acao in ("build", "construir"):
@@ -223,7 +229,7 @@ def forge_app(
             run=_publicar)
 
     return ("[failed] Unknown action. Use plan, build, modify, review, undo, package, executable, publish, "
-            "list, open or usage.")
+            "list, open, usage or check.")
 
 
 # ── Tool declaration (auto-discovered by core/action_loader.py) ──────────────
@@ -241,12 +247,13 @@ TOOL = {
         "code for bugs and security problems and fixes the serious ones), action=undo (back to before the last Forge "
         "change), action=package (zip in NexusForge\\_entregas), action=executable (PyInstaller .exe for Python apps), "
         "action=publish (GitHub, private repo by default; the user must press CONFIRM on screen), action=list, "
-        "action=open, action=usage (tokens spent)."),
+        "action=open, action=usage (tokens spent), action=check (tests the Anthropic key without spending anything; "
+        "use it when the Forge fails because of the key, the package or the account)."),
     "parameters": {
         "type": "OBJECT",
         "properties": {
             "action": {"type": "STRING",
-                       "description": "plan (default) | build | modify | review | undo | package | executable | publish | list | open | usage"},
+                       "description": "plan (default) | build | modify | review | undo | package | executable | publish | list | open | usage | check"},
             "description": {"type": "STRING",
                             "description": "For plan: the full brief in the user's words (what it does, where it runs, screens, name). For modify: the change to make."},
             "project_name": {"type": "STRING",

@@ -151,6 +151,27 @@ class Orcamento(Exception):
     """Limite de tokens atingido."""
 
 
+class ChaveAusente(RuntimeError):
+    """O NEXUS não tem chave da Anthropic."""
+
+
+class SDKAusente(RuntimeError):
+    """O pacote anthropic não está instalado."""
+
+
+# Frases curtas e acionáveis: o NEXUS as fala em voz alta.
+MSG_SDK = ("O Forge precisa do pacote anthropic, que não está instalado neste computador. "
+           "Rode o Instalar o NEXUS de novo ou, no terminal, pip install anthropic.")
+MSG_SEM_CHAVE = ("O Forge usa o Claude e precisa da chave da Anthropic, que o NEXUS ainda não tem. "
+                 "Cole a chave nas Configurações, em Motor de voz, no campo Chave do provedor, com o modelo Claude "
+                 "selecionado. A chave do Gemini não serve para o Forge. Enquanto isso, o dev_agent funciona só com o Gemini.")
+MSG_CHAVE_RECUSADA = ("A Anthropic recusou a chave que o NEXUS tem: inválida, apagada ou de outra conta. "
+                      "Gere uma nova em console.anthropic.com, em API Keys, e cole de novo nas Configurações.")
+MSG_SEM_CREDITO = ("A conta da Anthropic está sem crédito. Adicione crédito em console.anthropic.com, "
+                   "em Plans e Billing, e tente de novo.")
+MSG_SEM_RESPOSTA = "Não consegui falar com a Anthropic. Veja a internet e tente de novo."
+
+
 # ----------------------------------------------------------------------------
 # Utilidades
 # ----------------------------------------------------------------------------
@@ -923,33 +944,92 @@ class NexusForge:
                    f"e hoje no total {self._uso_dia() // 1000} mil.")
 
     # ------------------------------------------------------------ infraestrutura
+    def _chave_e_origem(self):
+        """Acha a chave da Anthropic e diz de onde veio (sem nunca mostrá-la). O que a pessoa colou nas Configurações
+        do NEXUS (llm_keys.claude, o que a tela grava) vale mais que anthropic_api_key do json, que vale mais que
+        a variável de ambiente."""
+        try:
+            from memory.config_manager import load_api_keys
+            dados = load_api_keys()
+            chave = str((dados.get("llm_keys") or {}).get("claude") or "").strip()
+            if chave:
+                return chave, "Configurações do NEXUS (provedor Claude)"
+            chave = str(dados.get("anthropic_api_key") or "").strip()
+            if chave:
+                return chave, "anthropic_api_key em config/api_keys.json"
+        except Exception:
+            pass
+        chave = (os.environ.get("ANTHROPIC_API_KEY") or "").strip()
+        if chave:
+            return chave, "variável de ambiente ANTHROPIC_API_KEY"
+        arq = CONFIG_DIR / "api_key.txt"
+        if arq.exists():
+            chave = arq.read_text(encoding="utf-8").strip()
+            if chave:
+                return chave, "arquivo ~/.nexus_forge/api_key.txt"
+        return "", ""
+
+    def _chave(self) -> str:
+        return self._chave_e_origem()[0]
+
     def _cliente(self):
         if self._cliente_cache:
             return self._cliente_cache
         if anthropic is None:
-            raise RuntimeError("Falta instalar o SDK: pip install anthropic")
-        chave = os.environ.get("ANTHROPIC_API_KEY")
+            raise SDKAusente(MSG_SDK)
+        chave = self._chave()
         if not chave:
-            try:   # a chave do Nexus (config/api_keys.json), a mesma do claude_voice
-                from memory.config_manager import load_api_keys
-                chave = str(load_api_keys().get("anthropic_api_key") or "").strip()
-            except Exception:
-                chave = ""
-        if not chave:
-            arq = CONFIG_DIR / "api_key.txt"
-            if arq.exists():
-                chave = arq.read_text(encoding="utf-8").strip()
-        if not chave:
-            raise RuntimeError("Falta a chave da API (anthropic_api_key em config/api_keys.json).")
+            raise ChaveAusente(MSG_SEM_CHAVE)
         self._cliente_cache = anthropic.Anthropic(api_key=chave)
         return self._cliente_cache
 
+    def testar_chave(self):
+        """Confere, sem gastar tokens, se o Forge consegue usar a Anthropic: pacote, chave e resposta da API.
+        Devolve (ok, frase). A chave nunca aparece na frase."""
+        if anthropic is None:
+            return False, MSG_SDK
+        chave, origem = self._chave_e_origem()
+        if not chave:
+            return False, MSG_SEM_CHAVE
+        import urllib.error
+        import urllib.request
+        req = urllib.request.Request("https://api.anthropic.com/v1/models?limit=1",
+                                     headers={"x-api-key": chave, "anthropic-version": "2023-06-01"})
+        try:
+            with urllib.request.urlopen(req, timeout=10) as r:
+                if r.status == 200:
+                    return True, (f"A chave da Anthropic ({origem}) é válida e o Forge está pronto. "
+                                  "O saldo da conta só aparece quando o Forge gasta.")
+                return False, f"A Anthropic respondeu algo inesperado ({r.status})."
+        except urllib.error.HTTPError as e:
+            if e.code in (401, 403):
+                return False, MSG_CHAVE_RECUSADA
+            return False, f"A Anthropic respondeu com o erro {e.code}."
+        except Exception:
+            return False, MSG_SEM_RESPOSTA
+
     @staticmethod
     def _msg_erro(e: Exception) -> str:
+        """Transforma o erro numa frase que diz o que fazer (nunca o JSON cru da API)."""
+        if isinstance(e, (ChaveAusente, SDKAusente, Orcamento)):
+            return str(e)
+        nome = type(e).__name__
         t = str(e)
-        if "api" in t.lower() and "key" in t.lower():
-            return "Confira a chave da API."
-        return t[:160]
+        low = t.lower()
+        if "credit balance" in low:
+            return MSG_SEM_CREDITO
+        if nome == "OverloadedError" or "overloaded" in low:
+            return "A Anthropic está sobrecarregada agora. Tente de novo daqui a pouco."
+        if nome in ("AuthenticationError", "PermissionDeniedError") or "invalid x-api-key" in low \
+                or "authentication_error" in low:
+            return MSG_CHAVE_RECUSADA
+        if nome == "RateLimitError" or "rate_limit" in low:
+            return "O limite de uso da Anthropic foi atingido agora. Espere um pouco e tente de novo."
+        if nome in ("APIConnectionError", "APITimeoutError"):
+            return MSG_SEM_RESPOSTA
+        if nome == "NotFoundError" and "model" in low:
+            return "O modelo do Claude pedido não existe nesta conta. Confira a variável NEXUS_FORGE_MODEL."
+        return re.sub(r"\s+", " ", t).strip()[:160]
 
     def _bg(self, fn, *args, resetar: bool = True):
         if not self._lock.acquire(blocking=False):

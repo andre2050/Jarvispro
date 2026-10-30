@@ -387,3 +387,144 @@ def test_fluxo_completo_por_voz_no_console(tmp_path):
                                             ("não, cancela", False), ("", False), ("sim mas não", False)])
 def test_confirmacao_por_voz(frase, esperado):
     assert FE.NexusForge._sim(frase) is esperado
+
+
+# ── a chave da Anthropic: onde o Nexus a guarda e o que o Forge diz quando falha ──────────
+
+@pytest.fixture
+def config_nexus(tmp_path, monkeypatch):
+    """O config/api_keys.json de verdade (memory/config_manager), numa pasta temporária e sem chave no ambiente."""
+    from memory import config_manager as CM
+    monkeypatch.setattr(CM, "CONFIG_DIR", tmp_path / "cfg_nexus")
+    monkeypatch.setattr(CM, "CONFIG_FILE", tmp_path / "cfg_nexus" / "api_keys.json")
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    return CM
+
+
+@pytest.fixture
+def sdk_falso(monkeypatch):
+    monkeypatch.setattr(FE, "anthropic", SimpleNamespace(Anthropic=lambda **kw: SimpleNamespace(**kw)))
+
+
+def escreve_json(CM, dados):
+    CM.CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+    CM.CONFIG_FILE.write_text(json.dumps(dados), encoding="utf-8")
+
+
+def test_a_chave_colada_nas_configuracoes_do_nexus_e_encontrada(config_nexus, tmp_path):
+    # exatamente o que a tela de Configurações grava ao colar a chave no provedor Claude
+    config_nexus.save_motor_config({"llm_keys": {"claude": "sk-ant-das-configuracoes"}})
+    assert motor(tmp_path)._chave_e_origem() == ("sk-ant-das-configuracoes", "Configurações do NEXUS (provedor Claude)")
+
+
+def test_a_chave_anthropic_api_key_do_json_tambem_funciona(config_nexus, tmp_path):
+    escreve_json(config_nexus, {"gemini_api_key": "g", "anthropic_api_key": "sk-ant-do-json"})
+    assert motor(tmp_path)._chave_e_origem() == ("sk-ant-do-json", "anthropic_api_key em config/api_keys.json")
+
+
+def test_ordem_das_chaves_nexus_depois_json_depois_ambiente(config_nexus, tmp_path, monkeypatch):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-do-ambiente")
+    m = motor(tmp_path)
+    assert m._chave() == "sk-ant-do-ambiente"                                  # só o ambiente
+    escreve_json(config_nexus, {"anthropic_api_key": "sk-ant-do-json"})
+    assert m._chave() == "sk-ant-do-json"                                      # o json vence o ambiente
+    escreve_json(config_nexus, {"anthropic_api_key": "sk-ant-do-json", "llm_keys": {"claude": "sk-ant-da-tela"}})
+    assert m._chave() == "sk-ant-da-tela"                                      # a tela vence tudo
+
+
+def test_so_a_chave_do_gemini_nao_conta(config_nexus, tmp_path):
+    escreve_json(config_nexus, {"gemini_api_key": "AIza-so-gemini", "llm_keys": {"gemini": "AIza-so-gemini"}})
+    assert motor(tmp_path)._chave_e_origem() == ("", "")
+
+
+def test_sem_chave_o_forge_diz_onde_colar(config_nexus, sdk_falso):
+    r = FA.forge_app({"action": "plan", "description": "app de tarefas"})
+    assert r.startswith("[failed]")
+    assert "Chave do provedor" in r and "Gemini não serve" in r and "dev_agent" in r
+    assert "Confira a chave da API" not in r          # a frase genérica de antes escondia tudo isso
+
+
+def test_sem_o_pacote_anthropic_o_forge_diz_o_que_instalar(config_nexus, monkeypatch):
+    monkeypatch.setattr(FE, "anthropic", None)
+    r = FA.forge_app({"action": "plan", "description": "app de tarefas"})
+    assert "pip install anthropic" in r
+
+
+def erro(nome, texto):
+    return type(nome, (Exception,), {})(texto)
+
+
+@pytest.mark.parametrize("e,trecho", [
+    (erro("AuthenticationError", "Error code: 401 - {'message': 'invalid x-api-key'}"), "recusou a chave"),
+    (erro("PermissionDeniedError", "Error code: 403"), "recusou a chave"),
+    (erro("BadRequestError", "Error code: 400 - Your credit balance is too low to access the Anthropic API."), "sem crédito"),
+    (erro("RateLimitError", "Error code: 429"), "limite de uso"),
+    (erro("APIConnectionError", "Connection error."), "falar com a Anthropic"),
+    (erro("InternalServerError", "Error code: 529 - overloaded_error"), "sobrecarregada"),
+    (erro("NotFoundError", "model: claude-x not found"), "modelo"),
+])
+def test_erros_da_anthropic_viram_frases_que_dizem_o_que_fazer(e, trecho):
+    assert trecho in FE.NexusForge._msg_erro(e)
+
+
+def test_erro_desconhecido_vai_resumido_e_sem_quebra_de_linha():
+    r = FE.NexusForge._msg_erro(RuntimeError("linha um\n" + "x" * 500))
+    assert len(r) <= 160 and "\n" not in r
+
+
+def test_acao_check_chave_valida(config_nexus, sdk_falso, monkeypatch):
+    config_nexus.save_motor_config({"llm_keys": {"claude": "sk-ant-segredo-123"}})
+    visto = {}
+
+    class Resposta:
+        status = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    def falso_urlopen(req, timeout=0):
+        visto["chave_enviada"] = req.get_header("X-api-key")
+        return Resposta()
+
+    monkeypatch.setattr("urllib.request.urlopen", falso_urlopen)
+    r = FA.forge_app({"action": "check"})
+    assert r.startswith("[done]") and "Configurações do NEXUS" in r
+    assert visto["chave_enviada"] == "sk-ant-segredo-123"
+    assert "sk-ant-segredo-123" not in r              # a chave nunca aparece no que o Nexus fala
+
+
+def test_acao_check_chave_recusada_e_sem_chave(config_nexus, sdk_falso, monkeypatch):
+    import urllib.error
+    r = FA.forge_app({"action": "check"})                                  # ainda sem chave
+    assert r.startswith("[failed]") and "Chave do provedor" in r
+
+    config_nexus.save_motor_config({"llm_keys": {"claude": "sk-ant-velha"}})
+
+    def recusa(req, timeout=0):
+        raise urllib.error.HTTPError(req.full_url, 401, "Unauthorized", {}, None)
+
+    monkeypatch.setattr("urllib.request.urlopen", recusa)
+    r = FA.forge_app({"action": "check"})
+    assert r.startswith("[failed]") and "recusou a chave" in r and "sk-ant-velha" not in r
+
+
+def test_acao_check_sem_internet(config_nexus, sdk_falso, monkeypatch):
+    config_nexus.save_motor_config({"llm_keys": {"claude": "sk-ant-x"}})
+
+    def cai(req, timeout=0):
+        raise OSError("sem rede")
+
+    monkeypatch.setattr("urllib.request.urlopen", cai)
+    assert "falar com a Anthropic" in FA.forge_app({"action": "check"})
+
+
+def test_falha_de_chave_no_meio_da_construcao_vira_frase_falada(config_nexus, sdk_falso, tmp_path):
+    """Sem chave, o aviso falado no fim do trabalho em segundo plano diz o que fazer (não um erro cru)."""
+    falas = []
+    m = motor(tmp_path, falas=falas)
+    m._pendente = ({"titulo": "x", "arquivos": [], "comando_teste": ""}, "x")
+    m.construir_pendente()
+    assert any("Chave do provedor" in f for f in falas)

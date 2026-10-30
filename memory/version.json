@@ -1,8 +1,13 @@
 {
-  "version": "4.2.0",
+  "version": "4.2.1",
   "codename": "Nexus Ultra 2026",
   "released": "2026-10-30",
   "changelog": [
+    {
+      "version": "4.2.1",
+      "date": "2026-10-30",
+      "notes": "CORREÇÃO: o Forge não achava a chave do Claude colada nas Configurações (só olhava anthropic_api_key). Agora acha nos dois lugares; as mensagens de erro dizem o que fazer (sem chave, chave recusada, sem crédito, sem internet, pacote ausente) e há a ação check (“testa a chave do Forge”), que confere tudo sem gastar nada."
+    },
     {
       "version": "4.2.0",
       "date": "2026-10-30",
