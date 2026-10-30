@@ -57,6 +57,7 @@ Nexus-Ultra-2026/
 │   ├── financas_ia.py                   # Finanças com IA: categoria automática e previsão do mês
 │   ├── flight_finder.py                 # Busca de voos
 │   ├── focus_mode.py                    # Modo foco (Pomodoro por voz)
+│   ├── forge_app.py                     # Nexus Forge por voz: plano aprovado → constrói → testa → revisa; alterar, desfazer, zip, exe, GitHub (CONFIRMAR)
 │   ├── game_updater.py                  # Atualiza ou instala jogos pelo launcher
 │   ├── isa_core.py                      # I.S.A. por voz: "relatório da I.S.A."
 │   ├── loja_plugins.py                  # Loja de plugins por voz: listar, instalar (com CONFIRMAR), remover, confiar no autor
@@ -136,6 +137,7 @@ Nexus-Ultra-2026/
 │   ├── embeddings.py                    # Texto em vetores para comparar sentido
 │   ├── financas_ia.py                   # Categoria automática e previsão de gastos
 │   ├── focus_guard.py                   # Modo reunião, tela cheia e limites de alerta
+│   ├── forge_engine.py                  # Motor do Forge: arquiteto, construtor, revisor, checkpoints em git e limite de tokens
 │   ├── gemini.py                        # Todas as chamadas avulsas ao Gemini: escada de modelos, tempos e pausas
 │   ├── habits.py                        # Aprende como você usa o NEXUS
 │   ├── hotkey.py                        # Segurar uma tecla para falar
@@ -207,6 +209,7 @@ Nexus-Ultra-2026/
 │   ├── test_dev_agent_proprio_nexus.py  # Agente de código e o próprio NEXUS: resposta na hora, sem círculo
 │   ├── test_dev_projeto.py              # Testes de core/dev_projeto.py — as conferências do agente de programação
 │   ├── test_diagnostico.py              # Testes do diagnóstico: lê o registro de ações e não vaza nada que não deve
+│   ├── test_forge.py                    # Testes do Forge (motor + ação) com um Claude de mentira
 │   ├── test_funcoes_22.py               # Testes das funções novas da 2.2: compras, hábitos, contatos, manutenção do PC, texto/dev e diário
 │   ├── test_hud_ultra.py                # Os 20 visuais: registro, desenho em todos os estados, migração e volta ao orbe se falhar
 │   ├── test_ia_23.py                    # Testes da 2.3: reconexão, embeddings/memória semântica, roteador, voz do dono
