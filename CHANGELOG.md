@@ -1,5 +1,20 @@
 # Mudanças
 
+## 4.4.0 — 30/10/2026
+
+### 🐞 Correções no painel remoto do celular (`dashboard/static/app.html`, `login.html`)
+* O painel do celular ainda estava **em inglês** (botões, avisos, erros de conexão, guia do microfone) e a tela de login mostrava a marca **JARVIS** em vez de **NEXUS**. Agora está tudo em português do Brasil (`lang="pt-BR"`) e com a marca NEXUS.
+* Em telas estreitas (≈ 400 px) o botão ENVIAR e o ícone 🎯 ficavam cortados; o cabeçalho e o rodapé agora se ajustam.
+
+### ✨ Melhorias de interface (ideias do Mark58)
+* **Atalhos rápidos** acima do campo de texto: hora, tempo, captura de tela, desempenho do PC, volume −/+, lembrete e mudo. Tocar envia o comando pelo mesmo caminho do botão ENVIAR (nada novo passa por fora das proteções do NEXUS).
+* **Cor de destaque** (botão 🎨 no cabeçalho): um toque troca entre 6 cores; fica guardada só neste navegador (se o navegador bloquear o armazenamento, a cor apenas não persiste).
+*  testes novos em `tests/test_dashboard_ptbr.py`.
+
+### Bom saber
+* Os textos de erro da API do servidor (`dashboard/server.py`) não foram mexidos; a tela já mostra as mensagens em português.
+* Testado em navegador de verdade só com a conexão simulada: o painel funcionando contra o NEXUS real no seu PC e no celular ainda precisa do seu olho.
+
 ## 4.3.0 — 30/10/2026
 
 ### 📱 Forge para Android (`core/forge_android.py`, `core/forge_engine.py`, `actions/forge_app.py`)

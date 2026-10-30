@@ -212,6 +212,7 @@ Nexus-Ultra-2026/
 │   ├── test_diagnostico.py              # Testes do diagnóstico: lê o registro de ações e não vaza nada que não deve
 │   ├── test_forge.py                    # Testes do Forge (motor + ação) com um Claude de mentira
 │   ├── test_forge_android.py             # Testes do Forge Android com JDK, SDK, Gradle e adb de mentira
+│   ├── test_dashboard_ptbr.py            # Painel remoto em pt-BR, marca NEXUS, atalhos rápidos e cor de destaque
 │   ├── test_funcoes_22.py               # Testes das funções novas da 2.2: compras, hábitos, contatos, manutenção do PC, texto/dev e diário
 │   ├── test_hud_ultra.py                # Os 20 visuais: registro, desenho em todos os estados, migração e volta ao orbe se falhar
 │   ├── test_ia_23.py                    # Testes da 2.3: reconexão, embeddings/memória semântica, roteador, voz do dono

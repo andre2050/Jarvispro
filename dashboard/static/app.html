@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -138,6 +138,21 @@
       pointer-events:none; white-space:nowrap;
     }
     #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .enc-badge{white-space:nowrap}
+    @media (max-width:430px){
+      header{gap:7px;padding-left:12px;padding-right:12px}
+      .url{display:none}
+      header .logo{font-size:15px;letter-spacing:.14em}
+      header>button{padding:0 2px!important;font-size:16px!important}
+      .enc-badge{padding:3px 6px}
+      .btn{padding:11px 11px;letter-spacing:1px}
+      footer{gap:6px;padding-left:10px;padding-right:10px}
+      #inp{min-width:0}
+    }
+  #quick{flex-shrink:0;display:flex;gap:7px;overflow-x:auto;padding:8px 14px 0;background:rgba(7,9,15,0.95);scrollbar-width:none}
+    #quick::-webkit-scrollbar{display:none}
+    #quick button{flex:0 0 auto;padding:7px 12px;border:1px solid var(--border);border-radius:99px;background:var(--surface);color:var(--text);font-size:12px;cursor:pointer;white-space:nowrap}
+    #quick button:hover,#quick button:active{border-color:var(--accent);background:var(--adim)}
   </style>
 </head>
 <body>
@@ -166,22 +181,33 @@
   <div id="toast"></div>
   <header>
     <div class="logo"><em>N</em>EXUS</div>
-    <div class="pill" id="pill"><span class="dot"></span><span id="st">Connecting</span></div>
+    <div class="pill" id="pill"><span class="dot"></span><span id="st">Conectando</span></div>
     <div class="enc-badge" id="enc">AES-256</div>
     <div class="spacer"></div>
     <button id="aud-btn" onclick="_audAbrir()" title="Auditoria" style="background:none;border:0;font-size:18px;cursor:pointer">🧾</button>
+    <button id="tema-btn" title="Trocar a cor de destaque" style="background:none;border:0;font-size:18px;cursor:pointer">🎨</button>
     <button id="mis-btn" onclick="_missoesAbrir()" title="Missões" style="background:none;border:0;font-size:18px;cursor:pointer">🎯</button>
     <button id="bell" title="Avisos no celular" style="display:none;background:none;border:0;font-size:18px;cursor:pointer">🔔</button>
     <div class="url">__IP__:__PORT__</div>
   </header>
   <main id="feed"></main>
+  <div id="quick" aria-label="Atalhos rápidos">
+    <button type="button" data-cmd="Que horas são?">🕒 Hora</button>
+    <button type="button" data-cmd="Como está o tempo hoje?">⛅ Tempo</button>
+    <button type="button" data-cmd="Tire uma captura de tela e me diga o que está aberto.">🖥 Tela</button>
+    <button type="button" data-cmd="O que está deixando meu PC lento?">⚡ Desempenho</button>
+    <button type="button" data-cmd="Diminua o volume.">🔉 Volume −</button>
+    <button type="button" data-cmd="Aumente o volume.">🔊 Volume +</button>
+    <button type="button" data-cmd="Me lembre em 10 minutos.">⏰ Lembrete</button>
+    <button type="button" data-cmd="Silencie o computador.">🔇 Mudo</button>
+  </div>
   <footer>
-    <input id="inp" placeholder="Send a command to NEXUS…" autocomplete="off">
-    <label class="btn-attach" for="file-inp" title="Send file">📎</label>
+    <input id="inp" placeholder="Diga ao NEXUS o que fazer…" autocomplete="off">
+    <label class="btn-attach" for="file-inp" title="Enviar arquivo">📎</label>
     <input type="file" id="file-inp" multiple accept="*/*" style="display:none">
-    <button id="mic-btn" onclick="doMic()" title="Voice command">🎤</button>
-    <button class="btn btn-wake" id="wake" onclick="doWake()">WAKE</button>
-    <button class="btn btn-send" onclick="doSend()">SEND</button>
+    <button id="mic-btn" onclick="doMic()" title="Comando de voz">🎤</button>
+    <button class="btn btn-wake" id="wake" onclick="doWake()">ACORDAR</button>
+    <button class="btn btn-send" onclick="doSend()">ENVIAR</button>
   </footer>
 
   <script>
@@ -230,7 +256,7 @@
     const _encReady = _sessionKey ? _initCrypto(_sessionKey) : false;
     const encBadge  = document.getElementById('enc');
     if (_encReady) { encBadge.className = 'enc-badge on'; }
-    else           { encBadge.className = 'enc-badge off'; encBadge.textContent = 'NO ENC'; }
+    else           { encBadge.className = 'enc-badge off'; encBadge.textContent = 'SEM CRIPTO'; }
 
     // ── WebSocket ─────────────────────────────────────────────────────────────
     const feed  = document.getElementById('feed');
@@ -242,9 +268,9 @@
     const _wsUrl   = `${_wsProto}://${location.host}/ws?token=${encodeURIComponent(_authToken)}`;
     const ws       = new WebSocket(_wsUrl);
 
-    ws.onopen    = () => { sys('Remote session active.'); toast('Connected to NEXUS'); };
-    ws.onclose   = () => sys('Connection lost — refresh to reconnect.');
-    ws.onerror   = () => sys('Connection error.');
+    ws.onopen    = () => { sys('Sessão remota ativa.'); toast('Conectado ao NEXUS'); };
+    ws.onclose   = () => sys('Conexão perdida — atualize a página para reconectar.');
+    ws.onerror   = () => sys('Erro de conexão.');
     ws.onmessage = (e) => {
       const m = JSON.parse(e.data);
       if (m.type === 'log')           { append(m.speaker, m.text); if (m.speaker === 'jarvis') _avisar(m.text); }
@@ -256,9 +282,9 @@
 
     function setStatus(s) {
       if (s === 'active') {
-        pill.className = 'pill on'; stTxt.textContent = 'Active'; wake.classList.remove('show');
+        pill.className = 'pill on'; stTxt.textContent = 'Ativo'; wake.classList.remove('show');
       } else {
-        pill.className = 'pill'; stTxt.textContent = 'Sleeping'; wake.classList.add('show');
+        pill.className = 'pill'; stTxt.textContent = 'Em repouso'; wake.classList.add('show');
       }
     }
 
@@ -269,7 +295,7 @@
         d.innerHTML = `<div class="lbl">Nexus</div>${esc(text)}`;
       } else {
         d.className = 'msg msg-u';
-        d.innerHTML = `<div class="lbl">You</div>${esc(text)}`;
+        d.innerHTML = `<div class="lbl">Você</div>${esc(text)}`;
       }
       feed.appendChild(d);
       feed.scrollTop = feed.scrollHeight;
@@ -352,12 +378,12 @@
           const dlUrl = `/uploads/${encodeURIComponent(savedName)}?token=${encodeURIComponent(_authToken)}`;
           if (bar)  { bar.style.width = '100%'; bar.style.background = 'var(--green)'; }
           if (st)   { st.textContent = '✓'; st.className = 'fc-status done'; }
-          if (lbl)  lbl.textContent = 'Sent';
+          if (lbl)  lbl.textContent = 'Enviado';
           if (meta) meta.insertAdjacentHTML('beforeend',
-            `<a class="fc-dl" href="${dlUrl}" download="${esc(savedName)}">⬇ Download back</a>`);
-          toast('File sent!');
+            `<a class="fc-dl" href="${dlUrl}" download="${esc(savedName)}">⬇ Baixar de volta</a>`);
+          toast('Arquivo enviado!');
         } else {
-          let errMsg = 'Upload failed';
+          let errMsg = 'Falha no envio';
           try { errMsg = JSON.parse(xhr.responseText).error || errMsg; } catch {}
           if (bar) bar.style.background = '#f87171';
           if (st)  { st.textContent = 'ERR'; st.className = 'fc-status err'; }
@@ -369,7 +395,7 @@
         const st  = document.getElementById(`${id}_st`);
         const lbl = card.querySelector('.fc-lbl');
         if (st)  { st.textContent = 'ERR'; st.className = 'fc-status err'; }
-        if (lbl) lbl.textContent = 'Connection error';
+        if (lbl) lbl.textContent = 'Erro de conexão';
       };
 
       const fd = new FormData();
@@ -394,7 +420,7 @@
       `;
       feed.appendChild(card);
       feed.scrollTop = feed.scrollHeight;
-      toast('File received on computer!');
+      toast('Arquivo recebido no computador!');
     }
 
     // File input change handler
@@ -420,7 +446,7 @@
     }
 
     function doWake() {
-      sys('Sending wake signal…');
+      sys('Enviando sinal para acordar…');
       _authFetch('/api/wake', { method: 'POST' });
     }
 
@@ -446,7 +472,7 @@
 
     function _micIdle() {
       micBtn.innerHTML = '🎤';
-      micBtn.title     = 'Voice — tap to speak';
+      micBtn.title     = 'Voz — toque para falar';
       micBtn.classList.remove('recording');
     }
 
@@ -478,19 +504,19 @@
         'animation:pop 0.18s ease'
       ].join(';');
       card.innerHTML =
-        '<div style="font-weight:700;color:#818cf8;letter-spacing:.5px;margin-bottom:10px">🎤 One-time voice setup</div>' +
+        '<div style="font-weight:700;color:#818cf8;letter-spacing:.5px;margin-bottom:10px">🎤 Configuração única da voz</div>' +
         '<ol style="padding-left:18px;color:#8899aa;margin:0;display:flex;flex-direction:column;gap:4px">' +
-        '<li>Open a new tab → go to <span style="background:rgba(255,255,255,0.07);padding:1px 6px;border-radius:4px;font-family:monospace;font-size:12px">chrome://flags</span></li>' +
-        '<li>Search: <strong style="color:#dde3ed">Insecure origins treated as secure</strong></li>' +
-        '<li>Paste this URL into the box:<br><span id="flags-url" style="background:rgba(255,255,255,0.07);padding:2px 8px;border-radius:4px;font-family:monospace;font-size:11px;user-select:all;cursor:pointer">' + esc(origin) + '</span></li>' +
-        '<li>Set to <strong style="color:#22c55e">Enabled</strong> → tap <strong style="color:#dde3ed">Relaunch</strong></li>' +
-        '<li>Return here and tap 🎤</li>' +
+        '<li>Abra uma nova aba → vá para <span style="background:rgba(255,255,255,0.07);padding:1px 6px;border-radius:4px;font-family:monospace;font-size:12px">chrome://flags</span></li>' +
+        '<li>Procure: <strong style="color:#dde3ed">Insecure origins treated as secure</strong></li>' +
+        '<li>Cole este endereço na caixa:<br><span id="flags-url" style="background:rgba(255,255,255,0.07);padding:2px 8px;border-radius:4px;font-family:monospace;font-size:11px;user-select:all;cursor:pointer">' + esc(origin) + '</span></li>' +
+        '<li>Mude para <strong style="color:#22c55e">Enabled</strong> (Ativado) → toque em <strong style="color:#dde3ed">Relaunch</strong> (Reiniciar)</li>' +
+        '<li>Volte aqui e toque em 🎤</li>' +
         '</ol>';
       feed.appendChild(card);
       feed.scrollTop = feed.scrollHeight;
       // tap to copy
       card.querySelector('#flags-url').addEventListener('click', () => {
-        navigator.clipboard?.writeText(origin).then(() => toast('URL copied!')).catch(() => {});
+        navigator.clipboard?.writeText(origin).then(() => toast('Endereço copiado!')).catch(() => {});
       });
     }
 
@@ -508,8 +534,8 @@
         });
       } catch (e) {
         sys(e.name === 'NotAllowedError'
-          ? 'Microphone denied — tap the address bar lock and allow microphone.'
-          : 'Mic error: ' + e.message);
+          ? 'Microfone negado — toque no cadeado da barra de endereço e permita o microfone.'
+          : 'Erro no microfone: ' + e.message);
         return;
       }
 
@@ -562,14 +588,14 @@
         }
 
         micBtn.innerHTML = '⏹';
-        micBtn.title     = 'Tap to stop';
+        micBtn.title     = 'Toque para parar';
         micBtn.classList.add('recording');
-        sys('Voice live — speak now');
+        sys('Voz ativa — pode falar');
         toast('🎤 Live');
       };
 
       ws.onclose = () => { _stopVoice(); };
-      ws.onerror = () => { sys('Voice connection failed.'); _stopVoice(); };
+      ws.onerror = () => { sys('Falha na conexão de voz.'); _stopVoice(); };
 
       _voiceWs  = ws;
       _audioCtx = ctx;
@@ -721,5 +747,31 @@
     function _audAbrir() { document.getElementById('aud-painel').style.display = 'block'; _audAtualizar(); }
     function _audFechar() { document.getElementById('aud-painel').style.display = 'none'; }
   </script>
+<script>
+(function () {
+  // Atalhos rápidos: preenchem o campo e enviam pelo mesmo caminho do botão ENVIAR.
+  var quick = document.getElementById('quick');
+  if (quick) quick.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-cmd]'); if (!b) return;
+    var inp = document.getElementById('inp'); if (!inp || typeof doSend !== 'function') return;
+    inp.value = b.getAttribute('data-cmd'); doSend();
+  });
+  // Cor de destaque: um toque no 🎨 passa para a próxima; fica guardada neste navegador.
+  var TEMAS = [['#6366f1', 'rgba(99,102,241,0.14)'], ['#ff42af', 'rgba(255,66,175,0.14)'], ['#3d9bff', 'rgba(61,155,255,0.14)'],
+               ['#2fd9a0', 'rgba(47,217,160,0.14)'], ['#ffb02e', 'rgba(255,176,46,0.14)'], ['#a06bff', 'rgba(160,107,255,0.14)']];
+  var idx = 0;
+  function aplicar(i) {
+    idx = ((i % TEMAS.length) + TEMAS.length) % TEMAS.length;
+    document.documentElement.style.setProperty('--accent', TEMAS[idx][0]);
+    document.documentElement.style.setProperty('--adim', TEMAS[idx][1]);
+  }
+  try { var salvo = parseInt(localStorage.getItem('nexus_tema'), 10); if (salvo >= 0) aplicar(salvo); } catch (e) {}
+  var btn = document.getElementById('tema-btn');
+  if (btn) btn.addEventListener('click', function () {
+    aplicar(idx + 1);
+    try { localStorage.setItem('nexus_tema', String(idx)); } catch (e) {}
+  });
+})();
+</script>
 </body>
 </html>

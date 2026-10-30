@@ -1,8 +1,13 @@
 {
-  "version": "4.3.0",
+  "version": "4.4.0",
   "codename": "Nexus Ultra 2026",
   "released": "2026-10-30",
   "changelog": [
+    {
+      "version": "4.4.0",
+      "date": "2026-10-30",
+      "notes": "CORREÇÃO + MELHORIA: o painel remoto do celular estava em inglês e o login mostrava “JARVIS” em vez de NEXUS. Agora tudo em português do Brasil, com a marca NEXUS, atalhos rápidos de comando (hora, tempo, tela, volume, lembrete…) e escolha da cor de destaque (🎨), e o cabeçalho passou a caber em telas estreitas."
+    },
     {
       "version": "4.3.0",
       "date": "2026-10-30",
