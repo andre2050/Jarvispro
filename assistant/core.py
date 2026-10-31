@@ -119,6 +119,12 @@ class NexusLive(WakeMixin, TypedCommandsMixin, AudioMixin, SessionMixin, ToolsMi
             logger=lambda msg: print(f"[Actions] {msg}"),
         )
 
+        try:   # 4.5.0 — o perfil de ferramentas e o guia enxergam as ações carregadas
+            from core import carga_ferramentas as _carga
+            _carga.REGISTRO = self._action_registry
+        except Exception:
+            pass
+
         # Routines run other actions, so they need the registry that was just
         # built. Without this call every "run" answered "routines aren't ready
         # yet" and nothing opened. The loader registered the module under

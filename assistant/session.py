@@ -365,6 +365,14 @@ class SessionMixin:
         _all_decls = (TOOL_DECLARATIONS
                       + self._action_registry.get_tool_declarations()
                       + self._plugin_registry.get_tool_declarations())
+        try:   # 4.5.0 — perfil de ferramentas: só apresenta ao modelo o que o perfil escolhido deixa à vista
+            from core import carga_ferramentas as _carga
+            _carga.REGISTRO = self._action_registry
+            _all_decls = _carga.filtrar(_all_decls)
+            _aviso_carga = _carga.aviso_para_o_modelo()
+        except Exception as e:
+            print(f"[Ferramentas] ⚠️ perfil não aplicado: {e}")
+            _aviso_carga = ""
         _names = {(d.get("name") if isinstance(d, dict) else getattr(d, "name", ""))
                   for d in _all_decls}
         sys_prompt = _render_prompt(sys_prompt, {
@@ -407,6 +415,8 @@ class SessionMixin:
             parts.append(mem_str)
         if _threads_ctx:
             parts.append(_threads_ctx)
+        if _aviso_carga:
+            parts.append(_aviso_carga)
         parts.append(sys_prompt)
 
         cfg = dict(

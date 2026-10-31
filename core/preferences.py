@@ -77,6 +77,9 @@ DEFAULTS = {
     "bemestar_vigia": True,        # oráculo de bem-estar: avisos de pausa, água e sono ao longo do dia
     "desempenho_auto": True,       # I.S.A. ajusta o próprio ritmo do NEXUS conforme o uso do PC
     "autoregeneracao": True,       # I.S.A. corrige sozinha as falhas conhecidas (só remédios seguros)
+    "carga_ferramentas": "completo",  # 4.5.0 — completo | recentes | essencial: quantas ferramentas o modelo enxerga
+    "kanban_pasta": "",              # 4.5.0 — pasta dos quadros Kanban (vazio = memory/kanban; pode ser um cofre do Obsidian)
+    "ferramentas_fixas": [],         # 4.5.0 — ferramentas que ficam sempre à vista nos perfis reduzidos
     "rede_colaborativa": False,    # trocar aprendizados de reparo com outros NEXUS da sua rede local
     "rede_colaborativa_codigo": "",  # código do grupo: só NEXUS com o mesmo código se entendem
 }

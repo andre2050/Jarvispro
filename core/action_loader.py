@@ -220,7 +220,8 @@ def _validate(module, filename: str) -> ActionRecord:
 
 
 def discover_actions(actions_dir: Path, reserved_names: set[str] | None = None,
-                     logger: Callable[[str], None] = print) -> ActionRegistry:
+                     logger: Callable[[str], None] = print,
+                     desativadas: set[str] | None = None) -> ActionRegistry:
     """
     Scans actions_dir for *.py files (skips files starting with '_'). A file is
     only treated as an action if it exposes a module-level TOOL dict; files
@@ -229,6 +230,12 @@ def discover_actions(actions_dir: Path, reserved_names: set[str] | None = None,
     skipped — they NEVER raise out of this function.
     """
     reserved = reserved_names or set()
+    if desativadas is None:   # 4.5.0 — ações que o usuário desligou (core/acoes_desativadas.py)
+        try:
+            from core import acoes_desativadas as _desl
+            desativadas = set(_desl.carregar())
+        except Exception:
+            desativadas = set()
     actions_dir.mkdir(parents=True, exist_ok=True)
     valid: dict[str, ActionRecord] = {}
     all_records: list[ActionRecord] = []
@@ -259,7 +266,10 @@ def discover_actions(actions_dir: Path, reserved_names: set[str] | None = None,
 
             rec = _validate(module, path.name)
 
-            if rec.valid and rec.name in reserved:
+            if rec.valid and rec.name in desativadas:
+                rec = ActionRecord(name=rec.name, file=path.name,
+                                   error="desativada por você (manage_actions) — não carregada.")
+            elif rec.valid and rec.name in reserved:
                 rec = ActionRecord(name=rec.name, file=path.name,
                                    error=f"Name '{rec.name}' collides with a reserved core tool — rejected.")
             elif rec.valid and rec.name in valid:

@@ -1,8 +1,13 @@
 {
-  "version": "4.4.0",
+  "version": "4.5.0",
   "codename": "Nexus Ultra 2026",
-  "released": "2026-10-30",
+  "released": "2026-10-31",
   "changelog": [
+    {
+      "version": "4.5.0",
+      "date": "2026-10-31",
+      "notes": "MELHORIA: perfil de ferramentas (mostra menos ferramentas à IA: abre mais rápido e erra menos), desativar ações que falham, guia “o que você sabe fazer?”, controle de impressora, estudo com repetição espaçada e quiz, e quadros Kanban compatíveis com o Obsidian."
+    },
     {
       "version": "4.4.0",
       "date": "2026-10-30",

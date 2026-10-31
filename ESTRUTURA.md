@@ -1,5 +1,5 @@
 # NEXUS ULTRA 2026
-### Assistente pessoal de voz — desenvolvido por André Luiz Lima Menezes · Versão 4.0.0
+### Assistente pessoal de voz — desenvolvido por André Luiz Lima Menezes · Versão 4.5.0
 
 Mapa de todas as pastas e arquivos do projeto, como estão hoje na pasta.
 Base: MARK LV — JARVIS (© FatihMakes, CC BY-NC 4.0) — veja `LICENSE` e `NOTICE.md`.
@@ -35,6 +35,7 @@ Nexus-Ultra-2026/
 │   ├── background_monitor.py            # Vigia de assuntos que você pediu (checagem diária)
 │   ├── briefing.py                      # Resumo do dia por voz
 │   ├── browser_control.py               # Controle do navegador
+│   ├── carga_ferramentas.py             # Perfil de ferramentas: quantas ferramentas a IA enxerga
 │   ├── casa_inteligente.py              # Casa inteligente: Home Assistant e webhooks
 │   ├── cerebro_local.py                 # Cérebro local no Ollama (dados, Modelfile, LoRA)
 │   ├── code_helper.py                   # Escreve e roda scripts em qualquer linguagem
@@ -51,6 +52,7 @@ Nexus-Ultra-2026/
 │   ├── diario.py                        # Diário com humor (só no seu PC)
 │   ├── email_checker.py                 # "Nexus, verifica meu e-mail"
 │   ├── email_reader.py                  # Lê e-mails novos em voz alta
+│   ├── estudo.py                        # Estudo: cartões com repetição espaçada e quiz
 │   ├── everyday_tools.py                # Pequenas ferramentas do dia a dia
 │   ├── file_controller.py               # Operações com arquivos e pastas
 │   ├── file_processor.py                # Leitura e resumo de documentos
@@ -59,7 +61,10 @@ Nexus-Ultra-2026/
 │   ├── focus_mode.py                    # Modo foco (Pomodoro por voz)
 │   ├── forge_app.py                     # Nexus Forge por voz: plano aprovado → constrói → testa → revisa; alterar, desfazer, zip, exe, GitHub (CONFIRMAR)
 │   ├── game_updater.py                  # Atualiza ou instala jogos pelo launcher
+│   ├── gerenciar_acoes.py               # Desativar/reativar ações e ver as que falham
+│   ├── guia_nexus.py                    # Guia: o que o NEXUS sabe fazer, por assunto
 │   ├── isa_core.py                      # I.S.A. por voz: "relatório da I.S.A."
+│   ├── kanban.py                        # Quadros Kanban em Markdown (Obsidian)
 │   ├── loja_plugins.py                  # Loja de plugins por voz: listar, instalar (com CONFIRMAR), remover, confiar no autor
 │   ├── llm_brain.py                     # Modelo de linguagem para trabalhos pesados de texto
 │   ├── local_vision.py                  # Visão local por voz e modo privado (sem internet)
@@ -76,6 +81,7 @@ Nexus-Ultra-2026/
 │   ├── orquestrador.py                  # Equipe de agentes especialistas trabalhando juntos
 │   ├── previsao_habitos.py              # Previsão de hábitos por horário
 │   ├── price_alert.py                   # Alertas de preço
+│   ├── printer_control.py               # Controle de impressora
 │   ├── proactive.py                     # Conversa proativa ciente de horário, contexto e projetos
 │   ├── projetos.py                      # Meus projetos: registra projeto e próximo passo
 │   ├── quick_notes.py                   # Notas rápidas por voz
@@ -120,6 +126,7 @@ Nexus-Ultra-2026/
 │   └── update.json                      # Repositório do GitHub usado pelo botão ATUALIZAR (vazio = desligado)
 ├── core/                                # Peças internas: voz, rede neural, I.S.A., licença, segurança
 │   ├── __init__.py                      # Pacote core
+│   ├── acoes_desativadas.py             # Lista de ações desativadas e detecção das que falham
 │   ├── action_loader.py                 # Descobre e executa as actions
 │   ├── anomalia.py                      # Detector de anomalias do PC
 │   ├── armazem.py                       # Guarda listas pessoais em JSON sem corromper
@@ -128,6 +135,7 @@ Nexus-Ultra-2026/
 │   ├── audit.py                         # Registro de cada ação em memory/audit.log
 │   ├── aviso_voz.py                     # Avisos falados que não dependem do Gemini
 │   ├── bloco_de_notas.py                # Bloco de Notas do Windows + modo ditado
+│   ├── carga_ferramentas.py             # Perfis completo/recentes/essencial
 │   ├── cerebro_local.py                 # Cérebro local (Ollama)
 │   ├── claude_voice.py                  # Laço de voz com Claude
 │   ├── comandos_usuario.py              # Comandos criados por você
@@ -135,18 +143,22 @@ Nexus-Ultra-2026/
 │   ├── dev_projeto.py                   # Conferências do agente de código, sem IA e sem rede
 │   ├── echo.py                          # Separa a sua voz do eco do próprio NEXUS
 │   ├── embeddings.py                    # Texto em vetores para comparar sentido
+│   ├── estudo.py                        # SM-2 e montagem de quiz
 │   ├── financas_ia.py                   # Categoria automática e previsão de gastos
 │   ├── focus_guard.py                   # Modo reunião, tela cheia e limites de alerta
 │   ├── forge_android.py                  # Forge Android: acha JDK/SDK/adb/Gradle, prepara o projeto (gradlew) e valida gradlew/adb por listas fechadas
 │   ├── forge_engine.py                  # Motor do Forge: arquiteto, construtor, revisor, checkpoints em git e limite de tokens
 │   ├── gemini.py                        # Todas as chamadas avulsas ao Gemini: escada de modelos, tempos e pausas
+│   ├── guia_nexus.py                    # Textos do guia por assunto
 │   ├── habits.py                        # Aprende como você usa o NEXUS
 │   ├── hotkey.py                        # Segurar uma tecla para falar
+│   ├── impressora.py                    # Impressão (PowerShell / CUPS) com travas de segurança
 │   ├── indice_semantico.py              # Índice da memória semântica
 │   ├── installer.py                     # Instalador automático de dependências
 │   ├── intent_net.py                    # Rede neural local que entende comandos sem internet
 │   ├── isa.py                           # I.S.A.: o núcleo de decisões ao vivo
 │   ├── integracoes.py                   # Telegram, agenda (.ics) e Notion
+│   ├── kanban.py                        # Leitura e escrita do formato Kanban do Obsidian
 │   ├── plugin_loja.py                   # Loja de plugins: pacotes assinados, permissões conferidas, hashes
 │   ├── isa_hud.py                       # Desenho da I.S.A. no HUD: cérebro + engrenagens
 │   ├── janelas.py                       # Fechar app pelo nome, trazer para a frente, limites da plataforma

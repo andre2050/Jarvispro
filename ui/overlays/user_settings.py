@@ -118,6 +118,11 @@ class PreferencesOverlay(QWidget):
                     [("diaria", "Uma vez por dia"), ("6h", "A cada 6 horas"),
                      ("manual", "Só quando eu pedir")])
 
+        self._section(form, "FERRAMENTAS  (valem na próxima conversa)")
+        self._combo(form, "carga_ferramentas", "Ferramentas que o NEXUS mostra à IA",
+                    [("completo", "Todas (como sempre foi)"), ("recentes", "As essenciais e as que eu uso"),
+                     ("essencial", "Só o básico (mais rápido)")])
+
         self._section(form, "ALERTAS E MODOS")
         self._check(form, "quiet_when_busy", "Silenciar notícias e check-ins em reunião ou jogo em tela cheia")
         self._line(form, "max_alerts_per_hour", "Máximo de alertas de notícias por hora (0 = nenhum)")

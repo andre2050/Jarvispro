@@ -1,5 +1,36 @@
 # Mudanças
 
+## 4.5.0 — 31/10/2026
+
+### ⚡ Perfil de ferramentas (`core/carga_ferramentas.py`, `actions/carga_ferramentas.py`)
+* **Medido na 4.4.0:** o NEXUS apresentava **129 ferramentas (cerca de 31 mil tokens)** ao Gemini em TODA conversa. Isso pesa na abertura da sessão e aumenta a chance de a IA escolher a ferramenta errada.
+* Três perfis, em Configurações › FERRAMENTAS ou por voz ("usa o perfil essencial", "quantas ferramentas você tem?"): **completo** (padrão, igual ao de sempre), **recentes** (essenciais + o que você usou nos últimos 30 dias + as que você fixar) e **essencial** (42 ferramentas, cerca de 9,7 mil tokens: ~70% menos).
+* Só muda o que é **mostrado** à IA; nada é apagado. Segurança e configuração ficam sempre à vista. Com o perfil reduzido a IA é avisada, para oferecer voltar ao completo se faltar algo. Vale na próxima conversa.
+
+### 🧹 Ações que falham ou que você não usa (`core/acoes_desativadas.py`, `actions/gerenciar_acoes.py`)
+* "O que anda falhando?" lista as ações que erraram em 70% ou mais das vezes (mínimo de 5 chamadas, últimos 14 dias). "Desativa a ação X" / "reativa X". Desativada = não carrega e não gasta tokens; o arquivo continua em `actions/`.
+* Ações de segurança, configuração e diagnóstico **não podem** ser desativadas.
+
+### 🧭 Guia (`core/guia_nexus.py`, `actions/guia_nexus.py`)
+* "O que você sabe fazer?" / "o que você faz com e-mail?": explica por assunto, com exemplos do que dizer. Um teste confere que o guia só cita ferramentas que existem.
+
+### 🖨️ Impressora (`core/impressora.py`, `actions/printer_control.py`)
+* Lista impressoras, vê a fila, imprime arquivo ou texto, cancela a fila. Windows (PowerShell) e Linux/macOS (CUPS).
+* Imprimir e cancelar pedem **CONFIRMAR**. Só arquivos da sua pasta de usuário, de tipos comuns; impressora só se estiver na lista do sistema; até 20 cópias.
+
+### 🎓 Estudo (`core/estudo.py`, `actions/estudo.py`)
+* Cartões com **repetição espaçada (SM-2)**, importação "pergunta :: resposta", "o que devo revisar hoje?" e **quiz** de múltipla escolha que atualiza os cartões conforme você acerta ou erra.
+
+### 🗂️ Kanban (`core/kanban.py`, `actions/kanban.py`)
+* Quadros em Markdown no formato do **plugin Kanban do Obsidian** (colunas `## Título`, cartões `- [ ]`/`- [x]`). Aponte a pasta para o seu cofre e eles aparecem lá; o bloco de ajustes do Obsidian é preservado.
+
+### Já existiam (não repeti): WhatsApp, Telegram, Home Assistant, Lista de Compras, Pomodoro (modo foco), monitor em segundo plano, Forge, controle de apps e navegador, permissões e aprovações.
+
+### Bom saber
+* 54 testes novos (`tests/test_45_*.py`). Toda a suíte passa; o `ruff` não acusa erros.
+* **Não testado no seu PC:** a impressão real (os testes usam um sistema de impressão de mentira), a conversa por voz com o Gemini e a janela. O perfil de ferramentas só se prova de verdade abrindo uma conversa: se a IA errar mais ou menos, o perfil "completo" volta tudo.
+* Google (Gmail/Agenda) continua como estava (e-mail por senha de app e agenda por link .ics, só leitura); acesso completo ao Google Drive/Docs por OAuth não foi incluído.
+
 ## 4.4.0 — 30/10/2026
 
 ### 🐞 Correções no painel remoto do celular (`dashboard/static/app.html`, `login.html`)

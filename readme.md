@@ -1,7 +1,7 @@
 # ✦ NEXUS Ultra 2026
 ### Assistente pessoal de voz para o seu computador — desenvolvido por André Luiz Lima Menezes
 
-Versão 4.4.0 — interface 2026
+Versão 4.5.0 — interface 2026
 
 NEXUS ouve, vê, fala e controla o computador em tempo real. Ele conversa por voz
 (Gemini Live), lembra de você entre uma conversa e outra, abre seus programas,
@@ -15,6 +15,12 @@ lê seus e-mails, cuida do seu foco e aprende com o seu jeito de usar.
 
 | Área | Funções |
 |---|---|
+| Perfil de ferramentas | (4.5) Em Configurações › FERRAMENTAS (ou "usa o perfil essencial"): o NEXUS mostra menos ferramentas à IA. No perfil essencial são 42 em vez de 129, cerca de 70% menos texto enviado a cada conversa |
+| Ações que falham | (4.5) "o que anda falhando?" lista as ações que erram quase sempre; "desativa a ação X" a tira de cena (e "reativa X" a traz de volta) |
+| Guia | (4.5) "O que você sabe fazer com e-mail?" explica por assunto, em português simples |
+| Impressora | (4.5) Lista impressoras, vê a fila, imprime arquivo ou texto e cancela. Imprimir e cancelar pedem CONFIRMAR; só arquivos da sua pasta de usuário |
+| Estudo | (4.5) Cartões com repetição espaçada (SM-2), "o que devo revisar hoje?" e quiz de múltipla escolha |
+| Kanban | (4.5) Quadros em Markdown no formato do plugin Kanban do Obsidian ("cria o quadro Casa", "move X para Feito"); aponte a pasta para o seu cofre |
 | Documentos | (3.5) "Indexa a pasta Contratos", "o que o contrato diz sobre multa?": lê PDF, Word, PowerPoint, texto e código só das pastas que você escolher e responde **citando a fonte** (arquivo e página) |
 | Loja de plugins | (3.5) Pacotes `.nexusplugin` assinados, com permissões conferidas no código; instalar pede CONFIRMAR |
 | Integrações | (3.5) Telegram (só o seu chat), Google Calendar por link iCal (só leitura) e Notion (criar e buscar) |
