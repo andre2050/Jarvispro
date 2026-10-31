@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from .common import agora, asyncio, data_hora, get_system_status, sys, threading, time  # noqa: F401
 from core.wake_word import frase as _wake_frase  # noqa: F401
+from core.protecao import engolida as _engolida
 
 
 class TypedCommandsMixin:
@@ -57,7 +58,7 @@ class TypedCommandsMixin:
                 _isa.registrar("decisao", "Encaminhado ao Gemini",
                                "a rede local não reconheceu — o Gemini decide", origem="roteador")
             except Exception:
-                pass
+                _engolida("assistant/typed.py:60")
         # 1.4.3 — vigia: se o Gemini não der NENHUM sinal em 15 s, a conexão
         # é refeita (sem perder a conversa) e o pedido vai de novo.
         if not text.startswith("["):
@@ -142,7 +143,7 @@ class TypedCommandsMixin:
                 from core import habits as _habits
                 _habits.record(tool, args)
             except Exception:
-                pass
+                _engolida("assistant/typed.py:145")
             return out
 
         try:
@@ -229,7 +230,7 @@ class TypedCommandsMixin:
                         turn_complete=True,
                     )
                 except Exception:
-                    pass
+                    _engolida("assistant/typed.py:232")
                 return
             # 3) only speak again if something went wrong
             if "Could not do:" in result and self.session:
@@ -241,7 +242,7 @@ class TypedCommandsMixin:
                         turn_complete=True,
                     )
                 except Exception:
-                    pass
+                    _engolida("assistant/typed.py:244")
 
         asyncio.run_coroutine_threadsafe(_go(), self._loop)
         return True

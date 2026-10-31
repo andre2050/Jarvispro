@@ -35,6 +35,7 @@ except ImportError:
     _TRANSCRIPT_OK = False
 
 from config import get_os, is_windows, is_mac, is_linux
+from core.protecao import engolida as _engolida
 
 
 def _get_base_dir() -> Path:
@@ -60,7 +61,7 @@ _YT_VIDEO_FILTER = "EgIQAQ%3D%3D"
 
 def _get_api_key() -> str:
     with open(API_CONFIG_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)["gemini_api_key"]
+        return __import__("core.cofre", fromlist=["resolver"]).resolver(json.load(f))["gemini_api_key"]
 
 
 def _open_url(url: str) -> None:
@@ -146,7 +147,7 @@ def _get_transcript(video_id: str) -> str | None:
         try:
             transcript = transcript_list.find_manually_created_transcript(lang_priority)
         except Exception:
-            pass
+            _engolida("actions/youtube_video.py:149")
 
         if transcript is None:
             try:

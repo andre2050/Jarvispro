@@ -8,6 +8,7 @@ import time as _time
 from .common import _MOTIVOS, API_CONFIG_PATH, LIVE_MODEL, RECEIVE_SAMPLE_RATE, SEND_SAMPLE_RATE, _P, _ReconnectSignal, _brief_days, _describe_limits, _describe_tools, _fetch_news_sync, _gemini, _get_api_key, _is_reconnect_signal, _keep_context_of, _load_system_prompt, _platform, _render_prompt, agora, asyncio, audio_devices, confirm_gate, data_hora, datetime, format_memory_for_prompt, genai, get_brief_enabled, get_media_resolution, get_proactive_audio_enabled, get_thinking_enabled, get_turn_tuning, get_voice, json, load_memory, pop_last_session, save_session_summary, set_trim_notifier, traceback, types  # noqa: F401
 from .tool_declarations import TOOL_DECLARATIONS  # noqa: F401
 from core.wake_word import frase as _wake_frase  # noqa: F401
+from core.protecao import engolida as _engolida
 
 # 1.4.3 — o servidor do Gemini Live fecha cada CONEXÃO perto dos 10 minutos
 # (avisa com um GoAway ~50 s antes, quando avisa). A conversa continua pelo
@@ -128,7 +129,7 @@ class SessionMixin:
                     _prot.registrar_falha(f"tarefa auxiliar '{getattr(funcao, '__name__', '?')}'",
                                           traceback.format_exc())
                 except Exception:
-                    pass
+                    _engolida("assistant/session.py:131")
                 espera = 5.0 * tentativas if tentativas <= 4 else None
                 try:                                        # 3.9 — a I.S.A. dá descansos e recomeça em vez de desistir de vez
                     from core import isa_autonomia as _auto
@@ -136,7 +137,7 @@ class SessionMixin:
                     if espera is not None and tentativas > 4:
                         tentativas = 0
                 except Exception:
-                    pass
+                    _engolida("assistant/session.py:139")
                 try:                                        # 4.0 — vacina: se esta falha já tem remédio que funcionou, aplica e espera o que ele manda
                     from core import autoregeneracao as _ar
                     from core import imunidade as _imu
@@ -147,7 +148,7 @@ class SessionMixin:
                     if _v and _v.get("espera_s") and espera is not None:
                         espera = max(espera, _imu.espera_crescente(_v["vacina"], tentativas) or 0)
                 except Exception:
-                    pass
+                    _engolida("assistant/session.py:150")
                 if espera is None:
                     return
                 await asyncio.sleep(espera)
@@ -368,6 +369,7 @@ class SessionMixin:
         try:   # 4.5.0 — perfil de ferramentas: só apresenta ao modelo o que o perfil escolhido deixa à vista
             from core import carga_ferramentas as _carga
             _carga.REGISTRO = self._action_registry
+            _carga.TODAS = list(_all_decls)          # a busca do perfil dinâmico enxerga tudo
             _all_decls = _carga.filtrar(_all_decls)
             _aviso_carga = _carga.aviso_para_o_modelo()
         except Exception as e:
@@ -425,14 +427,10 @@ class SessionMixin:
             input_audio_transcription={},
             system_instruction="\n".join(parts),
             tools=[{"function_declarations": _all_decls}],
-            # Asks the server to issue session-resumption handles. Enabled but
-            # NOT yet used: no handle is captured from the resumption update and
-            # none is passed back here, so a reconnect starts a fresh session
-            # rather than continuing the old one. Left on because the handles
-            # cost nothing and are the prerequisite for doing it properly.
-            # Hand back the handle captured from the last session_resumption
-            # update. `handle=None` is exactly the old behaviour (ask for
-            # handles, start fresh), so the first connect of a run is unchanged.
+            # Session resumption: o handle é capturado em audio.py (session_resumption_update) e
+            # devolvido aqui. `handle=None` pede handles e começa limpo (primeira conexão).
+            # Fica só na memória; main.py o repassa ao motor novo se o motor cair
+            # (core/continuidade.py).
             session_resumption=types.SessionResumptionConfig(
                 handle=self._resume_handle
             ),
@@ -839,7 +837,7 @@ class SessionMixin:
                         _isa.registrar("sistema", "Conectado ao Gemini Live",
                                        str(live_model).split("/")[-1], origem="gemini")
                     except Exception:
-                        pass
+                        _engolida("assistant/session.py:839")
                     _silenciosa = self._reconexao_silenciosa and _resumed_with
                     self._reconexao_silenciosa = False
                     if _resumed_with and not _silenciosa:
@@ -1059,7 +1057,7 @@ class SessionMixin:
                         _isa.definir("conexao", "chave inválida")
                         _isa.registrar("erro", "Chave da API inválida", "o Gemini recusou a chave", origem="gemini")
                     except Exception:
-                        pass
+                        _engolida("assistant/session.py:1059")
                     self.ui.set_state("SLEEPING")
                     self.ui.prompt_reconfig()
                     while not self.ui._win._ready:
@@ -1086,7 +1084,7 @@ class SessionMixin:
                         _isa.registrar("sistema", "Sem conexão com o Gemini",
                                        f"nova tentativa em {_conn_backoff}s", origem="gemini")
                     except Exception:
-                        pass
+                        _engolida("assistant/session.py:1086")
                 else:
                     # queda comum (o servidor fechou): volta em 1 s, com a conversa
                     self._conn_backoff = 1

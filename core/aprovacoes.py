@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 ARQUIVO = Path(__file__).resolve().parent.parent / "config" / "aprovacoes.json"
 MINIMO = 5
@@ -25,7 +26,7 @@ def _ler(arq: Path | None = None) -> dict:
         if isinstance(d, dict):
             return {"contagem": d.get("contagem") or {}, "regras": d.get("regras") or {}, "adiadas": d.get("adiadas") or {}}
     except Exception:
-        pass
+        _engolida("core/aprovacoes.py:28")
     return {"contagem": {}, "regras": {}, "adiadas": {}}
 
 

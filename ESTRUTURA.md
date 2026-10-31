@@ -1,5 +1,5 @@
 # NEXUS ULTRA 2026
-### Assistente pessoal de voz — desenvolvido por André Luiz Lima Menezes · Versão 4.5.0
+### Assistente pessoal de voz — desenvolvido por André Luiz Lima Menezes · Versão 4.6.0
 
 Mapa de todas as pastas e arquivos do projeto, como estão hoje na pasta.
 Base: MARK LV — JARVIS (© FatihMakes, CC BY-NC 4.0) — veja `LICENSE` e `NOTICE.md`.
@@ -375,7 +375,7 @@ Enquanto o ditado está ligado: `assistant/audio.py` manda a sua fala para o Blo
 | `core/wake_nexus.py` | Palavra de ativação "Nexus" / "Hey Nexus": corte de fala + Whisper tiny, só em trechos curtos |
 | `core/wake_word.py` | (ampliado) escolhe o motor: "Nexus" (Whisper) ou "Hey Jarvis" (openWakeWord), com reserva |
 | `actions/projetos.py` | "Meus projetos": registra projeto e próximo passo; o `proactive.py` pergunta do projeto parado |
-| `ui/main_window.py` › `_show_content` | O painel de conteúdo mostra Markdown (títulos, listas, tabelas, links) no tema do NEXUS |
+| `ui/janela_conteudo_estudo.py` › `_show_content` | O painel de conteúdo mostra Markdown (títulos, listas, tabelas, links) no tema do NEXUS |
 
 ## Novidades da 2.1
 | Arquivo | O que faz |
@@ -537,3 +537,14 @@ Veja `actions/focus_mode.py` como exemplo curto.
 | `core/missoes_checkpoint.py` | 4.1 — checkpoints e rewind das missões (ações `checkpoints` / `rewind` em `actions/missao.py`) |
 | `core/guardrails.py`, `actions/guardrails.py` | 4.1 — regras de entrada/saída das ferramentas (padrão + suas em `config/guardrails.json`) |
 | `core/trace_local.py`, `actions/trace.py` | 4.1 — linha do tempo local (`memory/trace.jsonl`, `GET /api/trace`) |
+
+
+## Novidades da 4.6.0 (onde fica cada coisa)
+| Arquivo | Para que serve |
+|---|---|
+| `core/cofre.py`, `actions/cofre_chaves.py` | Chaves e senhas no cofre do sistema (opcional) |
+| `core/continuidade.py` | A conversa retoma de onde parou quando o motor reinicia |
+| `core/carga_ferramentas.py` | Perfis de ferramentas, inclusive o dinâmico (`tool_search`/`tool_call`) |
+| `core/protecao.py` › `engolida()` | Rastro dos erros que antes eram ignorados (`memory/falhas_menores.log`) |
+| `ui/janela_camera_video.py`, `janela_atalhos_sistema.py`, `janela_conteudo_estudo.py`, `janela_voz_entrada.py`, `janela_paineis.py`, `janela_licenca_atalhos.py` | Partes da janela principal (`ui/main_window.py` herda de todas) |
+| `ui/modern_base.py`, `modern_conversa.py`, `modern_medidores.py`, `modern_botoes.py` | Peças visuais (`ui/modern.py` reexporta tudo) |

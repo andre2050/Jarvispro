@@ -10,6 +10,7 @@ short list the prompt already carries.
 import json
 import time
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 try:
     CONFIG_DIR = Path(__file__).resolve().parent.parent / "memory"
@@ -26,7 +27,7 @@ def _load() -> list:
         if isinstance(data, list):
             return data
     except Exception:
-        pass
+        _engolida("actions/memory_bank.py:29")
     return []
 
 
@@ -145,7 +146,7 @@ def _log(message: str, player=None) -> None:
         try:
             player.write_log(f"NEXUS: {message}")
         except Exception:
-            pass
+            _engolida("actions/memory_bank.py:148")
 
 
 # ── Tool declaration (auto-discovered by core/action_loader.py) ──────────────

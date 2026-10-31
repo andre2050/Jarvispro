@@ -25,6 +25,7 @@ import time
 from ._qt import *  # noqa: F401,F403
 from ._base import C, FONT_MAIN, FONT_MONO, accent2, mix, qcol  # noqa: F401
 from .hud_novos import NOVOS_INFO, NOVOS_STYLES
+from core.protecao import engolida as _engolida
 
 # Estados que o cérebro manda (em inglês, por dentro) e como aparecem na tela
 _ESTADOS_PT = {
@@ -132,7 +133,7 @@ class HudCanvas(QWidget):
                     return
             self._visemes = (novos, at, hop)
         except Exception:
-            pass
+            _engolida("ui/hud.py:135")
 
     # ── animação ─────────────────────────────────────────────────────────────
     def _na_tela(self) -> bool:

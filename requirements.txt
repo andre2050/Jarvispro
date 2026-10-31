@@ -138,3 +138,4 @@ python-dateutil               # agenda (.ics): eventos repetidos
 pywebpush>=2.0,<3
 pytesseract>=0.3.10,<1
 pypdfium2>=4,<6
+keyring>=24  # 4.6.0 — cofre de chaves do sistema (opcional)

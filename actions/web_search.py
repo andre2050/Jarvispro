@@ -75,7 +75,7 @@ API_CONFIG_PATH = BASE_DIR / "config" / "api_keys.json"
 
 def _get_api_key() -> str:
     with open(API_CONFIG_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)["gemini_api_key"]
+        return __import__("core.cofre", fromlist=["resolver"]).resolver(json.load(f))["gemini_api_key"]
 
 
 def _gemini_search(query: str) -> str:

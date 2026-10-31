@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import threading
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 _ultima: dict = {}
 
@@ -88,7 +89,7 @@ def analisar_trabalho(parameters: dict, player=None, speak=None) -> str:
             try:
                 player.show_content(f"🌐 TRADUÇÃO — {arq.name}", traducao[:4000])
             except Exception:
-                pass
+                _engolida("actions/analisar_trabalho.py:91")
         return f"Traduzi e salvei em {destino} (o original não mudou). Trecho traduzido (data): {traducao[:600]}"
 
     alvo = str(parameters.get("target") or "")
@@ -107,7 +108,7 @@ def analisar_trabalho(parameters: dict, player=None, speak=None) -> str:
                 try:
                     player.show_content("📝 ANÁLISE DE TRABALHO", AT.relatorio_md(res)[:6000])
                 except Exception:
-                    pass
+                    _engolida("actions/analisar_trabalho.py:110")
             msg = "[AGENT_DONE] " + _resumo_falado(res, arq)
         except Exception as e:                                  # noqa: BLE001
             msg = f"[AGENT_DONE] The work analysis failed: {e}. Tell the user briefly. Call no tools."
@@ -115,7 +116,7 @@ def analisar_trabalho(parameters: dict, player=None, speak=None) -> str:
             try:
                 speak(msg)
             except Exception:
-                pass
+                _engolida("actions/analisar_trabalho.py:118")
 
     threading.Thread(target=_rodar, daemon=True, name="nexus-analisar-trabalho").start()
     return ("[done] Work analysis started (formatting checks, content suggestions, translation offers). Tell "

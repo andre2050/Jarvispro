@@ -4,6 +4,7 @@
 "quanto tempo trabalhei na Loja Virtual?"    "volta a trabalhar no projeto Loja Virtual"
 """
 from __future__ import annotations
+from core.protecao import engolida as _engolida
 
 
 def iniciar_projeto(parameters: dict, player=None) -> str:
@@ -45,14 +46,14 @@ def iniciar_projeto(parameters: dict, player=None) -> str:
         from actions.projetos import projetos as _projetos
         registro = _projetos({"action": "add", "name": pasta.name, "note": f"pasta: {pasta}"})
     except Exception:
-        pass
+        _engolida("actions/iniciar_projeto.py:48")
     ja_existia = "already exists" in registro
 
     if player is not None:
         try:
             player.write_log(f"SYS: 🚀 Projeto {pasta.name}: {pasta}")
         except Exception:
-            pass
+            _engolida("actions/iniciar_projeto.py:55")
     partes = [f"Project '{pasta.name}' started.",
               f"Folder: {pasta}" + (f" (created: {', '.join(criados)})" if criados else " (already existed, kept as is)") + ".",
               f"Opened in: {editor}." if editor else "Could not open an editor.",

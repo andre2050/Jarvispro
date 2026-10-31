@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import threading
 import time
+from core.protecao import engolida as _engolida
 
 MENSAGEM_CHAVE_INVALIDA = ("A chave da API do Gemini é inválida. "
                            "Digite uma chave nova na tela de configuração.")
@@ -58,7 +59,7 @@ def _falar_agora(texto: str) -> None:
             if voz:
                 eng.setProperty("voice", voz)
         except Exception:
-            pass
+            _engolida("core/aviso_voz.py:61")
         eng.say(texto)
         eng.runAndWait()
     except Exception as e:                      # sem voz do sistema: a mensagem escrita continua valendo

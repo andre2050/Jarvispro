@@ -39,6 +39,7 @@ import threading
 import time
 from dataclasses import dataclass
 from typing import Callable, Optional
+from core.protecao import engolida as _engolida
 
 # A pending confirmation is abandoned after this long. Chosen to outlast a
 # normal "hang on, let me look at the screen" pause without leaving a live
@@ -76,7 +77,7 @@ def _log(msg: str) -> None:
         try:
             _log_cb(msg)
         except Exception:
-            pass
+            _engolida("core/confirm.py:79")
 
 
 def request(key: str, title: str, detail: str, run: Callable[[], str]) -> str:
@@ -118,7 +119,7 @@ def _auditar_decisao(p, o_que: str) -> None:
         from core import auditoria
         auditoria.registrar("decisao", "usuario", f"{o_que}: {p.title}", {"detalhe": p.detail}, motivo=p.key)
     except Exception:
-        pass
+        _engolida("core/confirm.py:121")
 
 
 def resolve(accepted: bool) -> None:
@@ -136,7 +137,7 @@ def resolve(accepted: bool) -> None:
         try:
             _hide_cb()
         except Exception:
-            pass
+            _engolida("core/confirm.py:139")
 
     if p is None:
         return

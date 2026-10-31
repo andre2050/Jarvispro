@@ -17,6 +17,7 @@ import tempfile
 from pathlib import Path
 
 from core import plugin_loja as L
+from core.protecao import engolida as _engolida
 
 MAX_CODIGO = 20_000
 TEMPO_TESTE = 15
@@ -158,7 +159,7 @@ def preparar(pedido: str, llm, pasta_saida: Path, autor: str = "NEXUS (gerado)")
     try:
         prop["versao"] = guardar_versao(d["id"], dict(d, permissoes=rev["permissoes"]), pasta_saida)
     except Exception:
-        pass
+        _engolida("core/fabrica_plugins.py:161")
     return prop
 
 

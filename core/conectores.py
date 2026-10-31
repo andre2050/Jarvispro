@@ -15,6 +15,7 @@ import re
 import socket
 import urllib.parse
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 ARQUIVO = Path(__file__).resolve().parent.parent / "config" / "conectores.json"
 MAX_RESPOSTA = 600
@@ -61,7 +62,7 @@ def _gravar(d: dict, arq: Path | None = None) -> None:
         import os
         os.chmod(tmp, 0o600)
     except Exception:
-        pass
+        _engolida("core/conectores.py:64")
     tmp.replace(arq)
 
 

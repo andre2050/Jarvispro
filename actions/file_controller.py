@@ -11,6 +11,7 @@ except ImportError:
     _SEND2TRASH = False
 
 from core.undo import push_undo
+from core.protecao import engolida as _engolida
 
 _OS = platform.system()  # "Windows" | "Darwin" | "Linux"
 
@@ -124,7 +125,7 @@ def _win_shell_dir(shell_name: str, fallback: str) -> Path:
             if p.exists():
                 return p
         except Exception:
-            pass
+            _engolida("actions/file_controller.py:127")
     return Path.home() / fallback
 
 
@@ -444,7 +445,7 @@ def clean_temp(confirm: bool = False, min_age_hours: float = 1.0) -> str:
                             if f.is_file():
                                 tam += f.stat().st_size
                         except Exception:
-                            pass
+                            _engolida("actions/file_controller.py:447")
                 else:
                     tam = st.st_size
                 itens.append((p, tam))

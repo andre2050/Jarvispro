@@ -78,6 +78,7 @@ DEFAULTS = {
     "desempenho_auto": True,       # I.S.A. ajusta o próprio ritmo do NEXUS conforme o uso do PC
     "autoregeneracao": True,       # I.S.A. corrige sozinha as falhas conhecidas (só remédios seguros)
     "carga_ferramentas": "completo",  # 4.5.0 — completo | recentes | essencial: quantas ferramentas o modelo enxerga
+    "cofre_chaves": False,           # 4.6.0 — guarda chaves/senhas no cofre do sistema (Windows/macOS/Linux) em vez de texto puro
     "kanban_pasta": "",              # 4.5.0 — pasta dos quadros Kanban (vazio = memory/kanban; pode ser um cofre do Obsidian)
     "ferramentas_fixas": [],         # 4.5.0 — ferramentas que ficam sempre à vista nos perfis reduzidos
     "rede_colaborativa": False,    # trocar aprendizados de reparo com outros NEXUS da sua rede local

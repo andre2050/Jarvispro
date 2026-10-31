@@ -16,6 +16,7 @@ from .._base import C, FONT_MAIN, agora, qcol  # noqa: F401
 from ..overlays.base import _HudOverlay  # noqa: F401
 from PyQt6.QtCore import QDateTime
 from PyQt6.QtWidgets import QDateTimeEdit
+from core.protecao import engolida as _engolida
 
 _DIAS = ["seg", "ter", "qua", "qui", "sex", "sáb", "dom"]
 
@@ -181,7 +182,7 @@ class AgendaOverlay(_HudOverlay):
             try:
                 self._log_fn(text)
             except Exception:
-                pass
+                _engolida("ui/overlays/agenda.py:184")
 
     def _close_panel(self):
         self.hide()

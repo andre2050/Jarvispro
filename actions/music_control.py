@@ -6,6 +6,7 @@ the system player — reacts exactly as if the user had pressed the key on
 the keyboard. Works on Windows, macOS and most Linux desktops via pyautogui,
 which is already a project dependency.
 """
+from core.protecao import engolida as _engolida
 
 try:
     import pyautogui
@@ -107,7 +108,7 @@ def _log(message: str, player=None) -> None:
         try:
             player.write_log(f"NEXUS: {message}")
         except Exception:
-            pass
+            _engolida("actions/music_control.py:110")
 
 
 # ── Tool declaration (auto-discovered by core/action_loader.py) ──────────────

@@ -23,6 +23,7 @@ import sys
 import threading
 from pathlib import Path
 from typing import Callable
+from core.protecao import engolida as _engolida
 
 # Pretrained openwakeword model that listens for "Hey Jarvis".
 WAKE_MODEL = "hey_jarvis"
@@ -155,7 +156,7 @@ class WakeWordDetector:
         try:
             self._queue.put_nowait(None)
         except Exception:
-            pass
+            _engolida("core/wake_word.py:158")
         self._model = None
         self._ready = False
 
@@ -175,7 +176,7 @@ class WakeWordDetector:
         except queue.Full:
             pass
         except Exception:
-            pass
+            _engolida("core/wake_word.py:178")
 
     def _loop(self) -> None:
         import numpy as np
@@ -208,7 +209,7 @@ class WakeWordDetector:
             while True:
                 self._queue.get_nowait()
         except Exception:
-            pass
+            _engolida("core/wake_word.py:211")
 
 
 

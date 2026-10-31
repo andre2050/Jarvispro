@@ -6,6 +6,7 @@ from __future__ import annotations
 from .._qt import *  # noqa: F401,F403
 from .._base import C, DEFAULT_UI_COLOR, FONT_MAIN, accent2  # noqa: F401
 from ..widgets import HueWheel  # noqa: F401
+from core.protecao import engolida as _engolida
 
 # Temas prontos: um clique troca a cor da interface (e, se quiser, o visual do hub).
 TEMAS = (
@@ -466,7 +467,7 @@ class CustomizeOverlay(QWidget):
             try:
                 self.on_hud_style(hud)
             except Exception:
-                pass
+                _engolida("ui/overlays/customize.py:469")
 
     def _sync_chips(self):
         for ch in getattr(self, "_theme_chips", ()):

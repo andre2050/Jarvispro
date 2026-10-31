@@ -70,6 +70,7 @@ import sys
 import time
 import threading
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 if getattr(sys, "frozen", False):
     _BASE = Path(sys.executable).parent
@@ -459,7 +460,7 @@ async def _live_turn(parts: list, system: str, key: str, timeout_s: float) -> st
         try:
             await cm.__aexit__(None, None, None)
         except Exception:
-            pass
+            _engolida("core/gemini.py:462")
 
 
 def _live_call(contents, config, timeout_ms: int, key: str):

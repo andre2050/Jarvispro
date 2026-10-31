@@ -32,6 +32,7 @@ from pathlib import Path
 from typing import Callable, Iterator
 
 import numpy as np
+from core.protecao import engolida as _engolida
 
 _BASE = Path(__file__).resolve().parent.parent
 PASTA_PIPER = _BASE / "memory" / "piper_voices"
@@ -454,7 +455,7 @@ class VozSistema:
                 if voz:
                     eng.setProperty("voice", voz)
             except Exception:
-                pass
+                _engolida("core/voz_propria.py:457")
             fd, caminho = tempfile.mkstemp(suffix=".wav")
             os.close(fd)
             try:
@@ -465,7 +466,7 @@ class VozSistema:
                 try:
                     os.remove(caminho)
                 except Exception:
-                    pass
+                    _engolida("core/voz_propria.py:468")
         pcm, taxa = _wav_para_pcm(dados)
         yield para_24k(pcm, taxa)
 
@@ -552,7 +553,7 @@ class Tocador:
                         rms = float(np.sqrt(np.mean(fatia.astype(np.float32) ** 2)))
                         self._ao_nivel(0.0 if rms < 60 else min(1.0, (rms - 60) / 2540.0))
                     except Exception:
-                        pass
+                        _engolida("core/voz_propria.py:555")
                 st.write(fatia.tobytes())
         return True
 
@@ -562,5 +563,5 @@ class Tocador:
                 try:
                     self._stream.stop(); self._stream.close()
                 except Exception:
-                    pass
+                    _engolida("core/voz_propria.py:565")
                 self._stream = None

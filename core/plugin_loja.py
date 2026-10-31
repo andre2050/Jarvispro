@@ -33,6 +33,7 @@ import shutil
 import tempfile
 import zipfile
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 _BASE = Path(__file__).resolve().parent.parent
 PASTA_PLUGINS = _BASE / "plugins"
@@ -115,7 +116,7 @@ def autores_confiaveis(arq: Path | None = None) -> dict[str, str]:
             if isinstance(nome, str) and isinstance(chave, str) and len(_b64(chave)) == 32:
                 autores[nome] = chave
     except Exception:
-        pass
+        _engolida("core/plugin_loja.py:118")
     return autores
 
 

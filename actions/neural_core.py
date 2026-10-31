@@ -21,6 +21,7 @@ from pathlib import Path
 import numpy as np
 
 from core.neural_backend import engine as eng   # Keras se houver TensorFlow, senão NumPy
+from core.protecao import engolida as _engolida
 
 _MODELS_DIR = Path(__file__).resolve().parent.parent / "memory" / "neural_models"
 _SEED = 42
@@ -98,7 +99,7 @@ def _log_experiment(name: str, kind: str, report: dict) -> None:
         with open(_MODELS_DIR / "experiments.jsonl", "a", encoding="utf-8") as f:
             f.write(json.dumps(rec, default=str) + "\n")
     except Exception:
-        pass
+        _engolida("actions/neural_core.py:101")
 
 
 def _write_report(name: str, model: dict, report: dict) -> str:
@@ -210,7 +211,7 @@ def _monitor_write(name: str, r: dict) -> None:
         if len(lines) > _MONITOR_MAX * 1.5:
             p.write_text("\n".join(lines[-_MONITOR_MAX:]) + "\n", encoding="utf-8")
     except Exception:
-        pass
+        _engolida("actions/neural_core.py:213")
 
 
 def monitor(model_name: str) -> dict:
@@ -565,7 +566,7 @@ def _log(message: str, player=None) -> None:
         try:
             player.write_log(f"NEXUS: {message}")
         except Exception:
-            pass
+            _engolida("actions/neural_core.py:568")
 
 
 # ── Tool declaration (auto-discovered by core/action_loader.py) ──────────────

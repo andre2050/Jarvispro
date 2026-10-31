@@ -23,6 +23,7 @@ except ImportError:
 
 from core import confirm
 from core.undo import push_undo
+from core.protecao import engolida as _engolida
 
 _OS = platform.system()  # "Windows" | "Darwin" | "Linux"
 
@@ -40,7 +41,7 @@ def _get_base_dir() -> Path:
 def _get_api_key() -> str:
     path = _get_base_dir() / "config" / "api_keys.json"
     with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)["gemini_api_key"]
+        return __import__("core.cofre", fromlist=["resolver"]).resolver(json.load(f))["gemini_api_key"]
 
 def _get_macos_wifi_interface() -> str:
     try:
@@ -55,7 +56,7 @@ def _get_macos_wifi_interface() -> str:
                     if lines[j].startswith("Device:"):
                         return lines[j].split(":", 1)[1].strip()
     except Exception:
-        pass
+        _engolida("actions/computer_settings.py:58")
     return "en0" 
 
 def volume_up():
@@ -140,7 +141,7 @@ def brightness_get() -> int | None:
                                      capture_output=True, text=True, timeout=5).stdout.strip())
             return max(0, min(100, round(cur * 100 / mx))) if mx else None
     except Exception:
-        pass
+        _engolida("actions/computer_settings.py:143")
     return None
 
 
@@ -286,14 +287,14 @@ def snap_left():
         try:
             subprocess.run(["open", "-a", "Rectangle"], capture_output=True, timeout=1)
         except Exception:
-            pass
+            _engolida("actions/computer_settings.py:289")
         pyautogui.hotkey("ctrl", "option", "left")
     else:  # Linux
         try:
             subprocess.run(["wmctrl", "-r", ":ACTIVE:", "-e", "0,0,0,960,1080"],
                 capture_output=True)
         except Exception:
-            pass
+            _engolida("actions/computer_settings.py:296")
 
 def snap_right():
     if _OS == "Windows":
@@ -302,14 +303,14 @@ def snap_right():
         try:
             subprocess.run(["open", "-a", "Rectangle"], capture_output=True, timeout=1)
         except Exception:
-            pass
+            _engolida("actions/computer_settings.py:305")
         pyautogui.hotkey("ctrl", "option", "right")
     else:  # Linux
         try:
             subprocess.run(["wmctrl", "-r", ":ACTIVE:", "-e", "0,960,0,960,1080"],
                 capture_output=True)
         except Exception:
-            pass
+            _engolida("actions/computer_settings.py:312")
 
 def switch_window():
     if _OS == "Darwin": pyautogui.hotkey("command", "tab")
@@ -852,7 +853,7 @@ def computer_settings(
                     return ("The window in front is NEXUS itself, so I did not close it. "
                             "Ask the user which app to close (call again with value=<app name>).")
         except Exception:
-            pass
+            _engolida("actions/computer_settings.py:855")
 
     if action == "volume_set":
         try:

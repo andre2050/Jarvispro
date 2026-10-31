@@ -28,6 +28,7 @@ import re
 import threading
 import webbrowser
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 _YT = re.compile(r"(youtube\.com/|youtu\.be/)", re.I)
 
@@ -65,7 +66,7 @@ def _local_path(text: str) -> str:
         if p.exists() and p.is_file():
             return str(p)
     except Exception:
-        pass
+        _engolida("actions/video_player.py:68")
     return ""
 
 
@@ -257,7 +258,7 @@ def _play_youtube(player, source: str, token: int) -> None:
         webbrowser.open(page)
         opened = " and it has been opened in the browser instead"
     except Exception:
-        pass
+        _engolida("actions/video_player.py:260")
     _say(player, "Tell the user, in one short sentence in their own language: "
                  f"'{source}' could not be played on the display "
                  f"({err}){opened}.")
@@ -268,7 +269,7 @@ def _say(player, instruction: str) -> None:
         try:
             player.request_say(instruction)
         except Exception:
-            pass
+            _engolida("actions/video_player.py:271")
 
 
 # ── Tool declaration (auto-discovered by core/action_loader.py) ──────────────

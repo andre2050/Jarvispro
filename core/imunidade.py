@@ -14,6 +14,7 @@ import re
 import threading
 import time
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 ARQUIVO = Path(__file__).resolve().parent.parent / "memory" / "imunidade.json"
 MAX_ASSINATURAS = 200
@@ -64,7 +65,7 @@ def _ler(arq=None) -> dict:
         if isinstance(d, dict) and isinstance(d.get("falhas"), dict):
             return d
     except Exception:
-        pass
+        _engolida("core/imunidade.py:67")
     return {"falhas": {}}
 
 
@@ -120,7 +121,7 @@ def resultado(sig: str, ok: bool, arq=None) -> None:
                 f["ok" if ok else "ruim"] += 1
                 _gravar(d, arq)
     except Exception:
-        pass
+        _engolida("core/imunidade.py:123")
 
 
 def confiavel(f: dict) -> bool:

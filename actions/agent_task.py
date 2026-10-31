@@ -23,6 +23,7 @@ import threading
 import time
 from datetime import datetime
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 _registry = None
 _MAX_PASSOS = 10
@@ -170,7 +171,7 @@ def _trabalhar(objetivo: str, speak, player) -> None:
             try:
                 player.write_log(f"SYS: 🧩 {m}")
             except Exception:
-                pass
+                _engolida("actions/agent_task.py:173")
 
     conferencias = 0
     try:
@@ -213,7 +214,7 @@ def _trabalhar(objetivo: str, speak, player) -> None:
                   + (f"The full report was saved to {arq}. " if arq else "")
                   + "Tell the user the result now, briefly, in their language. Call no tools.")
         except Exception:
-            pass
+            _engolida("actions/agent_task.py:216")
     _ativas.pop(objetivo, None)
 
 

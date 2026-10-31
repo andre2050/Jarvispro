@@ -14,6 +14,7 @@ else:
 import time
 import random
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 try:
     import pyautogui
@@ -41,7 +42,7 @@ _MEMORY_PATH  = _BASE / "memory" / "long_term.json"
 
 def _load_config() -> dict:
     try:
-        return json.loads(_CONFIG_PATH.read_text(encoding="utf-8"))
+        return __import__("core.cofre", fromlist=["resolver"]).resolver(json.loads(_CONFIG_PATH.read_text(encoding="utf-8")))
     except Exception:
         return {}
 
@@ -72,7 +73,7 @@ def _safe_screenshot_path(requested: str | None) -> Path:
                 p.parent.mkdir(parents=True, exist_ok=True)
                 return p
     except Exception:
-        pass
+        _engolida("actions/computer_control.py:75")
     return fallback
 
 def _require_pyautogui():
@@ -151,7 +152,7 @@ def _user_profile() -> dict:
             identity = data.get("identity", {})
             return {k: v.get("value", "") for k, v in identity.items()}
     except Exception:
-        pass
+        _engolida("actions/computer_control.py:154")
     return {}
 
 def _type(text: str, interval: float = 0.03) -> str:
@@ -425,7 +426,7 @@ def computer_control(
             if limite:
                 return f"[failed] I cannot do that right now: {limite}."
         except Exception:
-            pass
+            _engolida("actions/computer_control.py:428")
 
     try:
 

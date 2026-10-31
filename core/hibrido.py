@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 ARQUIVO = Path(__file__).resolve().parent.parent / "config" / "hibrido.json"
 MODOS = ("auto", "privado", "rapido", "economico", "offline")
@@ -113,5 +114,5 @@ def completar(texto: str, nuvem, local, online: bool | None = None, local_ok: bo
             auditoria.registrar("modelo", "hibrido", f"texto de {len(texto or '')} caracteres → {rota.get('usado', 'falhou')}",
                                 motivo=rota["motivo"], modelo=rota.get("usado", ""))
         except Exception:
-            pass
+            _engolida("core/hibrido.py:116")
     return resp, rota

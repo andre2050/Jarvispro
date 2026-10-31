@@ -8,6 +8,7 @@ from __future__ import annotations
 from .._qt import *  # noqa: F401,F403
 from .._base import C, FONT_MAIN  # noqa: F401
 from ..overlays.base import _HudOverlay  # noqa: F401
+from core.protecao import engolida as _engolida
 
 
 def _f(size: float, bold: bool = False) -> QFont:
@@ -142,7 +143,7 @@ class PrivacidadeOverlay(_HudOverlay):
             from core import privacidade as P
             P.apagar(chave, confirmar=True)
         except Exception:
-            pass
+            _engolida("ui/overlays/privacidade_painel.py:145")
         self._montar()
 
     def _fechar(self) -> None:

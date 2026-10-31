@@ -33,6 +33,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from core import habits
+from core.protecao import engolida as _engolida
 
 _FILE = Path(__file__).resolve().parent.parent / "memory" / "routines.json"
 _LOCK = threading.Lock()
@@ -302,7 +303,7 @@ def run_routine(key: str, player=None, speak=None) -> str:
             try:
                 player.write_log(f"SYS: {msg}")
             except Exception:
-                pass
+                _engolida("actions/smart_routines.py:305")
 
     _log(f"running '{key}'")
 

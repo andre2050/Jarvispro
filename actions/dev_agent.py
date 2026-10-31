@@ -38,6 +38,7 @@ from pathlib import Path
 
 from core import dev_projeto as DP
 from core import gemini
+from core.protecao import engolida as _engolida
 
 PROJECTS_DIR: Path | None = None       # testes e quem quiser outra pasta: defina aqui
 MAX_FIX_ATTEMPTS = 5                   # rodar → corrigir
@@ -203,7 +204,7 @@ class _Obra:
             try:
                 self.player.write_log(f"SYS: 🛠 {msg}")
             except Exception:
-                pass
+                _engolida("actions/dev_agent.py:206")
 
     def ler(self, rel: str) -> str:
         if rel in self.codigos:
@@ -707,7 +708,7 @@ def _open_vscode(pasta: Path) -> bool:
         if sys.platform.startswith("win"):
             os.startfile(str(pasta))           # noqa: S606 — pasta do projeto, no Explorador
     except Exception:
-        pass
+        _engolida("actions/dev_agent.py:710")
     return False
 
 
@@ -1001,7 +1002,7 @@ def _em_segundo_plano(rotulo: str, trabalho, speak) -> str:
                   "Tell the user the result now, briefly and in their language: whether it worked, what "
                   "was made and where the folder is. Call no tools.")
         except Exception:
-            pass
+            _engolida("actions/dev_agent.py:1004")
 
     threading.Thread(target=_rodar, daemon=True, name="nexus-dev-agent").start()
     return ("[done] I started working on it in the background; it usually takes a few minutes. "

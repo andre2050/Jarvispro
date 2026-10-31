@@ -141,7 +141,7 @@ def _token(cfg: dict) -> str:
     t = os.environ.get("NEXUS_HA_TOKEN", "").strip()
     if not t:
         try:
-            t = str(json.loads(_KEYS.read_text(encoding="utf-8")).get("home_assistant_token") or "").strip()
+            t = str(__import__("core.cofre", fromlist=["resolver"]).resolver(json.loads(_KEYS.read_text(encoding="utf-8"))).get("home_assistant_token") or "").strip()
         except (OSError, ValueError, AttributeError):
             t = ""
     if not t:

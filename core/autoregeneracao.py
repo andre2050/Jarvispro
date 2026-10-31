@@ -31,6 +31,7 @@ import time
 from pathlib import Path
 
 from core import armazem
+from core.protecao import engolida as _engolida
 
 RAIZ = Path(__file__).resolve().parent.parent
 MEM = armazem.PASTA_MEMORIA
@@ -98,7 +99,7 @@ def _anotar(sig: str, remedio: str, ok: bool, detalhe: str) -> None:
         isa.registrar("sistema", f"Auto-regeneração: {REMEDIOS[remedio][0]}" if remedio in REMEDIOS else remedio,
                       ("✔ " if ok else "✖ ") + str(detalhe)[:200], origem="isa")
     except Exception:
-        pass
+        _engolida("core/autoregeneracao.py:101")
 
 
 # ── cópias boas ──────────────────────────────────────────────────────────────
@@ -247,7 +248,7 @@ def _rem_liberar_memoria(_ctx) -> tuple[bool, str]:
         from core import cache_respostas
         cache_respostas.limpar()
     except Exception:
-        pass
+        _engolida("core/autoregeneracao.py:250")
     return True, f"memória liberada ({n} objetos) e caches limpos"
 
 

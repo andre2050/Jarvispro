@@ -24,6 +24,7 @@ from datetime import datetime
 from pathlib import Path
 
 from core import armazem
+from core.protecao import engolida as _engolida
 
 TEXTO = {".txt", ".md", ".rst", ".tex", ".csv", ".json", ".yml", ".yaml", ".html", ".htm", ".css", ".xml"}
 CODIGO = {".py", ".js", ".ts", ".jsx", ".tsx", ".java", ".cs", ".c", ".cpp", ".h", ".go", ".rs", ".php",
@@ -61,7 +62,7 @@ def _projeto_atual() -> Path | None:
         if nome and (IP.pasta_base() / nome).is_dir():
             return IP.pasta_base() / nome
     except Exception:
-        pass
+        _engolida("core/analise_trabalho.py:64")
     return None
 
 

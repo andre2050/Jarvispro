@@ -4,6 +4,7 @@ from pathlib import Path
 
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
                              QComboBox, QPushButton, QTextEdit, QMessageBox)
+from core.protecao import engolida as _engolida
 
 # project root = two folders up (this file lives in ui/overlays/)
 _FILE = Path(__file__).resolve().parents[2] / "memory" / "activity.log"
@@ -89,5 +90,5 @@ class ActivityLogOverlay(QWidget):
         try:
             _FILE.write_text("", encoding="utf-8")
         except Exception:
-            pass
+            _engolida("ui/overlays/activity_log.py:92")
         self.refresh()

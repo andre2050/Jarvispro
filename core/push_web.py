@@ -24,6 +24,7 @@ import threading
 import time
 from pathlib import Path
 from urllib.parse import urlparse
+from core.protecao import engolida as _engolida
 
 _BASE = Path(__file__).resolve().parent.parent
 ARQ_SUBS = _BASE / "memory" / "push_subs.json"
@@ -170,7 +171,7 @@ def enviar(titulo: str, corpo: str, arq_subs: Path | None = None, arq_chave: Pat
                 res["motivo"] = "perfil sem avisos no celular"
                 return res
         except Exception:
-            pass
+            _engolida("core/push_web.py:173")
     agora = time.monotonic() if agora is None else agora
     with _trava:
         subs = _ler(arq_subs)

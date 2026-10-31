@@ -13,6 +13,7 @@ O motor fica em core/visao_local.py (OCR do Windows ou RapidOCR + Ollama).
 from __future__ import annotations
 
 from datetime import datetime
+from core.protecao import engolida as _engolida
 
 _ORIGENS = {"screen": "tela", "tela": "tela", "window": "janela", "janela": "janela",
             "camera": "camera", "câmera": "camera", "file": "arquivo", "arquivo": "arquivo"}
@@ -29,7 +30,7 @@ def _log(player, texto: str) -> None:
         try:
             player.write_log(texto)
         except Exception:
-            pass
+            _engolida("actions/local_vision.py:32")
 
 
 def _segundos(ms: int) -> str:
@@ -62,7 +63,7 @@ def _ler(img, nome: str, params: dict, player) -> str:
         try:
             player.show_content(f"TEXTO DA {nome.upper()} (offline)", texto)
         except Exception:
-            pass
+            _engolida("actions/local_vision.py:65")
     aviso = (" O leitor alternativo (RapidOCR) pode tirar os acentos." if r["motor"] == "RapidOCR"
              else "")
     corte = texto[:3500]

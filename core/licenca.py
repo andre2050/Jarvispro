@@ -25,6 +25,7 @@ import time
 import uuid
 from datetime import date, datetime
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 # Chave pública Ed25519 (32 bytes, base64). Só confere assinaturas.
 PUBLIC_KEY_B64 = "IdYVqJpleK2MY8gwOjM0Z2vfkKKOgHfoIFyf8ppwfNY="
@@ -66,7 +67,7 @@ def _identidade_da_maquina() -> str:
             if m:
                 return "mac:" + m.group(1)
     except Exception:
-        pass
+        _engolida("core/licenca.py:69")
     return f"mac:{uuid.getnode()}|{platform.machine()}"
 
 
@@ -331,7 +332,7 @@ def status() -> dict:
         try:
             _gravar(d)
         except Exception:
-            pass
+            _engolida("core/licenca.py:334")
     ate = str(dados.get("ate") or "")
     dias = None
     if ate:

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import platform
 import re
+from core.protecao import engolida as _engolida
 
 _OS = platform.system()
 
@@ -38,7 +39,7 @@ def _endpoint(nome: str):
         try:
             comtypes.CoInitialize()
         except Exception:
-            pass
+            _engolida("core/volume_dispositivo.py:41")
         from pycaw.pycaw import AudioUtilities
         alvo = _norm(nome)
         if not alvo or alvo.startswith("padrão") or alvo.startswith("padrao") or alvo == "default":

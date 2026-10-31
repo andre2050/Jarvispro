@@ -17,6 +17,7 @@ import time
 import unicodedata
 from datetime import date, datetime
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 BASE = Path(__file__).resolve().parent.parent
 MAX_ARQUIVOS_VARRIDOS = 2000
@@ -65,7 +66,7 @@ def _horas(nome: str, base: Path, agora: float) -> float:
         try:
             total += ((fim or agora) - ini) / 3600
         except Exception:
-            pass
+            _engolida("core/contexto_projeto.py:68")
     return round(total, 1)
 
 

@@ -21,6 +21,7 @@ import re
 import threading
 import time
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 ARQUIVO = Path(__file__).resolve().parent.parent / "memory" / "autoavaliacao.json"
 VERSAO = 1
@@ -43,7 +44,7 @@ def _carregar(arquivo: Path | None = None) -> dict:
         if d.get("versao") == VERSAO and isinstance(d.get("eventos"), list):
             return d
     except Exception:
-        pass
+        _engolida("core/autoavaliacao.py:46")
     return {"versao": VERSAO, "eventos": [], "ajustes": []}
 
 
@@ -57,7 +58,7 @@ def _salvar(d: dict, arquivo: Path | None = None) -> None:
         tmp.write_text(json.dumps(d, ensure_ascii=False), encoding="utf-8")
         tmp.replace(arq)
     except Exception:
-        pass
+        _engolida("core/autoavaliacao.py:60")
 
 
 def _ensinar(texto: str, rota: str) -> bool:

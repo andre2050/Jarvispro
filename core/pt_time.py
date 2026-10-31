@@ -1,5 +1,6 @@
 """Datas e horas em português, sem depender do idioma do sistema."""
 from datetime import datetime, timedelta, timezone
+from core.protecao import engolida as _engolida
 
 # Horário de Brasília. O zoneinfo usa o banco de fusos do sistema; se ele não
 # existir (Windows sem o pacote tzdata), usa UTC-3 fixo, que é o horário de
@@ -37,7 +38,7 @@ def hora(dt: datetime) -> str:
             h = dt.hour % 12 or 12
             return f"{h:02d}:{dt.minute:02d} {'AM' if dt.hour < 12 else 'PM'}"
     except Exception:
-        pass
+        _engolida("core/pt_time.py:40")
     return f"{dt:%H:%M}"
 
 

@@ -21,6 +21,7 @@ import threading
 import time
 from contextlib import contextmanager
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 ARQUIVO = Path(__file__).resolve().parent.parent / "memory" / "latencia.json"
 VERSAO = 1
@@ -139,7 +140,7 @@ def registrar_total(origem: str, ms: float) -> None:
                      "etapas": {}, "primeira_fala_ms": int(ms), "primeiro_token_ms": None,
                      "total_ms": int(ms), "ferramentas": 0, "cache": 0})
     except Exception:
-        pass
+        _engolida("core/latencia.py:142")
 
 
 # ── disco ───────────────────────────────────────────────────────────────────
@@ -149,7 +150,7 @@ def _carregar(arquivo: Path | None = None) -> dict:
         if d.get("versao") == VERSAO and isinstance(d.get("pedidos"), list):
             return d
     except Exception:
-        pass
+        _engolida("core/latencia.py:152")
     return {"versao": VERSAO, "pedidos": []}
 
 
@@ -165,7 +166,7 @@ def _gravar(reg: dict, arquivo: Path | None = None) -> None:
             tmp.write_text(json.dumps(d, ensure_ascii=False), encoding="utf-8")
             tmp.replace(arq)
     except Exception:
-        pass
+        _engolida("core/latencia.py:168")
 
 
 def pedidos(n: int = 50, arquivo: Path | None = None) -> list[dict]:
@@ -179,7 +180,7 @@ def esquecer(arquivo: Path | None = None) -> None:
             arq.parent.mkdir(parents=True, exist_ok=True)
             arq.write_text(json.dumps({"versao": VERSAO, "pedidos": []}), encoding="utf-8")
         except Exception:
-            pass
+            _engolida("core/latencia.py:182")
 
 
 # ── análise ─────────────────────────────────────────────────────────────────

@@ -14,6 +14,7 @@ from __future__ import annotations
 import webbrowser
 from datetime import date, timedelta
 from urllib.parse import quote_plus
+from core.protecao import engolida as _engolida
 
 _GEO = "https://geocoding-api.open-meteo.com/v1/search"
 _API = "https://api.open-meteo.com/v1/forecast"
@@ -146,7 +147,7 @@ def weather_action(parameters: dict, player=None, session_memory=None) -> str:
             try:
                 session_memory.set_last_search(query=f"clima {cidade} {quando}", response=texto)
             except Exception:
-                pass
+                _engolida("actions/weather_report.py:149")
         return texto
     except LookupError as e:
         return f"Não consegui o clima: {e}. Confira o nome da cidade."
@@ -166,7 +167,7 @@ def _log(message: str, player=None) -> None:
         try:
             player.write_log(f"SYS: ☀ {message}")
         except Exception:
-            pass
+            _engolida("actions/weather_report.py:169")
 
 
 TOOL = {

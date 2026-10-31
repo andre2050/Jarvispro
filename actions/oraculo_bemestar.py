@@ -4,6 +4,7 @@
 "como está meu bem-estar?"   "o que você está vendo de risco na minha rotina?"
 """
 from __future__ import annotations
+from core.protecao import engolida as _engolida
 
 
 def oraculo_bemestar(parameters: dict, player=None) -> str:
@@ -29,7 +30,7 @@ def oraculo_bemestar(parameters: dict, player=None) -> str:
         try:
             player.show_content("🌿 PLANO DO DIA", texto)
         except Exception:
-            pass
+            _engolida("actions/oraculo_bemestar.py:32")
     proximos = " | ".join(f"{h} {o}" for h, o in p["blocos"][:5])
     return (f"Plan (data): energy {p['energia']}/5 because {'; '.join(p['motivos'])}. Blocks: {proximos}. "
             f"Prevention: {' | '.join(p['alertas']) or 'nothing repeated this week'}. Tips: {' '.join(p['dicas'])} "

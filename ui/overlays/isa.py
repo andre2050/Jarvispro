@@ -15,6 +15,7 @@ import time
 from .._qt import *  # noqa: F401,F403
 from .._base import C, FONT_MAIN, qcol  # noqa: F401
 from ..overlays.base import _HudOverlay  # noqa: F401
+from core.protecao import engolida as _engolida
 
 
 def _f(size: float, bold: bool = False, spacing: float = 0.0) -> QFont:
@@ -503,7 +504,7 @@ class IsaOverlay(_HudOverlay):
             if self._isa is not None:
                 self._isa.parar_de_ouvir(self._ao_evento)
         except Exception:
-            pass
+            _engolida("ui/overlays/isa.py:506")
 
     def _fechar(self) -> None:
         self._desligar()

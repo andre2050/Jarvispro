@@ -11,6 +11,7 @@ from pathlib import Path
 from datetime import datetime
 
 from config import get_os, is_windows, is_mac, is_linux
+from core.protecao import engolida as _engolida
 
 _CNW: dict = (
     {"creationflags": subprocess.CREATE_NO_WINDOW}
@@ -144,7 +145,7 @@ def _get_steam_libraries(steam_path: Path) -> list[Path]:
             if lib.exists() and lib not in libraries:
                 libraries.append(lib)
     except Exception:
-        pass
+        _engolida("actions/game_updater.py:147")
     return libraries
 
 
@@ -190,7 +191,7 @@ def _get_steam_window_rect() -> tuple[int, int, int, int] | None:
             if "steam" in w.title.lower() and w.width > 200 and w.visible:
                 return w.left, w.top, w.width, w.height
     except Exception:
-        pass
+        _engolida("actions/game_updater.py:193")
     return None
 
 
@@ -272,7 +273,7 @@ def _handle_steam_profile_selection() -> bool:
     except ImportError:
         pass
     except Exception:
-        pass
+        _engolida("actions/game_updater.py:275")
 
     print("[GameUpdater] 👤 Profile selection detected — clicking the first profile")
     return _click_first_profile_by_screenshot()
@@ -316,7 +317,7 @@ def _select_drive_in_dialog(dialog, drive_letter: str) -> bool:
             except Exception:
                 continue
     except Exception:
-        pass
+        _engolida("actions/game_updater.py:319")
     try:
         for ctrl in dialog.descendants():
             txt = ctrl.window_text().upper()
@@ -324,7 +325,7 @@ def _select_drive_in_dialog(dialog, drive_letter: str) -> bool:
                 ctrl.click_input()
                 return True
     except Exception:
-        pass
+        _engolida("actions/game_updater.py:327")
     return False
 
 
@@ -339,7 +340,7 @@ def _click_button(window, keywords: list[str]) -> bool:
             except Exception:
                 continue
     except Exception:
-        pass
+        _engolida("actions/game_updater.py:342")
     return False
 
 
@@ -372,7 +373,7 @@ def _handle_install_dialog_pyautogui(game_name: str, best_drive: dict) -> str:
         install_win.activate()
         time.sleep(0.4)
     except Exception:
-        pass
+        _engolida("actions/game_updater.py:375")
 
     wx, wy = install_win.left, install_win.top
     ww, wh = install_win.width, install_win.height
@@ -424,7 +425,7 @@ def _handle_install_dialog(game_name: str) -> str:
                     except Exception:
                         continue
             except Exception:
-                pass
+                _engolida("actions/game_updater.py:427")
             if dialog:
                 break
 

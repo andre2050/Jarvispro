@@ -30,6 +30,7 @@ import sys
 import threading
 import time
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 NO_WINDOWS = sys.platform.startswith("win")
 
@@ -280,7 +281,7 @@ def _url_ollama() -> str:
         if llm_client.get_llm_provider() == "ollama":
             return llm_client.get_llm_settings()[0].rstrip("/")
     except Exception:
-        pass
+        _engolida("core/visao_local.py:283")
     return "http://localhost:11434"
 
 
@@ -310,7 +311,7 @@ def _ollama_no_ar(url: str) -> bool:
         _modelos_instalados(url)
         return True
     except Exception:
-        pass
+        _engolida("core/visao_local.py:313")
     if shutil.which("ollama"):
         try:
             from core.llm_client import ensure_ollama_running

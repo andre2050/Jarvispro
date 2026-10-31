@@ -4,6 +4,7 @@ Mixin of NexusLive (assistant/core.py); methods moved verbatim from main.py."""
 from __future__ import annotations
 
 from .common import _MOTIVOS, WakeWordDetector, _P, asyncio, save_wake_word_enabled, time, wake_criar_detector, wake_criar_reserva, wake_frase, wake_install, wake_is_ready  # noqa: F401
+from core.protecao import engolida as _engolida
 
 
 class WakeMixin:
@@ -140,7 +141,7 @@ class WakeMixin:
                 + ("." if scope == "global"
                    else " (funciona com esta janela em primeiro plano)."))
         except Exception:
-            pass
+            _engolida("assistant/wake.py:143")
         return scope
 
     def _on_ptt(self, held: bool) -> None:
@@ -155,4 +156,4 @@ class WakeMixin:
         try:
             self.ui.set_state("LISTENING" if held else "SLEEPING")
         except Exception:
-            pass
+            _engolida("assistant/wake.py:158")

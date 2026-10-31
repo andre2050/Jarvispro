@@ -4,6 +4,7 @@ import threading
 
 from core import computer_use as C
 from core import confirm as _confirm
+from core.protecao import engolida as _engolida
 
 _atual: C.Uso | None = None
 _ultimo = ""
@@ -40,7 +41,7 @@ def _rodar(objetivo: str) -> None:
         from actions import missao
         missao._avisar(f"Uso do computador: {_ultimo}")
     except Exception:
-        pass
+        _engolida("actions/uso_computador.py:43")
 
 
 def uso_computador(parameters: dict, **_kw) -> str:

@@ -11,6 +11,7 @@ from .._base import C, FONT_MAIN  # noqa: F401
 from ..overlays.base import _HudOverlay  # noqa: F401
 from .. import quickbar as QB
 from PyQt6.QtWidgets import QAbstractItemView, QListWidget, QListWidgetItem
+from core.protecao import engolida as _engolida
 
 try:
     from PyQt6.QtWidgets import QKeySequenceEdit
@@ -283,11 +284,11 @@ class ShortcutsEditor(QWidget):
                 try:
                     campo.setMaximumSequenceLength(1)
                 except Exception:
-                    pass
+                    _engolida("ui/overlays/quickbar_editor.py:286")
                 try:
                     campo.setClearButtonEnabled(True)
                 except Exception:
-                    pass
+                    _engolida("ui/overlays/quickbar_editor.py:290")
             else:
                 campo = QLineEdit(QB.tecla(chave))
             campo.setFixedWidth(170)

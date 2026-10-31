@@ -57,6 +57,7 @@ from core.wake_word            import (
     criar_detector as wake_criar_detector, criar_detector_reserva as wake_criar_reserva,
     frase as wake_frase,
 )
+from core.protecao import engolida as _engolida
 
 # How long the assistant stays awake with no user speech before it auto-sleeps
 # again (wake-word mode only).
@@ -206,7 +207,7 @@ def _describe_limits(has_vision: bool, has_mic: bool) -> str:
         from core.janelas import limites_fixos
         out.extend(limites_fixos())
     except Exception:
-        pass
+        _engolida("assistant/common.py:209")
     return "\n".join(out)
 
 
@@ -225,7 +226,7 @@ def _render_prompt(template: str, values: dict) -> str:
 
 def _get_api_key() -> str:
     with open(API_CONFIG_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)["gemini_api_key"]
+        return __import__("core.cofre", fromlist=["resolver"]).resolver(json.load(f))["gemini_api_key"]
 
 
 def _load_system_prompt() -> str:

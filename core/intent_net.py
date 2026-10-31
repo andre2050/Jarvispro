@@ -44,6 +44,7 @@ import unicodedata
 from pathlib import Path
 
 import numpy as np
+from core.protecao import engolida as _engolida
 
 _BASE = Path(__file__).resolve().parent.parent
 MODEL_FILE    = _BASE / "memory" / "intent_net.npz"
@@ -764,7 +765,7 @@ def load_settings() -> dict:
     try:
         d.update(json.loads(SETTINGS_FILE.read_text(encoding="utf-8")))
     except Exception:
-        pass
+        _engolida("core/intent_net.py:767")
     return d
 
 
@@ -902,7 +903,7 @@ class IntentBrain:
                 try:
                     self._preparar_verificador()
                 except Exception:
-                    pass
+                    _engolida("core/intent_net.py:905")
                 self._log(f"[IntentNet] treinada em {meta['seconds']}s — validação {acc:.1%} "
                           f"({len(X)} frases, {len(user_ex)} suas)")
             except Exception as e:

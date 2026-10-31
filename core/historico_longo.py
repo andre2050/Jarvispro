@@ -21,6 +21,7 @@ import unicodedata
 from collections import Counter
 from datetime import date, datetime
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 BASE = Path(__file__).resolve().parent.parent
 ARQUIVO = BASE / "memory" / "historico_longo.jsonl"
@@ -160,7 +161,7 @@ def buscar_palavras(consulta: str, dias: tuple[date, date] | None = None, limite
         try:
             s *= 1 + 0.2 / (1 + (hoje - date.fromisoformat(e["data"])).days / 30)
         except Exception:
-            pass
+            _engolida("core/historico_longo.py:163")
         if len(achou) / len(q) >= 0.5 or len(q) == 1:
             out.append((s, e))
     return [dict(e, nota=round(s, 3)) for s, e in sorted(out, key=lambda x: -x[0])[:limite]]
@@ -207,7 +208,7 @@ def buscar(consulta: str, limite: int = 5, arq=None, hoje: date | None = None, c
             res, _nome = competicao.executar("historico", consulta, dias, limite, arq, hoje, restricao="preciso")
             return res
         except Exception:
-            pass
+            _engolida("core/historico_longo.py:210")
     return buscar_palavras(consulta, dias, limite, arq, hoje)
 
 

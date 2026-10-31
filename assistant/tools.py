@@ -34,6 +34,7 @@ def _em_segundo_plano(fn, *args) -> None:
 
 
 import re as _re
+from core.protecao import engolida as _engolida
 
 # 2.4 — o que conta como "pediu para desligar o NEXUS" (pt e en)
 _PEDIDO_DESLIGAR = _re.compile(
@@ -60,6 +61,34 @@ class ToolsMixin:
         return bool(_PEDIDO_DESLIGAR.search(recentes))
 
     async def _execute_tool(self, fc) -> types.FunctionResponse:
+        """4.6.0 — porta de entrada: o perfil dinâmico (core/carga_ferramentas.py) tem duas ferramentas próprias,
+        `tool_search` (procura) e `tool_call` (roda). `tool_call` vira uma chamada normal da ferramenta escolhida e
+        passa por TODO o caminho de sempre (guardrails, confirmações, auditoria, I.S.A.); só a resposta volta com
+        o nome `tool_call`, que é o que o modelo chamou."""
+        from core import carga_ferramentas as _carga
+        if fc.name == _carga.NOME_BUSCA:
+            texto = _carga.buscar(_carga.TODAS, str((fc.args or {}).get("query") or ""))
+            return types.FunctionResponse(id=fc.id, name=fc.name, response={"result": texto})
+        if fc.name == _carga.NOME_CHAMADA:
+            validos = {n for n in self._nomes_de_acoes_e_plugins()}
+            alvo, argumentos, erro = _carga.resolver_chamada(dict(fc.args or {}), validos)
+            if erro:
+                return types.FunctionResponse(id=fc.id, name=fc.name, response={"result": f"[failed] {erro}"})
+            interno = types.FunctionCall(id=fc.id, name=alvo, args=argumentos)
+            resp = await self._executar_ferramenta(interno)
+            return resp.model_copy(update={"name": fc.name})
+        return await self._executar_ferramenta(fc)
+
+    def _nomes_de_acoes_e_plugins(self) -> set:
+        nomes = set()
+        for reg in (self._action_registry, self._plugin_registry):   # só o que o registro de fato oferece (plugin desligado fica de fora)
+            try:
+                nomes |= {d["name"] for d in reg.get_tool_declarations()}
+            except Exception:
+                _engolida("assistant/tools.py:87")
+        return nomes
+
+    async def _executar_ferramenta(self, fc) -> types.FunctionResponse:
         name = fc.name
         args = dict(fc.args or {})
         _t0 = _time.monotonic()       # 2.1 — quanto a função demora (vai para o audit.log)
@@ -69,7 +98,7 @@ class ToolsMixin:
         try:
             self.ui.hud_modulo(name)                  # 2.3 — acende o módulo no visual Hub
         except Exception:
-            pass
+            _engolida("assistant/tools.py:100")
         self._learn_from_tool(name, args)
 
         # I.S.A. (1.3): toda função que o Gemini chama passa pelo núcleo de decisões
@@ -118,7 +147,7 @@ class ToolsMixin:
             try:
                 self.ui.write_log(f"SYS: ⚙ {_isa.nome_da_funcao(name)} — trabalhando nisso…")
             except Exception:
-                pass
+                _engolida("assistant/tools.py:149")
         _aviso = loop.call_later(1.5, _avisar_trabalhando) if name not in (
             "screen_process", "close_camera", "recall_memory", "undo", "system_status") else None
 
@@ -232,7 +261,7 @@ class ToolsMixin:
                                 turn_complete=True,
                             )
                         except Exception:
-                            pass
+                            _engolida("assistant/tools.py:263")
                     await asyncio.sleep(1.5)
                     # 2.4 — os._exit pulava a marca de "fechou direito": a próxima abertura
                     # dizia que o NEXUS tinha fechado de forma inesperada.
@@ -240,7 +269,7 @@ class ToolsMixin:
                         from core import protecao as _prot
                         _prot.fechar_sessao()
                     except Exception:
-                        pass
+                        _engolida("assistant/tools.py:271")
                     import os as _os
                     _os._exit(0)
                 asyncio.create_task(_do_shutdown())
@@ -312,7 +341,7 @@ class ToolsMixin:
                 try:
                     self.ui.stop_camera_stream()
                 except Exception:
-                    pass
+                    _engolida("assistant/tools.py:343")
 
         if _aviso is not None:
             _aviso.cancel()
@@ -330,7 +359,7 @@ class ToolsMixin:
             from core import latencia as _lat
             _lat.marca_ferramenta((_time.monotonic() - _t0) * 1000, cache=bool(locals().get("_do_cache")))
         except Exception:
-            pass
+            _engolida("assistant/tools.py:361")
         _isa.concluir_acao(_isa_tok, result, ok=_status != "failed")
         try:                                                 # 3.4 — auto-regeneração e desempenho da I.S.A.
             from core import autoregeneracao as _regen
@@ -340,7 +369,7 @@ class ToolsMixin:
                 from core import adaptacao as _adapt
                 _adapt.observar("uso", name)
             except Exception:
-                pass
+                _engolida("assistant/tools.py:371")
             if self._action_registry.has(name) and not str(result).startswith("[failed] A função"):
                 if _status == "failed" and str(result).startswith(("Tool '", "Action '")):
                     if _regen.falha_de_funcao(name):
@@ -348,7 +377,7 @@ class ToolsMixin:
                 elif _status != "failed":
                     _regen.acerto_de_funcao(name)
         except Exception:
-            pass
+            _engolida("assistant/tools.py:379")
         print(f"[NEXUS] 📤 {name} [{_status}] → {str(result)[:80]}")
         from core.audit import record as _audit
         _em_segundo_plano(_audit, name, dict(args), f"[{_status}] {result}",

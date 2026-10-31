@@ -33,6 +33,7 @@ from datetime import datetime
 from pathlib import Path
 
 from core.pt_time import agora
+from core.protecao import engolida as _engolida
 
 try:
     _DIR = Path(__file__).resolve().parent.parent / "memory"
@@ -65,7 +66,7 @@ def _load() -> dict:
             data.setdefault("next_id", 1)
             return data
     except Exception:
-        pass
+        _engolida("actions/conversation_threads.py:68")
     return _empty()
 
 
@@ -365,7 +366,7 @@ def _log(message: str, player=None) -> None:
         try:
             player.write_log(f"SYS: {message}")
         except Exception:
-            pass
+            _engolida("actions/conversation_threads.py:368")
 
 
 TOOL = {

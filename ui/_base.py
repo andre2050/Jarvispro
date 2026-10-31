@@ -19,7 +19,7 @@ API_FILE   = CONFIG_DIR / "api_keys.json"
 def _read_full_config() -> dict:
     """Read api_keys.json config dict. Returns {} on any error."""
     try:
-        return json.loads(API_FILE.read_text(encoding="utf-8"))
+        return __import__("core.cofre", fromlist=["resolver"]).resolver(json.loads(API_FILE.read_text(encoding="utf-8")))
     except Exception:
         return {}
 
@@ -28,6 +28,7 @@ def _read_full_config() -> dict:
 # badge and the readme must never disagree again.
 from core.pt_time import data_curta, agora, de_timestamp
 from datetime import datetime as _DT
+from core.protecao import engolida as _engolida
 
 def _dt_now():
     return agora()
@@ -52,7 +53,7 @@ def _persist_activity(text: str) -> None:
         with f.open("a", encoding="utf-8") as fh:
             fh.write(f"{_t.strftime('%Y-%m-%d %H:%M:%S')} | {text}\n")
     except Exception:
-        pass
+        _engolida("ui/_base.py:55")
 
 
 def _pref_key(pref_key: str, default: str) -> str:
@@ -242,7 +243,7 @@ def retheme_all_widgets(old: dict[str, str], new: dict[str, str]) -> None:
                     w.setStyleSheet(s2)
             w.update()
         except Exception:
-            pass
+            _engolida("ui/_base.py:245")
 
 
 def aplicar_tema_automatico(ultima: str | None, cor: str | None = None) -> str | None:
@@ -324,7 +325,7 @@ def _nvml_read_windows() -> dict | None:
                 nm = pynvml.nvmlDeviceGetName(h)
                 out["name"] = nm.decode() if isinstance(nm, bytes) else str(nm)
             except Exception:
-                pass
+                _engolida("ui/_base.py:327")
             return out
 
         dev = ctypes.c_void_p()
@@ -345,7 +346,7 @@ def _nvml_read_windows() -> dict | None:
             if _nvml_lib.nvmlDeviceGetName(dev, buf, 96) == 0:
                 out["name"] = buf.value.decode(errors="ignore")
         except Exception:
-            pass
+            _engolida("ui/_base.py:348")
         _nvml_ok = True
         return out
     except Exception:
@@ -406,7 +407,7 @@ class _SysMetrics:
             for p in psutil.process_iter(["cpu_percent"]):   # primeira leitura = referência
                 pass
         except Exception:
-            pass
+            _engolida("ui/_base.py:409")
         t = threading.Thread(target=self._loop, daemon=True)
         t.start()
 
@@ -415,7 +416,7 @@ class _SysMetrics:
             try:
                 self._update()
             except Exception:
-                pass
+                _engolida("ui/_base.py:418")
             time.sleep(2.0)
 
     # ── leitura ──────────────────────────────────────────────────────────────
@@ -512,7 +513,7 @@ class _SysMetrics:
                     nm = nv.nvmlDeviceGetName(h)
                     out["name"] = nm.decode() if isinstance(nm, bytes) else str(nm)
                 except Exception:
-                    pass
+                    _engolida("ui/_base.py:515")
                 return out
             except Exception:
                 self._pynvml_ok = False
@@ -544,7 +545,7 @@ class _SysMetrics:
                 out["temp"] = float(t.value)
             return out
         except Exception:
-            pass
+            _engolida("ui/_base.py:547")
         return None
 
     def _get_temp(self, gpu: dict | None = None) -> tuple[float, str]:
@@ -560,7 +561,7 @@ class _SysMetrics:
                 if entries:
                     return float(entries[0].current), "CPU"
         except Exception:
-            pass
+            _engolida("ui/_base.py:563")
 
         if _OS == "Windows":
             # Sensores do LibreHardwareMonitor / OpenHardwareMonitor, se estiverem abertos.

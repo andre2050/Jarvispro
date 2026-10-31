@@ -23,6 +23,7 @@ import time
 import zipfile
 from datetime import datetime
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 _WIN_HIDE = {"creationflags": 0x08000000} if sys.platform == "win32" else {}
 _HOST_OK = re.compile(r"^(?=.{1,253}$)[A-Za-z0-9]([A-Za-z0-9.\-]*[A-Za-z0-9])?$")
@@ -280,7 +281,7 @@ def _ip_publico() -> str:
         if r.ok and re.fullmatch(r"[0-9a-fA-F:.]{3,45}", ip):
             return f"Seu IP público é {ip}."
     except Exception:
-        pass
+        _engolida("actions/manutencao_pc.py:283")
     return "[failed] Não consegui consultar o IP público (sem internet?)."
 
 

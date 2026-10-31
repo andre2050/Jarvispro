@@ -25,6 +25,7 @@ import threading
 from email.header import decode_header
 from email.utils import parseaddr
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 try:
     from memory.config_manager import CONFIG_DIR
@@ -70,7 +71,7 @@ def load_settings() -> dict:
         if isinstance(data, dict):
             out.update({k: data[k] for k in DEFAULTS if k in data})
     except Exception:
-        pass
+        _engolida("actions/email_checker.py:73")
     return out
 
 
@@ -173,7 +174,7 @@ def _run_dialog(parent, prefill_user: str, prefill_server: str) -> dict | None:
         acc, text, med = _ui.C.ACC, _ui.C.TEXT, _ui.C.TEXT_MED
         border, bg, font = _ui.C.BORDER_B, _ui.C.BG, _ui.FONT_MAIN
     except Exception:
-        pass
+        _engolida("actions/email_checker.py:176")
 
     dlg = QDialog(parent)
     dlg.setWindowTitle("Verificar email")
@@ -362,7 +363,7 @@ def _check_once(user: str, password: str, server: str, limit: int, unread_only: 
         try:
             conn.logout()
         except Exception:
-            pass
+            _engolida("actions/email_checker.py:365")
 
 
 # ── Handler ───────────────────────────────────────────────────────────────────
@@ -404,7 +405,7 @@ def _log(msg: str, player) -> None:
         try:
             player.write_log(f"SYS: Email — {msg}")
         except Exception:
-            pass
+            _engolida("actions/email_checker.py:407")
 
 
 def email_checker(parameters: dict, player=None) -> str:
@@ -458,7 +459,7 @@ def email_checker(parameters: dict, player=None) -> str:
                                 "\n".join(f"{i}. {m['from']}\n   {m['subject']}"
                                           for i, m in enumerate(mails, 1)))
         except Exception:
-            pass
+            _engolida("actions/email_checker.py:461")
 
     _log(f"{total} {kind}", player)
     return (f"{creds['user']} has {total} {kind} email(s). The {len(mails)} most recent: "

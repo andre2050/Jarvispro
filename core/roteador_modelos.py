@@ -33,6 +33,7 @@ from pathlib import Path
 import numpy as np
 
 from core import embeddings as E
+from core.protecao import engolida as _engolida
 
 _BASE = Path(__file__).resolve().parent.parent
 ARQUIVO = _BASE / "memory" / "roteador_exemplos.json"
@@ -273,7 +274,7 @@ class Roteador:
             if d.get("versao") == VERSAO_DADOS:
                 return [e for e in d.get("exemplos", []) if e.get("rota") in ROTAS and e.get("texto")]
         except Exception:
-            pass
+            _engolida("core/roteador_modelos.py:276")
         return []
 
     def _salvar_exemplos(self, ex: list[dict]) -> None:
@@ -284,7 +285,7 @@ class Roteador:
                                       ensure_ascii=False), encoding="utf-8")
             tmp.replace(self._arquivo)
         except Exception:
-            pass
+            _engolida("core/roteador_modelos.py:287")
 
     def _vetor(self, textos: list[str]) -> np.ndarray:
         emb = self._emb.embed(textos)

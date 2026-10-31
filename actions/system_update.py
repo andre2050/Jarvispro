@@ -28,6 +28,7 @@ import shutil
 import time
 import zipfile
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 _BASE = Path(__file__).resolve().parent.parent      # overridable in tests
 _UPDATES_DIR = _BASE / "updates"
@@ -88,7 +89,7 @@ def current_version() -> dict:
         if data.get("version"):
             return data
     except Exception:
-        pass
+        _engolida("actions/system_update.py:91")
     return {"version": "0.0", "codename": "unknown", "changelog": []}
 
 
@@ -165,7 +166,7 @@ def scan_updates() -> list:
                     ver = data["version"]
                     notes = (data.get("changelog") or [{}])[0].get("notes", "")
         except Exception:
-            pass
+            _engolida("actions/system_update.py:168")
         out.append({"path": str(f), "name": f.name, "version": ver or "?",
                     "notes": notes})
     out.sort(key=lambda p: _vt(p["version"]), reverse=True)
@@ -293,7 +294,7 @@ def github_branch(timeout: float = 8.0) -> str:
         if r.status_code == 200:
             nome = str(r.json().get("default_branch") or "main")
     except Exception:
-        pass
+        _engolida("actions/system_update.py:296")
     _branch_cache[repo] = nome
     return nome
 
@@ -417,7 +418,7 @@ def download_release(info: dict, timeout: float = 60.0, progress=None) -> str:
                             try:
                                 progress(baixado)
                             except Exception:
-                                pass
+                                _engolida("actions/system_update.py:420")
         with zipfile.ZipFile(part) as zf:
             if zf.testzip() is not None:
                 raise ValueError("the downloaded file is damaged")
@@ -432,7 +433,7 @@ def download_release(info: dict, timeout: float = 60.0, progress=None) -> str:
             try:
                 part.unlink()
             except Exception:
-                pass
+                _engolida("actions/system_update.py:435")
 
 
 def _stamp_version(version: str, notes: str) -> None:
@@ -502,7 +503,7 @@ def mark_announced(version: str) -> None:
         _state_file().write_text(json.dumps({"version": version, "at": time.time()}),
                                  encoding="utf-8")
     except Exception:
-        pass
+        _engolida("actions/system_update.py:505")
 
 
 # ── applying, with a backup ──────────────────────────────────────────────────
@@ -612,11 +613,11 @@ def rollback(player=None) -> str:
                 p.unlink()
                 removed += 1
         except Exception:
-            pass
+            _engolida("actions/system_update.py:615")
     try:
         bk.rename(bk.with_name(bk.name + "-restored"))
     except Exception:
-        pass
+        _engolida("actions/system_update.py:619")
     msg = (f"Restored v{manifest.get('from_version', '?')}: {restored} files put back"
            + (f", {removed} added files removed" if removed else "")
            + ". Restart me to finish.")
@@ -714,7 +715,7 @@ def _log(message: str, player=None) -> None:
         try:
             player.write_log(f"NEXUS: {message}")
         except Exception:
-            pass
+            _engolida("actions/system_update.py:717")
 
 
 # ── Tool declaration (auto-discovered by core/action_loader.py) ──────────────

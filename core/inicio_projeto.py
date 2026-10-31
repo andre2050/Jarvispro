@@ -25,6 +25,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from core import armazem
+from core.protecao import engolida as _engolida
 
 ARQ_TEMPO = armazem.PASTA_MEMORIA / "tempo_projetos.json"
 
@@ -157,14 +158,14 @@ def abrir_editor(pasta: Path, editor: str = "") -> str:
                                  shell=False)
                 return "VS Code"
             except Exception:
-                pass
+                _engolida("core/inicio_projeto.py:160")
     elif editor:
         try:
             from actions.open_app import launch_direct
             if launch_direct(editor):
                 return editor
         except Exception:
-            pass
+            _engolida("core/inicio_projeto.py:167")
     try:                                                     # último recurso: a pasta no Explorador
         if sys.platform == "win32":
             os.startfile(str(pasta))                         # type: ignore[attr-defined]

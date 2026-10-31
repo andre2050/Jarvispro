@@ -21,6 +21,7 @@ import threading
 import time
 import unicodedata
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 ARQUIVO = Path(__file__).resolve().parent.parent / "memory" / "perfil.json"
 
@@ -100,7 +101,7 @@ def ativo(arquivo: Path | None = None) -> str:
             if d.get("ativo") in PERFIS:
                 nome = d["ativo"]
         except Exception:
-            pass
+            _engolida("core/perfis.py:103")
         if arquivo is None:
             with _trava:
                 _cache.update(nome=nome, lido_em=agora)
@@ -121,7 +122,7 @@ def definir(nome: str, arquivo: Path | None = None) -> str:
         try:
             antes = json.loads(arq.read_text(encoding="utf-8")).get("antes", {})
         except Exception:
-            pass
+            _engolida("core/perfis.py:124")
         dados = {"ativo": chave, "desde": int(time.time())}
         if arquivo is None:
             antes = _aplicar_ambiente(chave, antes)
@@ -138,7 +139,7 @@ def definir(nome: str, arquivo: Path | None = None) -> str:
         from core import isa
         isa.definir("perfil", PERFIS[chave]["nome"])
     except Exception:
-        pass
+        _engolida("core/perfis.py:141")
     p = PERFIS[chave]
     extra = ""
     if p["bloqueadas"]:
@@ -177,9 +178,9 @@ def _aplicar_ambiente(chave: str, antes: dict) -> dict:
             try:
                 cb()
             except Exception:
-                pass
+                _engolida("core/perfis.py:180")
     except Exception:
-        pass
+        _engolida("core/perfis.py:182")
     return antes
 
 

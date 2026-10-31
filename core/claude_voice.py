@@ -41,6 +41,7 @@ from memory.memory_manager import (                      # noqa: E402
 )
 from memory.config_manager import load_api_keys, get_assistant_name  # noqa: E402
 from core import preferences as _P  # noqa: E402
+from core.protecao import engolida as _engolida
 
 SAMPLE_RATE = 16000
 BLOCK = 512                       # 32 ms frames
@@ -181,7 +182,7 @@ class Speaker:
             if language:
                 return escolher_voz(self._engine.getProperty("voices"), (language.lower(),))
         except Exception:
-            pass
+            _engolida("core/claude_voice.py:184")
         return None
 
     def say(self, text: str) -> None:

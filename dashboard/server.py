@@ -18,6 +18,7 @@ import string
 import threading
 import time
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 _DEPS_OK = False
 try:
@@ -34,7 +35,7 @@ try:
     from fastapi import UploadFile, File as FastAPIFile
     _UPLOAD_OK = True
 except Exception:
-    pass
+    _engolida("dashboard/server.py:37")
 
 BASE_DIR    = Path(__file__).resolve().parent.parent
 STATIC_DIR  = Path(__file__).parent / "static"
@@ -61,7 +62,7 @@ def _make_uploads_dir() -> Path:
             candidate.mkdir(parents=True, exist_ok=True)
             return candidate
         except Exception:
-            pass
+            _engolida("dashboard/server.py:64")
     return BASE_DIR / "uploads"
 
 
@@ -71,7 +72,7 @@ def _get_gemini_key() -> str | None:
     try:
         import json as _json
         with open(BASE_DIR / "config" / "api_keys.json", "r", encoding="utf-8") as f:
-            return _json.load(f).get("gemini_api_key")
+            return __import__("core.cofre", fromlist=["resolver"]).resolver(_json.load(f)).get("gemini_api_key")
     except Exception:
         return None
 
@@ -189,7 +190,7 @@ def _ensure_network_access(port: int) -> None:
             try:
                 os.close(fd)
             except Exception:
-                pass
+                _engolida("dashboard/server.py:192")
             return
 
         # ── Try running directly (succeeds when already admin) ────────────────
@@ -202,10 +203,10 @@ def _ensure_network_access(port: int) -> None:
                 try:
                     os.unlink(bat_path)
                 except Exception:
-                    pass
+                    _engolida("dashboard/server.py:205")
                 return
         except Exception:
-            pass
+            _engolida("dashboard/server.py:208")
 
         # ── ShellExecuteW: native UAC elevation (most reliable on Windows) ────
         # ShellExecuteW with verb "runas" always shows the UAC dialog regardless
@@ -239,7 +240,7 @@ def _ensure_network_access(port: int) -> None:
                 try:
                     os.unlink(path)
                 except Exception:
-                    pass
+                    _engolida("dashboard/server.py:242")
             threading.Thread(target=_cleanup, args=(bat_path,), daemon=True).start()
         return
 
@@ -268,7 +269,7 @@ def _ensure_network_access(port: int) -> None:
                 timeout=60,
             )
         except Exception:
-            pass  # macOS firewall is off by default — silent failure is fine
+            _engolida("dashboard/server.py:271")  # macOS firewall is off by default — silent failure is fine
         return
 
     # ── Linux ─────────────────────────────────────────────────────────────────
@@ -279,7 +280,7 @@ def _ensure_network_access(port: int) -> None:
                 if r.returncode == 0:
                     return True
             except Exception:
-                pass
+                _engolida("dashboard/server.py:282")
         return False
 
     try:  # ufw
@@ -355,7 +356,7 @@ def _local_ip() -> str:
             if not ip.startswith("127."):
                 return ip
         except Exception:
-            pass
+            _engolida("dashboard/server.py:358")
 
     # Method 2: hostname resolution (works offline on most systems)
     try:
@@ -363,7 +364,7 @@ def _local_ip() -> str:
         if not ip.startswith("127."):
             return ip
     except Exception:
-        pass
+        _engolida("dashboard/server.py:366")
 
     # Method 3: enumerate all interfaces (fully offline, no external deps)
     try:
@@ -372,7 +373,7 @@ def _local_ip() -> str:
             if not ip.startswith("127.") and not ip.startswith("169.254."):
                 return ip
     except Exception:
-        pass
+        _engolida("dashboard/server.py:375")
 
     return "127.0.0.1"
 
@@ -426,7 +427,7 @@ def _ensure_certs() -> bool:
             if not lan.startswith("127."):
                 alt.append(x509.IPAddress(ipaddress.IPv4Address(lan)))
         except Exception:
-            pass          # no LAN address resolvable — localhost entries still work
+            _engolida("dashboard/server.py:429")          # no LAN address resolvable — localhost entries still work
 
         # Timezone-aware UTC: datetime.utcnow() is deprecated from Python 3.12 on,
         # and the builder normalises aware values to UTC itself.
@@ -455,7 +456,7 @@ def _ensure_certs() -> bool:
             import os as _os
             _os.chmod(key_p, 0o600)   # best effort — largely a no-op on Windows
         except Exception:
-            pass
+            _engolida("dashboard/server.py:458")
 
         print(f"[Dashboard] Generated a self-signed certificate for this machine: {certs}")
         return True
@@ -494,7 +495,7 @@ class DashboardServer:
             from core import tunel as _tn
             _tn.tunel().ao_mudar(self.set_public_base)
         except Exception:
-            pass
+            _engolida("dashboard/server.py:497")
         self._login_html                  = _read("login.html")
         self._app_html                    = _read("app.html")
         self.app                          = self._build_app()
@@ -636,7 +637,7 @@ class DashboardServer:
             threading.Thread(target=_pw.enviar, args=("NEXUS", str(msg.get("text") or "")), daemon=True,
                              name="push-web").start()
         except Exception:
-            pass
+            _engolida("dashboard/server.py:639")
 
     # ── FastAPI app ───────────────────────────────────────────────────────
 
@@ -916,7 +917,7 @@ class DashboardServer:
             except WebSocketDisconnect:
                 pass
             except Exception:
-                pass                                  # conexão caiu / mensagem de texto no lugar de áudio
+                _engolida("dashboard/server.py:919")                                  # conexão caiu / mensagem de texto no lugar de áudio
             finally:
                 self._spawn(self.broadcast(
                     {"type": "sys", "text": "Phone microphone stopped."}
@@ -969,7 +970,7 @@ class DashboardServer:
                     try:
                         dest.unlink(missing_ok=True)
                     except Exception:
-                        pass
+                        _engolida("dashboard/server.py:972")
                     return JSONResponse({"error": str(exc)}, status_code=500)
 
                 self._spawn(self.broadcast({
@@ -1109,7 +1110,7 @@ class DashboardServer:
                 ):
                     files.append({"name": f.name, "size": f.stat().st_size})
             except Exception:
-                pass
+                _engolida("dashboard/server.py:1112")
             return JSONResponse({"files": files})
 
         @app.get("/uploads/{filename}")
@@ -1158,7 +1159,7 @@ class DashboardServer:
             except WebSocketDisconnect:
                 pass
             except Exception:
-                pass
+                _engolida("dashboard/server.py:1161")
             finally:
                 self._clients.discard(websocket)
 

@@ -10,6 +10,7 @@ import json
 import time
 from datetime import datetime
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 # ── Config dir: same place api_keys.json lives ────────────────────────────────
 try:
@@ -27,7 +28,7 @@ def _load() -> list:
         if isinstance(data, list):
             return data
     except Exception:
-        pass
+        _engolida("actions/quick_notes.py:30")
     return []
 
 
@@ -164,7 +165,7 @@ def _log(message: str, player=None) -> None:
         try:
             player.write_log(f"NEXUS: {message}")
         except Exception:
-            pass
+            _engolida("actions/quick_notes.py:167")
 
 
 # ── Tool declaration (auto-discovered by core/action_loader.py) ──────────────

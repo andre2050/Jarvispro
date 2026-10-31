@@ -17,6 +17,7 @@ import random
 import threading
 import time
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 ARQUIVO = Path(__file__).resolve().parent.parent / "memory" / "competicao.json"
 MIN_TESTES = 3
@@ -41,7 +42,7 @@ def _ler(arq=None) -> dict:
         if isinstance(d, dict):
             return d
     except Exception:
-        pass
+        _engolida("core/competicao.py:44")
     return {}
 
 

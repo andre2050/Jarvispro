@@ -29,6 +29,7 @@ import sys
 import threading
 import time
 from typing import Any
+from core.protecao import engolida as _engolida
 
 NS = "mcp"
 PROTOCOLO = "2025-06-18"
@@ -201,7 +202,7 @@ class ServidorMCP:
                 if isinstance(msg, dict):
                     self._tratar(msg)
         except Exception:
-            pass
+            _engolida("core/mcp_cliente.py:204")
         finally:
             with self._trava_esperas:
                 for e in self._esperas.values():
@@ -218,7 +219,7 @@ class ServidorMCP:
                     break
                 self._stderr = (self._stderr + [linha.decode("utf-8", errors="replace").rstrip()])[-20:]
         except Exception:
-            pass
+            _engolida("core/mcp_cliente.py:221")
 
     def _tratar(self, msg: dict) -> None:
         if "method" in msg and "id" in msg:                    # o servidor está PEDINDO algo ao NEXUS

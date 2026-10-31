@@ -9,6 +9,7 @@ import tempfile
 import platform
 from pathlib import Path
 from datetime import datetime
+from core.protecao import engolida as _engolida
 
 try:
     import pyautogui
@@ -27,7 +28,7 @@ def _get_base_dir() -> Path:
 def _get_api_key() -> str:
     path = _get_base_dir() / "config" / "api_keys.json"
     with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)["gemini_api_key"]
+        return __import__("core.cofre", fromlist=["resolver"]).resolver(json.load(f))["gemini_api_key"]
     
 def _get_desktop() -> Path:
     # mesmo desktop real do file_controller (registro → OneDrive) — sem isso
@@ -36,7 +37,7 @@ def _get_desktop() -> Path:
         from actions.file_controller import _get_desktop as _real_desktop
         return _real_desktop()
     except Exception:
-        pass
+        _engolida("actions/desktop.py:39")
     if _OS == "Linux":
         xdg = os.environ.get("XDG_DESKTOP_DIR", "")
         if xdg and Path(xdg).exists():
@@ -395,7 +396,7 @@ def set_wallpaper_from_url(url: str) -> str:
             try:
                 tmp.unlink()
             except Exception:
-                pass
+                _engolida("actions/desktop.py:398")
 
 
 def get_current_wallpaper() -> str:

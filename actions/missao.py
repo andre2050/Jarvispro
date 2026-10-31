@@ -11,6 +11,7 @@ import threading
 from pathlib import Path
 
 from core import missoes as M
+from core.protecao import engolida as _engolida
 
 _registry = None
 _motor: M.Motor | None = None
@@ -113,12 +114,12 @@ def _avisar(texto: str, urgente: bool = False) -> None:
         if urgente:
             push_web.enviar("NEXUS · Missão", texto, ignorar_intervalo=False)
     except Exception:
-        pass
+        _engolida("actions/missao.py:116")
     if _speak:
         try:
             _speak(f"[MISSAO] {texto} Diga isso ao usuário em uma frase curta, sem chamar ferramentas.")
         except Exception:
-            pass
+            _engolida("actions/missao.py:121")
 
 
 def _undo_info():
@@ -151,7 +152,7 @@ def _aprendeu(tool: str, args: dict, aprovou: bool):
             return (f"Você já aprovou “{sig}” {aprovacoes.MINIMO} vezes seguidas. Quer que eu faça esse tipo de passo "
                     "sem perguntar? Diga “sim, automático” (ou veja em aprovações).")
     except Exception:
-        pass
+        _engolida("actions/missao.py:154")
     return None
 
 

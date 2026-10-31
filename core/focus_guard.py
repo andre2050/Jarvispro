@@ -5,6 +5,7 @@ import time
 from collections import deque
 
 from core import preferences as P
+from core.protecao import engolida as _engolida
 
 MEETING_APPS = {"teams.exe", "ms-teams.exe", "zoom.exe", "zoomwebhost.exe",
                 "webex.exe", "skype.exe", "lync.exe"}
@@ -20,7 +21,7 @@ def _meeting_app() -> str | None:
             if name.lower() in MEETING_APPS:
                 return name
     except Exception:
-        pass
+        _engolida("core/focus_guard.py:23")
     return None
 
 
@@ -45,7 +46,7 @@ def _fullscreen_app() -> str | None:
                 return None
             return name
     except Exception:
-        pass
+        _engolida("core/focus_guard.py:48")
     return None
 
 
@@ -64,7 +65,7 @@ def busy_reason() -> str | None:
         if reason:
             return reason
     except Exception:
-        pass
+        _engolida("core/focus_guard.py:67")
     if not P.get("quiet_when_busy"):
         return None
     meeting = _meeting_app()

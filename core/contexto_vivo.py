@@ -14,6 +14,7 @@ import sys
 import time
 from datetime import datetime, timedelta
 from typing import Callable
+from core.protecao import engolida as _engolida
 
 COOLDOWN_S = 900.0
 _ERRO_JANELA = re.compile(r"(n[aã]o est[aá] respondendo|not responding|\berro\b|\berror\b|falha|crash|exception|fatal)", re.I)
@@ -80,14 +81,14 @@ class Observador:
         try:
             titulo = (self.janela() if self.janela else "") or ""
         except Exception:
-            pass
+            _engolida("core/contexto_vivo.py:83")
         try:
             if self.agenda:
                 msg = reuniao_em_breve(self.agenda(), agora)
                 if msg and self._novo("reuniao:" + msg):
                     out.append(msg)
         except Exception:
-            pass
+            _engolida("core/contexto_vivo.py:90")
         texto = ""
         if self.tela:
             try:
@@ -100,7 +101,7 @@ class Observador:
                 if msg and self._novo(f"{nome}:{titulo[:30]}"):
                     out.append(msg)
             except Exception:
-                pass
+                _engolida("core/contexto_vivo.py:103")
         return out
 
 

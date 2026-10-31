@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Callable, Generator
 
 import requests
+from core.protecao import engolida as _engolida
 
 # Matches a sentence boundary: [.!?] followed by whitespace, or a blank line.
 # Avoids splitting on decimals (3.5) because those have no space after the dot.
@@ -59,7 +60,8 @@ def get_llm_provider() -> str:
 
 def _load_config() -> dict:
     try:
-        return json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+        from core.cofre import resolver
+        return resolver(json.loads(CONFIG_PATH.read_text(encoding="utf-8")))
     except Exception:
         return {}
 
@@ -318,7 +320,7 @@ def call_llm(
                     "tool_calls": msg.get("tool_calls") or [],
                 }
             except Exception:
-                pass
+                _engolida("core/llm_client.py:322")
         raise RuntimeError(
             f"Cannot connect to Ollama at {url}. "
             "Make sure Ollama is installed and run: ollama serve"
@@ -365,7 +367,7 @@ def call_llm_text(
                 resp.raise_for_status()
                 return (resp.json().get("message", {}).get("content") or "").strip()
             except Exception:
-                pass
+                _engolida("core/llm_client.py:369")
         raise RuntimeError(
             f"Cannot connect to Ollama at {url}. "
             "Make sure Ollama is installed and run: ollama serve"
@@ -465,7 +467,7 @@ def _stream_openai(
                 try:
                     args = json.loads(args)
                 except Exception:
-                    pass   # leave as raw string; _execute_tool handles it
+                    _engolida("core/llm_client.py:469")   # leave as raw string; _execute_tool handles it
                 tool_calls.append({
                     "id":       frag["id"],
                     "function": {"name": frag["function"]["name"], "arguments": args},

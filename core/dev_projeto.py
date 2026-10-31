@@ -25,6 +25,7 @@ import time
 import unicodedata
 from pathlib import Path
 from urllib.parse import unquote, urlparse
+from core.protecao import engolida as _engolida
 
 MAX_ARQUIVOS = 25
 MAX_BYTES_ARQUIVO = 400_000
@@ -338,7 +339,7 @@ def verificar_html(projeto: Path) -> list[dict]:
         try:
             parser.feed(texto)
         except Exception:
-            pass
+            _engolida("core/dev_projeto.py:341")
         for tag, valor in parser.refs:
             local = _ref_local(valor)
             if not local:

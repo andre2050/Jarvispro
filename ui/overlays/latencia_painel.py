@@ -12,6 +12,7 @@ from __future__ import annotations
 from .._qt import *  # noqa: F401,F403
 from .._base import C, FONT_MAIN, qcol  # noqa: F401
 from ..overlays.base import _HudOverlay  # noqa: F401
+from core.protecao import engolida as _engolida
 
 
 def _f(size: float, bold: bool = False) -> QFont:
@@ -249,7 +250,7 @@ class LatenciaOverlay(_HudOverlay):
             latencia.esquecer()
             cache_respostas.limpar()
         except Exception:
-            pass
+            _engolida("ui/overlays/latencia_painel.py:252")
         self._montar()
 
     def _fechar(self) -> None:

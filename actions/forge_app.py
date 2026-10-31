@@ -29,6 +29,7 @@ from pathlib import Path
 
 from core import confirm as _confirm
 from core import forge_engine as FE
+from core.protecao import engolida as _engolida
 
 PROJECTS_DIR: Path | None = None       # testes e quem quiser outra pasta: defina aqui
 
@@ -105,7 +106,7 @@ def _em_segundo_plano(rotulo: str, trabalho, speak) -> str:
                   "Tell the user the result now, briefly and in their language: whether it worked, what "
                   "was made and where the folder is. Call no tools.")
         except Exception:
-            pass
+            _engolida("actions/forge_app.py:108")
 
     threading.Thread(target=_rodar, daemon=True, name="nexus-forge").start()
     return ("[done] I started working on it in the background; it usually takes a few minutes. "

@@ -37,6 +37,7 @@ import threading
 from email import policy
 from email.utils import parseaddr, parsedate_to_datetime
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 _STATE = Path(__file__).resolve().parent.parent / "memory" / "email_state.json"
 _LOCK = threading.Lock()
@@ -112,7 +113,7 @@ def test_login(address: str, app_password: str, host: str = "") -> tuple[bool, s
         try:
             conn.logout()
         except Exception:
-            pass
+            _engolida("actions/email_reader.py:115")
         return True, "ok"
     except imaplib.IMAP4.error as e:
         return False, f"login recusado: {e}"
@@ -269,7 +270,7 @@ def check_new() -> tuple[list[dict], list[dict]]:
             try:
                 conn.logout()
             except Exception:
-                pass
+                _engolida("actions/email_reader.py:272")
     # newest ones are the ones read in full
     return mails[-MAX_FULL_PER_CHECK:], mails[:-MAX_FULL_PER_CHECK]
 
@@ -288,7 +289,7 @@ def latest(n: int = 1) -> list[dict]:
             try:
                 conn.logout()
             except Exception:
-                pass
+                _engolida("actions/email_reader.py:291")
 
 
 # ── what the model is told ───────────────────────────────────────────────────

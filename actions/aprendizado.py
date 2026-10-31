@@ -1,5 +1,6 @@
 """Aprendizado contínuo da rotina (opt-in, local). Ver core/aprendizado.py."""
 from core import aprendizado as A
+from core.protecao import engolida as _engolida
 
 
 def aprendizado(parameters: dict, **_kw) -> str:
@@ -22,7 +23,7 @@ def aprendizado(parameters: dict, **_kw) -> str:
         from core import habits
         A.atualizar(habits._load())
     except Exception:
-        pass
+        _engolida("actions/aprendizado.py:25")
     return A.resumo()
 
 

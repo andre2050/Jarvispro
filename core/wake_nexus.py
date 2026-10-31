@@ -32,6 +32,7 @@ import threading
 import time
 import unicodedata
 from typing import Callable
+from core.protecao import engolida as _engolida
 
 SAMPLE_RATE = 16000
 PALAVRA = "nexus"
@@ -245,7 +246,7 @@ class NexusWordDetector:
         try:
             self._queue.put_nowait(None)
         except Exception:
-            pass
+            _engolida("core/wake_nexus.py:248")
         self._modelo = None
         self._ready = False
 
@@ -264,7 +265,7 @@ class NexusWordDetector:
         except queue.Full:
             pass
         except Exception:
-            pass
+            _engolida("core/wake_nexus.py:267")
 
     # -- trabalho em segundo plano -------------------------------------------
     def _transcrever(self, audio) -> str:
@@ -310,5 +311,5 @@ class NexusWordDetector:
             while True:
                 self._queue.get_nowait()
         except Exception:
-            pass
+            _engolida("core/wake_nexus.py:313")
         self._seg = Segmentador()

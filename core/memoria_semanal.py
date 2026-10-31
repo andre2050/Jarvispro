@@ -21,6 +21,7 @@ import time
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 ARQUIVO = Path(__file__).resolve().parent.parent / "memory" / "resumo_semanal.json"
 VERSAO = 1
@@ -150,7 +151,7 @@ def _carregar(arquivo: Path | None = None) -> dict:
         if d.get("versao") == VERSAO and isinstance(d.get("semanas"), list):
             return d
     except Exception:
-        pass
+        _engolida("core/memoria_semanal.py:153")
     return {"versao": VERSAO, "semanas": []}
 
 
@@ -163,7 +164,7 @@ def _salvar(d: dict, arquivo: Path | None = None) -> None:
         tmp.write_text(json.dumps(d, ensure_ascii=False), encoding="utf-8")
         tmp.replace(arq)
     except Exception:
-        pass
+        _engolida("core/memoria_semanal.py:166")
 
 
 def garantir_semana(agora: float | None = None, arquivo: Path | None = None,

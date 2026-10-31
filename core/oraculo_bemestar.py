@@ -28,6 +28,7 @@ import time
 from datetime import date, datetime, timedelta
 
 from core import armazem
+from core.protecao import engolida as _engolida
 
 ARQ = armazem.PASTA_MEMORIA / "bemestar.json"
 AVISO_SAUDE = ("Isto é um plano de rotina baseado nos dados que você deu, não conselho médico. "
@@ -119,7 +120,7 @@ def _habito(palavras: tuple[str, ...], hoje: date) -> dict | None:
                 return {"nome": h["nome"], "meta": float(h.get("meta") or 1), "hoje": float(ult[0]),
                         "dias_sem": next((i for i, v in enumerate(ult) if v), 7)}
     except Exception:
-        pass
+        _engolida("core/oraculo_bemestar.py:122")
     return None
 
 

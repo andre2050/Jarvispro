@@ -7,6 +7,7 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 _CNW: dict = (
     {"creationflags": subprocess.CREATE_NO_WINDOW}
@@ -204,7 +205,7 @@ def _schedule_windows(target_dt: datetime, task_name: str,
     try:
         xml_path.unlink(missing_ok=True)
     except Exception:
-        pass
+        _engolida("actions/reminder.py:207")
 
     if result.returncode != 0:
         script_path.unlink(missing_ok=True)
@@ -416,7 +417,7 @@ def cancelar(task_id: str) -> tuple[bool, str]:
     try:
         (_scripts_dir() / f"{task_id}.py").unlink(missing_ok=True)
     except Exception:
-        pass
+        _engolida("actions/reminder.py:419")
     _registry_save([d for d in items if d["id"] != task_id])
     return True, f"Lembrete cancelado: {item.get('mensagem', '')}"
 

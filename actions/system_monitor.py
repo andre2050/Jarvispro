@@ -7,6 +7,7 @@ import platform
 import time
 
 import psutil
+from core.protecao import engolida as _engolida
 
 _OS = platform.system()  # "Windows" | "Darwin" | "Linux"
 
@@ -77,7 +78,7 @@ def _get_gpu_usage() -> float:
         h = pynvml.nvmlDeviceGetHandleByIndex(0)
         return float(pynvml.nvmlDeviceGetUtilizationRates(h).gpu)
     except Exception:
-        pass
+        _engolida("actions/system_monitor.py:80")
 
     return _nvml_gpu()
 
@@ -94,7 +95,7 @@ def _get_cpu_temp() -> float:
             if entries:
                 return entries[0].current
     except Exception:
-        pass
+        _engolida("actions/system_monitor.py:97")
 
     # Windows: wmi module (pure Python COM, zero subprocess)
     if _OS == "Windows":
@@ -105,7 +106,7 @@ def _get_cpu_temp() -> float:
             if tz:
                 return (tz[0].CurrentTemperature / 10.0) - 273.15
         except Exception:
-            pass
+            _engolida("actions/system_monitor.py:108")
 
     return -1.0
 

@@ -17,6 +17,7 @@ normalised by prefix matching, so "mile" finds "miles" and "kilo" finds
 import json
 import time
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 try:
     import requests
@@ -165,7 +166,7 @@ def _fetch_rates(base: str) -> dict:
                 _save_cache(cache)
                 return rates
         except Exception:
-            pass
+            _engolida("actions/unit_converter.py:168")
 
     if entry:                       # stale but better than nothing
         return entry["rates"]
@@ -179,7 +180,7 @@ def _save_cache(cache: dict) -> None:
             json.dumps(cache, indent=1), encoding="utf-8",
         )
     except Exception:
-        pass
+        _engolida("actions/unit_converter.py:182")
 
 
 def _fmt(value: float) -> str:
@@ -263,7 +264,7 @@ def _log(message: str, player=None) -> None:
         try:
             player.write_log(f"NEXUS: {message}")
         except Exception:
-            pass
+            _engolida("actions/unit_converter.py:266")
 
 
 # ── Tool declaration (auto-discovered by core/action_loader.py) ──────────────

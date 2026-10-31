@@ -9,6 +9,7 @@ salvo nos contatos com o nome exato (preferência ``whatsapp_ligar_confirmar`` =
 from __future__ import annotations
 
 import threading
+from core.protecao import engolida as _engolida
 
 
 def _pref(chave: str, padrao):
@@ -42,13 +43,13 @@ def _executar(nome: str, numero: str, tipo: str, speak=None, player=None) -> str
         try:
             player.write_log(f"SYS: 📞 {msg}")
         except Exception:
-            pass
+            _engolida("actions/ligar_whatsapp.py:45")
     if speak and not (ok and not detalhe):                  # só fala de novo quando algo não saiu perfeito
         try:
             speak(f"[CALL_RESULT] {msg} Tell the user in ONE short sentence, in their language. "
                   "Never say the call started unless this says so. Call no tools.")
         except Exception:
-            pass
+            _engolida("actions/ligar_whatsapp.py:51")
     return msg
 
 

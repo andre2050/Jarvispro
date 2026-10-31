@@ -9,6 +9,7 @@ from __future__ import annotations
 import time
 
 from core import visao_ia as V
+from core.protecao import engolida as _engolida
 
 
 def _imagem(p: dict):
@@ -70,7 +71,7 @@ def visao_ia(parameters: dict, player=None) -> str:
                     try:
                         imgs.append(_imagem(p)[0])
                     except Exception:
-                        pass
+                        _engolida("actions/visao_ia.py:73")
                     time.sleep(0.7)
                 n = V.cadastrar(nome, imgs)
                 if not n:
@@ -103,7 +104,7 @@ def visao_ia(parameters: dict, player=None) -> str:
             if isinstance(e, VL.VisaoIndisponivel):
                 return f"[failed] {e}"
         except Exception:
-            pass
+            _engolida("actions/visao_ia.py:106")
         return f"[failed] A visão falhou: {e}"
     return "Ação desconhecida. Use install, status, objects, people, recognize, enroll, forget ou list."
 

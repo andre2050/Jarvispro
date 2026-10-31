@@ -67,6 +67,32 @@ def anotar(origem: str) -> None:
     registrar_falha(origem, traceback.format_exc())
 
 
+ARQ_MENORES = PASTA / "falhas_menores.log"
+_vistos_menores: dict[str, float] = {}
+
+
+def engolida(origem: str) -> None:
+    """4.6.0 — para os ``except Exception: pass`` antigos: o erro continua sendo ignorado, mas deixa uma linha em
+    memory/falhas_menores.log (arquivo separado, para não afogar as falhas de verdade). Nunca levanta erro;
+    a mesma linha não repete em menos de 60 s."""
+    try:
+        tipo, valor, _ = sys.exc_info()
+        linha = f"{origem} · {getattr(tipo, '__name__', '?')}: {str(valor)[:160]}"
+        t = time.monotonic()
+        if t - _vistos_menores.get(linha, -999) < 60:
+            return
+        if len(_vistos_menores) > 2000:
+            _vistos_menores.clear()
+        _vistos_menores[linha] = t
+        PASTA.mkdir(parents=True, exist_ok=True)
+        antigo = ""
+        if ARQ_MENORES.exists():
+            antigo = ARQ_MENORES.read_text(encoding="utf-8", errors="replace")[-100_000:]
+        ARQ_MENORES.write_text(antigo + f"{_agora()} · {linha}\n", encoding="utf-8")
+    except Exception:
+        pass
+
+
 def _hook(tipo, valor, tb):
     if issubclass(tipo, (KeyboardInterrupt, SystemExit)):
         sys.__excepthook__(tipo, valor, tb)

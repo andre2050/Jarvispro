@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from ._qt import *  # noqa: F401,F403
 from .main_window import MainWindow  # noqa: F401
+from core.protecao import engolida as _engolida
 
 class _RootShim:
     def __init__(self, app: QApplication):
@@ -156,14 +157,14 @@ class NexusUI:
         try:
             self._win.hud.set_audio_level(level)
         except Exception:
-            pass
+            _engolida("ui/app.py:159")
 
     def hud_modulo(self, funcao: str) -> None:
         """Acende no visual Hub o módulo da função usada (thread-safe; só grava números)."""
         try:
             self._win.hud.ativar_modulo(funcao)
         except Exception:
-            pass
+            _engolida("ui/app.py:166")
 
     def glance(self, dx: float, dy: float, hold: float = 1.1) -> None:
         """Ask the avatar to look somewhere for a moment (see HoloAvatar.glance)."""
@@ -171,7 +172,7 @@ class NexusUI:
             if self._avatar is not None:
                 self._avatar.glance(dx, dy, hold)
         except Exception:
-            pass
+            _engolida("ui/app.py:174")
 
     @property
     def ptt_hold(self):
@@ -196,7 +197,7 @@ class NexusUI:
         try:
             self._win.hud.push_visemes(frames, hop, at)
         except Exception:
-            pass
+            _engolida("ui/app.py:199")
 
     def notify_phone_connected(self) -> None:
         self._win.notify_phone_connected()

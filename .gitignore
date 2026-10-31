@@ -180,3 +180,6 @@ memory/presenca.json
 memory/rag_config.json
 config/focus_state.json
 memory/perfil.json
+
+# ── Cópias antigas por versão (até a 4.5.0): ficam no histórico do git (tag arquivo-copias-v4.5.0) ──
+Nexus-v*/

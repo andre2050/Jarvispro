@@ -1,8 +1,10 @@
 """Perfil de ferramentas: 'usa o perfil essencial', 'quantas ferramentas você tem?'. Ver core/carga_ferramentas.py."""
 from core import carga_ferramentas as C
+from core.protecao import engolida as _engolida
 
 _NOMES = {"completo": "completo (todas as ferramentas)", "recentes": "recentes (as essenciais e as que você usa)",
-          "essencial": "essencial (só o básico)"}
+          "essencial": "essencial (só o básico)",
+          "dinamico": "dinâmico (o básico e uma busca que alcança o resto)"}
 
 
 def _decls():
@@ -12,7 +14,7 @@ def _decls():
         if C.REGISTRO is not None:
             out += C.REGISTRO.get_tool_declarations()
     except Exception:
-        pass
+        _engolida("actions/carga_ferramentas.py:16")
     return out
 
 
@@ -45,12 +47,12 @@ def tool_load(parameters: dict, **_kw) -> str:
 TOOL = {
     "name": "tool_load",
     "description": ("Chooses how many tools NEXUS shows the AI each conversation (fewer = faster start and fewer wrong tool picks). "
-                    "action=status (default) | set with mode completo|recentes|essencial | pin / unpin a tool by name. "
+                    "action=status (default) | set with mode completo|recentes|essencial|dinamico | pin / unpin a tool by name. "
                     "Use for 'usa o perfil essencial', 'quantas ferramentas você tem?', 'volta para o perfil completo'. "
                     "Takes effect when the next conversation starts."),
     "parameters": {"type": "OBJECT", "properties": {
         "action": {"type": "STRING", "enum": ["status", "set", "pin", "unpin"]},
-        "mode": {"type": "STRING", "enum": ["completo", "recentes", "essencial"]},
+        "mode": {"type": "STRING", "enum": ["completo", "recentes", "essencial", "dinamico"]},
         "tool": {"type": "STRING"}}},
     "handler": tool_load,
 }

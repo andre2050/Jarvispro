@@ -19,6 +19,7 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdi
 from PyQt6.QtCore import Qt, pyqtSignal
 
 from core import preferences as P
+from core.protecao import engolida as _engolida
 
 def _build_css() -> str:
     """Folha de estilo da janela, montada com as cores do tema ATUAL
@@ -121,7 +122,8 @@ class PreferencesOverlay(QWidget):
         self._section(form, "FERRAMENTAS  (valem na próxima conversa)")
         self._combo(form, "carga_ferramentas", "Ferramentas que o NEXUS mostra à IA",
                     [("completo", "Todas (como sempre foi)"), ("recentes", "As essenciais e as que eu uso"),
-                     ("essencial", "Só o básico (mais rápido)")])
+                     ("essencial", "Só o básico (mais rápido)"),
+                     ("dinamico", "O básico + busca do resto (mais leve, alcança tudo)")])
 
         self._section(form, "ALERTAS E MODOS")
         self._check(form, "quiet_when_busy", "Silenciar notícias e check-ins em reunião ou jogo em tela cheia")
@@ -493,7 +495,7 @@ class PreferencesOverlay(QWidget):
             try:
                 self._assistant._cancel()
             except Exception:
-                pass
+                _engolida("ui/overlays/user_settings.py:497")
         self.hide()
 
     def _apply_profile(self):

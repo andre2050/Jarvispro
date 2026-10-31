@@ -35,6 +35,7 @@ import threading
 import time
 from datetime import datetime
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 try:
     import cv2
@@ -76,7 +77,7 @@ def _indice_configurado() -> int | None:
         if "camera_index" in cfg:
             return int(cfg["camera_index"])
     except Exception:
-        pass
+        _engolida("actions/computer_vision.py:79")
     return None
 
 
@@ -224,7 +225,7 @@ def abrir_camera(largura: int = 1280, altura: int = 720):
                 cap.set(cv2.CAP_PROP_FRAME_WIDTH, largura)
                 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, altura)
             except Exception:
-                pass
+                _engolida("actions/computer_vision.py:227")
             ok, quadro = cap.read()
             if ok and quadro is not None:
                 _cam_boa.update(idx=idx, backend=be)
@@ -312,7 +313,7 @@ def capturar_telas(ocultar=None, forcar: bool = False) -> list:
             try:
                 ocultar(False)
             except Exception:
-                pass
+                _engolida("actions/computer_vision.py:315")
     return telas
 
 
@@ -326,7 +327,7 @@ def _detectores():
         try:
             out.append(cv2.QRCodeDetectorAruco())
         except Exception:
-            pass
+            _engolida("actions/computer_vision.py:329")
     out.append(cv2.QRCodeDetector())
     return out
 
@@ -366,7 +367,7 @@ def ler_qr(frame) -> list[dict]:
                     if t:
                         achados[t] = None if pts is None else (np.asarray(pts).reshape(-1, 2) / escala)
                 except Exception:
-                    pass
+                    _engolida("actions/computer_vision.py:369")
             if achados:
                 return [{"texto": t, "pontos": p} for t, p in achados.items()]
     return []
@@ -386,7 +387,7 @@ def _pasta_cascatas() -> Path:
     try:
         lugares.append(Path(cv2.data.haarcascades))
     except Exception:
-        pass
+        _engolida("actions/computer_vision.py:389")
     base = getattr(sys, "_MEIPASS", None)          # dentro do Nexus.exe
     if base:
         lugares.append(Path(base) / "cv2" / "data")
@@ -667,7 +668,7 @@ class _Vigia:
             try:
                 cap.release()
             except Exception:
-                pass
+                _engolida("actions/computer_vision.py:670")
 
     def _alerta(self, quadro, mascara, fracao: float) -> None:
         hora = datetime.now()
@@ -700,7 +701,7 @@ class _Vigia:
             isa.registrar("sistema", "Vigia: movimento detectado",
                           f"{fracao * 100:.1f}% da imagem mudou", origem="visão")
         except Exception:
-            pass
+            _engolida("actions/computer_vision.py:703")
 
     def _avisar(self, msg: str) -> None:
         print(f"[Vigia] {msg}")
@@ -708,7 +709,7 @@ class _Vigia:
             try:
                 fn(f"SYS: {msg}")
             except Exception:
-                pass
+                _engolida("actions/computer_vision.py:711")
 
 
 _vigia = _Vigia()
@@ -736,7 +737,7 @@ def _notificacao(titulo: str, texto: str) -> None:
             from win10toast import ToastNotifier
             ToastNotifier().show_toast(titulo, texto, duration=8, threaded=False)
         except Exception:
-            pass
+            _engolida("actions/computer_vision.py:739")
     threading.Thread(target=_mostrar, daemon=True).start()
 
 
@@ -880,7 +881,7 @@ def computer_vision_action(parameters: dict, player=None, session_memory=None) -
         try:
             avisar(f"SYS: 👁 {r['msg']}")
         except Exception:
-            pass
+            _engolida("actions/computer_vision.py:883")
     print(f"[ComputerVision] {r['msg']}")
     return r["msg"]
 

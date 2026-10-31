@@ -14,6 +14,7 @@ import json
 import re
 import threading
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 _BASE = Path(__file__).resolve().parent.parent
 CACHE = _BASE / "memory" / "emails_cache"
@@ -100,7 +101,7 @@ def sincronizar(dias: int = 90, maximo: int = 200, cache: Path | None = None, co
             try:
                 conn.logout()
             except Exception:
-                pass
+                _engolida("core/rag_emails.py:103")
         # respeita o teto: mantém só os mais novos
         if len(ind["uids"]) > MAX_EMAILS:
             for uid in sorted(ind["uids"], key=int)[:len(ind["uids"]) - MAX_EMAILS]:

@@ -30,6 +30,7 @@ import types as _pytypes
 import numpy as np
 
 from .common import _pcm_level, agora, asyncio, audio_devices, data_hora  # noqa: F401
+from core.protecao import engolida as _engolida
 
 _TAXA_MIC = 16000
 _BLOCO = 512                      # 32 ms
@@ -82,7 +83,7 @@ def _marca_fala() -> None:
         from core import latencia as _lat
         _lat.marca_primeira_fala()
     except Exception:
-        pass
+        _engolida("assistant/motor_proprio.py:85")
 
 
 class _SemMedir:
@@ -193,7 +194,7 @@ class MotorProprioMixin:
                 from core import roteador_modelos as _RM
                 _RM.roteador.aquecer()          # treina em segundo plano (~0,6 s): o 1º pedido não espera
             except Exception:
-                pass
+                _engolida("assistant/motor_proprio.py:196")
         desc = (f"{ouvido.descricao if ouvido else 'sem microfone'} + "
                 f"{self._proprio_cerebro.descricao()} + {getattr(voz, 'nome', 'voz')}")
         log(f"NEXUS online — motor próprio: {desc}.")
@@ -202,7 +203,7 @@ class MotorProprioMixin:
             _isa.definir("conexao", "motor próprio")
             _isa.definir("modelo", self._proprio_cerebro.descricao())
         except Exception:
-            pass
+            _engolida("assistant/motor_proprio.py:205")
 
         # ── microfone em thread própria ──
         parar_mic = threading.Event()
@@ -261,7 +262,7 @@ class MotorProprioMixin:
                 self._proprio_tocador.parar()
                 self._proprio_tocador.fechar()
             except Exception:
-                pass
+                _engolida("assistant/motor_proprio.py:264")
             self._proprio_tocador = None
             self._reconnect_event.clear()
             self.set_speaking(False)
@@ -342,7 +343,7 @@ class MotorProprioMixin:
                 try:
                     self.ui.set_audio_level(_pcm_level(bloco))
                 except Exception:
-                    pass
+                    _engolida("assistant/motor_proprio.py:345")
                 if not gravando:
                     # ruído da sala: o limiar acompanha o ambiente
                     niveis.append(nivel); niveis = niveis[-60:]
@@ -431,7 +432,7 @@ class MotorProprioMixin:
             if forcado in ("pt", "en"):
                 return forcado
         except Exception:
-            pass
+            _engolida("assistant/motor_proprio.py:434")
         return self._proprio_idioma or "pt"
 
     # ── um pedido ───────────────────────────────────────────────────────────
@@ -477,7 +478,7 @@ class MotorProprioMixin:
                 _isa.registrar("decisao", f"Roteador: {d.rota}", f"{d.motivo} · {d.confianca:.0%}",
                                origem="roteador")
             except Exception:
-                pass
+                _engolida("assistant/motor_proprio.py:480")
             return d
         except Exception:
             return None
@@ -488,7 +489,7 @@ class MotorProprioMixin:
             from core import roteador_modelos as _RM
             _RM.roteador.aprender(texto, rota)
         except Exception:
-            pass
+            _engolida("assistant/motor_proprio.py:491")
 
     async def _proprio_turno(self, texto: str, origem: str, imagens=None) -> None:
         from core import llm_providers as L
@@ -502,7 +503,7 @@ class MotorProprioMixin:
                 _isa.registrar("entrada", texto, "você " + ("falou" if origem == "voz" else "digitou"),
                                origem="voz" if origem == "voz" else "texto")
             except Exception:
-                pass
+                _engolida("assistant/motor_proprio.py:505")
         if self._wake_enabled and not self._awake and origem != "app":
             return
         hist = self._proprio_hist
@@ -611,7 +612,7 @@ class MotorProprioMixin:
                     from core import isa as _isa
                     _isa.registrar_latencia((time.monotonic() - t0) * 1000)
                 except Exception:
-                    pass
+                    _engolida("assistant/motor_proprio.py:614")
             hist.append({"role": "assistant", "content": resp.texto, "tool_calls": resp.chamadas})
 
             if not resp.chamadas:
@@ -628,7 +629,7 @@ class MotorProprioMixin:
                         from core import isa as _isa
                         _isa.registrar("resposta", resp.texto, origem="motor próprio")
                     except Exception:
-                        pass
+                        _engolida("assistant/motor_proprio.py:631")
                     if fala is not None and fala.enfileirou:
                         await asyncio.to_thread(fala.esperar)     # já falou em fluxo
                     else:

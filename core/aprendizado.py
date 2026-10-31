@@ -12,6 +12,7 @@ import math
 import time
 from datetime import datetime
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 ARQUIVO = Path(__file__).resolve().parent.parent / "memory" / "aprendizado.json"
 MEIA_VIDA_S = 30 * 86400
@@ -25,7 +26,7 @@ def _ler(arq=None) -> dict:
         if isinstance(d, dict):
             return d
     except Exception:
-        pass
+        _engolida("core/aprendizado.py:28")
     return {"ligado": False, "contagens": {}, "visto_ate": 0.0, "atualizado": 0.0}
 
 

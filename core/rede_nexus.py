@@ -24,6 +24,7 @@ from pathlib import Path
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from core.protecao import engolida as _engolida
 
 BASE = Path(__file__).resolve().parent.parent
 ARQ_CFG = BASE / "config" / "rede_nexus.json"
@@ -73,7 +74,7 @@ class Rede:
             if isinstance(d, dict):
                 return d
         except Exception:
-            pass
+            _engolida("core/rede_nexus.py:76")
         return {}
 
     def _gravar(self, d: dict) -> None:
@@ -83,7 +84,7 @@ class Rede:
         try:
             os.chmod(tmp, 0o600)
         except Exception:
-            pass
+            _engolida("core/rede_nexus.py:86")
         tmp.replace(self.arq)
 
     def eu(self, nome: str | None = None) -> dict:
@@ -298,7 +299,7 @@ class Rede:
             from core import verificacao as V
             texto = V.embrulhar("rede_nexus", texto)           # o que vem de outro nó é dado, nunca instrução
         except Exception:
-            pass
+            _engolida("core/rede_nexus.py:301")
         return ("" if r.get("ok") else "[failed] ") + texto
 
     def ping(self, peer_id: str) -> bool:
@@ -399,4 +400,4 @@ class Rede:
             from core import auditoria
             auditoria.registrar("sistema", "rede_nexus", o_que, motivo=motivo)
         except Exception:
-            pass
+            _engolida("core/rede_nexus.py:402")

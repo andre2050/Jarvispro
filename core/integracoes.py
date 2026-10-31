@@ -15,6 +15,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
+from core.protecao import engolida as _engolida
 
 NS_TELEGRAM, NS_AGENDA, NS_NOTION = "telegram", "calendario", "notion"
 _TIMEOUT = 20
@@ -152,7 +153,7 @@ def _data(valor: str, params: str, tz_padrao) -> tuple[datetime, bool]:
         try:
             return base.replace(tzinfo=ZoneInfo(tzm.group(1).strip('"'))).astimezone(tz_padrao), False
         except Exception:
-            pass
+            _engolida("core/integracoes.py:155")
     return base.replace(tzinfo=tz_padrao), False
 
 

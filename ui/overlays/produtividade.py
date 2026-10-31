@@ -16,6 +16,7 @@ import time
 from .._qt import *  # noqa: F401,F403
 from .._base import C, FONT_MAIN, qcol  # noqa: F401
 from ..overlays.base import _HudOverlay  # noqa: F401
+from core.protecao import engolida as _engolida
 
 _COR_PRIO = {"alta": lambda: C.RED, "media": lambda: C.ACC, "baixa": lambda: C.TEXT_DIM}
 _ROTULO_PRIO = {"alta": "ALTA", "media": "MÉDIA", "baixa": "BAIXA"}
@@ -352,7 +353,7 @@ class ProdutividadeOverlay(_HudOverlay):
             try:
                 self._log_fn(f"SYS: 🎯 Foco — {acao} {minutos or ''}".strip())
             except Exception:
-                pass
+                _engolida("ui/overlays/produtividade.py:355")
 
     # ── atualização da tela ─────────────────────────────────────────────────
     def _atualizar_tudo(self) -> None:

@@ -17,6 +17,7 @@ import re
 import subprocess
 import time
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 _BASE = Path(__file__).resolve().parent.parent
 ARQ = _BASE / "memory" / "presenca.json"
@@ -90,7 +91,7 @@ def rosto_na_camera(indice: int = 0, abrir=None) -> bool:
         try:
             cap.release()
         except Exception:
-            pass
+            _engolida("core/presenca.py:93")
 
 
 def sensor_atual(cfg: dict | None = None):

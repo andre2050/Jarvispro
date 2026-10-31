@@ -30,6 +30,7 @@ from typing import Callable
 import numpy as np
 
 from core import audio_feat as A
+from core.protecao import engolida as _engolida
 
 _BASE = Path(__file__).resolve().parent.parent
 ARQ_MODELO = _BASE / "memory" / "wake_nexus.npz"
@@ -260,7 +261,7 @@ class CustomWakeDetector:
         try:
             self._queue.put_nowait(None)
         except Exception:
-            pass
+            _engolida("core/wake_custom.py:263")
 
     @property
     def ready(self) -> bool:
@@ -273,7 +274,7 @@ class CustomWakeDetector:
             data = frame_int16[:, 0].copy() if getattr(frame_int16, "ndim", 1) > 1 else frame_int16.copy()
             self._queue.put_nowait(data)
         except Exception:
-            pass
+            _engolida("core/wake_custom.py:276")
 
     def _tratar(self, trecho) -> bool:
         if time.monotonic() - self._ultimo < _COOLDOWN_S:
@@ -306,5 +307,5 @@ class CustomWakeDetector:
             while True:
                 self._queue.get_nowait()
         except Exception:
-            pass
+            _engolida("core/wake_custom.py:309")
         self._seg = A.SegmentadorFala(min_s=0.25, max_s=2.5, silencio_s=0.4)

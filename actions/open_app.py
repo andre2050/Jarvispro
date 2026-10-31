@@ -2,6 +2,7 @@ import time
 import subprocess
 import platform
 import shutil
+from core.protecao import engolida as _engolida
 
 try:
     import psutil
@@ -265,7 +266,7 @@ def suggestions(app_name: str, n: int = 3) -> list[str]:
             try:
                 nomes |= {f.stem.lower() for f in _P(d).glob("*.desktop")}
             except Exception:
-                pass
+                _engolida("actions/open_app.py:268")
     contem = sorted((x for x in nomes if key and key in x), key=len)[:n]
     parecidos = difflib.get_close_matches(key, sorted(nomes), n=n, cutoff=0.6)
     out = []
@@ -328,7 +329,7 @@ def _confirm_later(app_name: str, before: set[str], player=None, wait: float = 8
             from core import isa as _isa
             _isa.registrar("erro", f"Abrir {app_name}: não confirmado", msg, origem="automação")
         except Exception:
-            pass
+            _engolida("actions/open_app.py:331")
 
     threading.Thread(target=_check, daemon=True, name="open-app-check").start()
 
@@ -345,7 +346,7 @@ def _prewarm() -> None:
             _start_menu_shortcuts()
             _store_apps()
         except Exception:
-            pass
+            _engolida("actions/open_app.py:348")
     threading.Thread(target=_go, daemon=True, name="open-app-warm").start()
 
 
@@ -379,7 +380,7 @@ def launch_direct(app_name: str) -> bool:
         from core import preferences as _prefs
         name = (_prefs.get("app_aliases") or {}).get(name.lower(), name)
     except Exception:
-        pass
+        _engolida("actions/open_app.py:382")
     if _is_url(name) or _is_url(_normalize(name)):
         return _open_url(name if _is_url(name) else _normalize(name))
     if _SYSTEM != "Windows":
@@ -490,7 +491,7 @@ def _launch_macos(app_name: str) -> bool:
             time.sleep(1.0)
             return True
     except Exception:
-        pass
+        _engolida("actions/open_app.py:493")
 
     try:
         result = subprocess.run(
@@ -501,7 +502,7 @@ def _launch_macos(app_name: str) -> bool:
             time.sleep(1.0)
             return True
     except Exception:
-        pass
+        _engolida("actions/open_app.py:504")
 
     binary = shutil.which(app_name) or shutil.which(app_name.lower())
     if binary:
@@ -514,7 +515,7 @@ def _launch_macos(app_name: str) -> bool:
             time.sleep(1.0)
             return True
         except Exception:
-            pass
+            _engolida("actions/open_app.py:517")
 
     try:
         import pyautogui
@@ -565,7 +566,7 @@ def _launch_linux(app_name: str) -> bool:
             time.sleep(1.0)
             return True
         except Exception:
-            pass
+            _engolida("actions/open_app.py:568")
 
     try:
         subprocess.run(
@@ -574,7 +575,7 @@ def _launch_linux(app_name: str) -> bool:
         )
         return True
     except Exception:
-        pass
+        _engolida("actions/open_app.py:577")
 
     for desktop_name in [
         app_name.lower(),
@@ -589,7 +590,7 @@ def _launch_linux(app_name: str) -> bool:
             if result.returncode == 0:
                 return True
         except Exception:
-            pass
+            _engolida("actions/open_app.py:592")
 
     return False
 
@@ -611,7 +612,7 @@ def open_app(
         from core import preferences as _prefs
         app_name = (_prefs.get("app_aliases") or {}).get(app_name.lower(), app_name)
     except Exception:
-        pass
+        _engolida("actions/open_app.py:614")
 
     if not app_name:
         return "Não consegui abrir: faltou o nome do programa."

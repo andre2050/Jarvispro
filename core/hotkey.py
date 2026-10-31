@@ -33,6 +33,7 @@ import platform
 import threading
 import time
 from typing import Callable
+from core.protecao import engolida as _engolida
 
 _OS = platform.system()
 
@@ -143,7 +144,7 @@ class PushToTalk:
         try:
             self._on_change(held)
         except Exception:
-            pass          # a listener fault must never kill the watcher
+            _engolida("core/hotkey.py:146")          # a listener fault must never kill the watcher
 
     def _poll_loop(self) -> None:
         import ctypes

@@ -23,6 +23,7 @@ import threading
 import unicodedata
 from datetime import date, datetime
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 _ARQ = Path(__file__).resolve().parent.parent / "memory" / "projetos.json"
 _LOCK = threading.RLock()
@@ -44,7 +45,7 @@ def _carregar() -> dict:
         if isinstance(d, dict) and isinstance(d.get("projetos"), list):
             return d
     except Exception:
-        pass
+        _engolida("actions/projetos.py:47")
     return {"proximo_id": 1, "projetos": []}
 
 
@@ -159,7 +160,7 @@ def projetos(parameters: dict, player=None) -> str:
                 try:
                     player.show_content("PROJETOS", tabela)
                 except Exception:
-                    pass
+                    _engolida("actions/projetos.py:162")
             ativos_ = [p for p in ps if p.get("status") == "ativo"]
             resumo = "; ".join(
                 f"{p['nome']}" + (f" (next: {p['proximo_passo']})" if p.get("proximo_passo") else "")
@@ -237,7 +238,7 @@ def _log(msg: str, player=None) -> None:
         try:
             player.write_log(f"SYS: {msg}")
         except Exception:
-            pass
+            _engolida("actions/projetos.py:240")
 
 
 TOOL = {

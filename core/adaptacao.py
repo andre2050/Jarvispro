@@ -18,6 +18,7 @@ import time
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 ARQUIVO = Path(__file__).resolve().parent.parent / "memory" / "adaptacao.json"
 MIN_SINAIS = 8
@@ -47,7 +48,7 @@ def _ler(arq=None) -> dict:
             base.update(d)
             return base
     except Exception:
-        pass
+        _engolida("core/adaptacao.py:50")
     return _novo()
 
 
@@ -90,7 +91,7 @@ def observar(sinal: str, valor: str = "", agora: float | None = None, arq=None) 
                 d["contagens"][sinal] = d["contagens"].get(sinal, 0) + 1
             _gravar(d, arq)
     except Exception:
-        pass
+        _engolida("core/adaptacao.py:93")
 
 
 def _limpar_pendente(d: dict, agora: float) -> None:

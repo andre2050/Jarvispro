@@ -15,6 +15,7 @@ from __future__ import annotations
 import time
 
 from core import voz_id, wake_custom
+from core.protecao import engolida as _engolida
 
 FRASES_DONO = 8
 CHAMADAS = 10
@@ -28,7 +29,7 @@ def _log(player, msg: str) -> None:
         if player:
             player.write_log(f"SYS: {msg}")
     except Exception:
-        pass
+        _engolida("actions/voz_treino.py:31")
 
 
 def _coletar(n: int, player, rotulo: str, min_s=1.0, max_s=8.0, silencio_s=0.6, tempo=TEMPO_FRASE_S):

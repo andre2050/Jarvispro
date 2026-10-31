@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 ARQUIVO = Path(__file__).resolve().parent.parent / "config" / "guardrails.json"
 ACOES = ("bloquear", "redigir", "avisar")
@@ -115,7 +116,7 @@ def adicionar(regra: dict, arq=None) -> str:
     try:
         lista = json.loads(a.read_text(encoding="utf-8"))
     except Exception:
-        pass
+        _engolida("core/guardrails.py:118")
     if len(lista) >= MAX_REGRAS_USUARIO:
         raise ValueError(f"Já há {MAX_REGRAS_USUARIO} regras suas.")
     if regra.get("acao") not in ACOES or regra.get("onde") not in ("entrada", "saida"):

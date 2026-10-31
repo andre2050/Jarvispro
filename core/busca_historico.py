@@ -16,6 +16,7 @@ import re
 import unicodedata
 from datetime import date, datetime, timedelta
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 RAIZ = Path(__file__).resolve().parent.parent
 PASTA_RELATORIOS = Path.home() / "Documents" / "NEXUS Agente"
@@ -114,7 +115,7 @@ def itens(relatorios: Path | None = None, notas: Path | None = None, diario: Pat
             except Exception:
                 continue
     except Exception:
-        pass
+        _engolida("core/busca_historico.py:117")
     return out
 
 

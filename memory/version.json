@@ -1,8 +1,13 @@
 {
-  "version": "4.5.0",
+  "version": "4.6.0",
   "codename": "Nexus Ultra 2026",
   "released": "2026-10-31",
   "changelog": [
+    {
+      "version": "4.6.0",
+      "date": "2026-10-31",
+      "notes": "MELHORIA: o perfil “dinâmico” (o básico + busca que alcança o resto), a conversa de voz retoma de onde parou quando o motor reinicia, chaves no cofre do sistema (opcional), erros engolidos agora deixam rastro em falhas_menores.log, janela principal dividida em arquivos menores e repositório sem as cópias antigas."
+    },
     {
       "version": "4.5.0",
       "date": "2026-10-31",

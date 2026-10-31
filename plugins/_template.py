@@ -4,6 +4,7 @@ Drop-in NEXUS plugin template.
 Copy this file, rename it (no leading underscore), fill in PLUGIN and run().
 No other file needs to change — NEXUS discovers this automatically at startup.
 """
+from core.protecao import engolida as _engolida
 
 PLUGIN = {
     "name": "my_plugin",                     # snake_case, unique, ^[a-zA-Z_][a-zA-Z0-9_]{0,63}$
@@ -41,5 +42,5 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
         try:
             player.write_log(f"NEXUS: {result_text}")
         except Exception:
-            pass
+            _engolida("plugins/_template.py:44")
     return result_text

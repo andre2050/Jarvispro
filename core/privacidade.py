@@ -13,6 +13,7 @@ import time
 import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 RAIZ = Path(__file__).resolve().parent.parent
 MEM, CFG = RAIZ / "memory", RAIZ / "config"
@@ -161,7 +162,7 @@ def apagar(alvo: str, confirmar: bool = False, catalogo=CATALOGO) -> str:
         from core import cache_respostas
         cache_respostas.limpar()
     except Exception:
-        pass
+        _engolida("core/privacidade.py:164")
     if apagados < len(arqs):
         return f"Apaguei {apagados} de {len(arqs)} arquivo(s) de {nome}; algum está em uso e fica para depois."
     return f"Pronto, apaguei {nome}."

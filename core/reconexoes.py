@@ -13,6 +13,7 @@ import re
 import threading
 import time
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 ARQUIVO = Path(__file__).resolve().parent.parent / "memory" / "reconexoes.log"
 _MAX_LINHAS = 400
@@ -78,7 +79,7 @@ def registrar(evento: str, tipo: str = "", msg: str = "", conectado_s: float | N
             linhas.append(json.dumps(linha, ensure_ascii=False))
             ARQUIVO.write_text("\n".join(linhas) + "\n", encoding="utf-8")
     except Exception:
-        pass
+        _engolida("core/reconexoes.py:81")
 
 
 def ler(ultimas: int = 50) -> list[dict]:

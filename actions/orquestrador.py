@@ -29,6 +29,7 @@ from datetime import datetime
 from pathlib import Path
 
 import importlib
+from core.protecao import engolida as _engolida
 
 _AT = importlib.import_module("actions.agent_task")   # a mesma instância que o carregador registrou
 
@@ -166,7 +167,7 @@ def _aprender(tarefa: str, rota: str) -> None:
         from core import roteador_modelos as RM
         RM.roteador.aprender(tarefa, rota)
     except Exception:
-        pass
+        _engolida("actions/orquestrador.py:169")
 
 
 # ── planejamento ────────────────────────────────────────────────────────────
@@ -442,7 +443,7 @@ def orquestrar(objetivo: str, player=None, speak=None) -> dict:
             try:
                 player.write_log(f"SYS: 🤝 {m}")
             except Exception:
-                pass
+                _engolida("actions/orquestrador.py:445")
 
     from core.equipe_agentes import Quadro
     ctx = {"player": player, "speak": None, "response": None, "session_memory": None, "quadro": Quadro()}
@@ -461,7 +462,7 @@ def orquestrar(objetivo: str, player=None, speak=None) -> dict:
         _isa.registrar("decisao", f"Orquestrador: {len(subs)} subtarefa(s)",
                        ", ".join(f"{s['agente']}" for s in subs), origem="orquestrador")
     except Exception:
-        pass
+        _engolida("actions/orquestrador.py:464")
 
     resultados: dict[str, dict] = {}
     for onda in _ondas(subs):
@@ -496,7 +497,7 @@ def orquestrar(objetivo: str, player=None, speak=None) -> dict:
                   + (f"The full report was saved to {arq}. " if arq else "")
                   + "Tell the user the result now, briefly, in their language. Call no tools.")
         except Exception:
-            pass
+            _engolida("actions/orquestrador.py:499")
     return {"final": final, "resultados": lista, "arquivo": arq, "plano": subs, "revisao": revisao}
 
 
@@ -510,7 +511,7 @@ def _thread(objetivo: str, speak, player) -> None:
                 speak(f"[AGENT_DONE] The team of agents stopped with an error: {e}. "
                       "Tell the user briefly. Call no tools.")
             except Exception:
-                pass
+                _engolida("actions/orquestrador.py:513")
     finally:
         try:
             _ativo.release()

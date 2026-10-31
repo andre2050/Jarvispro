@@ -6,6 +6,7 @@ import time
 from core.pt_time import agora
 from core.pt_time import data_hora
 from datetime import datetime
+from core.protecao import engolida as _engolida
 
 
 class ProactiveEngine:
@@ -44,7 +45,7 @@ class ProactiveEngine:
             if is_quiet_now():
                 return False
         except Exception:
-            pass
+            _engolida("actions/proactive.py:47")
         now = time.monotonic()
         return (
             (now - last_user_speech) >= self.min_silence_secs

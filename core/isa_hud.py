@@ -23,6 +23,7 @@ import random
 from PyQt6.QtCore import QPointF, QRectF, Qt
 from PyQt6.QtGui import (QColor, QFont, QPainter, QPainterPath, QPen,
                          QRadialGradient)
+from core.protecao import engolida as _engolida
 
 TAU = 2.0 * math.pi
 _OURO = QColor(255, 196, 107)
@@ -253,7 +254,7 @@ class IsaHUD:
                 self._last_peak = self._t
             self._rings = [a + dt for a in self._rings if a + dt < 1.5][-6:]
         except Exception:
-            pass
+            _engolida("core/isa_hud.py:256")
 
     # ── desenho ─────────────────────────────────────────────────────────────
 

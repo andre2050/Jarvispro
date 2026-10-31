@@ -11,6 +11,7 @@ import random
 import time
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
+from core.protecao import engolida as _engolida
 
 _ZONES = {
     # EN + PT (o assistente fala com brasileiro, depois normaliza acentos)
@@ -259,7 +260,7 @@ def _log(message: str, player=None) -> None:
         try:
             player.write_log(f"NEXUS: {message}")
         except Exception:
-            pass
+            _engolida("actions/everyday_tools.py:262")
 
 
 TOOL = {

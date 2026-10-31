@@ -13,7 +13,12 @@ def _platform_os() -> str:
 def get_config() -> dict:
     try:
         with open(_CONFIG_PATH, "r", encoding="utf-8") as f:
-            return json.load(f)
+            dados = json.load(f)
+        try:
+            from core.cofre import resolver     # 4.6.0 — "@cofre" vira o valor guardado no cofre do sistema
+            return resolver(dados)
+        except Exception:
+            return dados
     except Exception:
         return {}
 

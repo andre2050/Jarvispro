@@ -25,6 +25,7 @@ from typing import Callable
 
 from core import simulacao as SIM
 from core import missoes_checkpoint as CP
+from core.protecao import engolida as _engolida
 
 PASTA = Path(__file__).resolve().parent.parent / "memory" / "missoes"
 MAX_PASSOS_PLANO = 25
@@ -307,7 +308,7 @@ class Motor:
                         if dica:
                             self.avisar(dica, False)
                     except Exception:
-                        pass
+                        _engolida("core/missoes.py:310")
                 if p:
                     if aprovar:
                         p["estado"] = "aprovado"
@@ -528,7 +529,7 @@ class Motor:
             auditoria.registrar(tipo, ator, o_que, {"detalhe": detalhe}, motivo=m["objetivo"][:120], resultado=resultado,
                                 missao=m["id"])
         except Exception:
-            pass
+            _engolida("core/missoes.py:531")
 
     def rodar_ate_parar(self, mid: str, limite: int = 200) -> str:
         """Roda passos até algo precisar de gente/tempo ou acabar (usado nos testes e pelo laço de fundo)."""

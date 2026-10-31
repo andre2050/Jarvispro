@@ -13,6 +13,7 @@ import time
 import unicodedata
 from collections import deque
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 ARQUIVO = Path(__file__).resolve().parent.parent / "memory" / "grafo.json"
 TIPOS = ("pessoa", "projeto", "compromisso", "preferencia", "nota", "lugar")
@@ -165,7 +166,7 @@ class Grafo:
             if isinstance(d.get("nos"), dict) and isinstance(d.get("arestas"), list):
                 g.nos, g.arestas = d["nos"], [e for e in d["arestas"] if isinstance(e, dict) and {"a", "rel", "b"} <= set(e)]
         except Exception:
-            pass
+            _engolida("core/grafo.py:168")
         return g
 
 

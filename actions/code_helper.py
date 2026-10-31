@@ -19,11 +19,12 @@ MAX_BUILD_ATTEMPTS = 3
 # fallback ladder. Writing a model name here is what left this file hanging
 # forever whenever that one alias was unwell.
 from core import gemini
+from core.protecao import engolida as _engolida
 
 
 def _get_api_key() -> str:
     with open(API_CONFIG_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)["gemini_api_key"]
+        return __import__("core.cofre", fromlist=["resolver"]).resolver(json.load(f))["gemini_api_key"]
 
 
 def _get_gemini(tier: str = gemini.SMART):
@@ -566,7 +567,7 @@ Be specific and actionable. If you see an error message, quote it exactly."""
         try:
             screenshot_path.unlink()
         except Exception:
-            pass
+            _engolida("actions/code_helper.py:569")
 
         if file_path and file_content:
 
@@ -585,7 +586,7 @@ Be specific and actionable. If you see an error message, quote it exactly."""
         try:
             screenshot_path.unlink()
         except Exception:
-            pass
+            _engolida("actions/code_helper.py:588")
         return f"Screen analysis failed: {e}"
 
 

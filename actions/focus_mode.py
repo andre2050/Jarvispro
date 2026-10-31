@@ -23,6 +23,7 @@ import threading
 import time
 from datetime import date
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 _STATE = Path(__file__).resolve().parent.parent / "config" / "focus_state.json"
 _LOCK = threading.Lock()
@@ -112,7 +113,7 @@ def _fechar(apps: list[str], listar=None) -> str:
             p.terminate()                          # pede para fechar; nunca kill forçado
             n += 1
         except Exception:
-            pass
+            _engolida("actions/focus_mode.py:115")
     return f"[done] Pedi para fechar {n} programa(s) de distração."
 
 
@@ -231,7 +232,7 @@ def _log(message: str, player=None) -> None:
         try:
             player.write_log(f"SYS: {message}")
         except Exception:
-            pass
+            _engolida("actions/focus_mode.py:234")
 
 
 TOOL = {

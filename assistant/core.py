@@ -11,6 +11,7 @@ from .tools import ToolsMixin
 from .background import BackgroundMixin
 from .dictation import DictationMixin
 from .motor_proprio import MotorProprioMixin
+from core.protecao import engolida as _engolida
 
 
 class NexusLive(WakeMixin, TypedCommandsMixin, AudioMixin, SessionMixin, ToolsMixin, BackgroundMixin,
@@ -77,7 +78,7 @@ class NexusLive(WakeMixin, TypedCommandsMixin, AudioMixin, SessionMixin, ToolsMi
             self.ui._win.on_live_settings_change = (
                 lambda motivo="speed": self.request_reconnect(keep_context=True, reason=motivo))
         except Exception:
-            pass
+            _engolida("assistant/core.py:80")
         self._reconnect_event: asyncio.Event | None = None
         self._reconnect_keep = True   # False → next rebuild drops the resumption handle
 
@@ -123,7 +124,7 @@ class NexusLive(WakeMixin, TypedCommandsMixin, AudioMixin, SessionMixin, ToolsMi
             from core import carga_ferramentas as _carga
             _carga.REGISTRO = self._action_registry
         except Exception:
-            pass
+            _engolida("assistant/core.py:126")
 
         # Routines run other actions, so they need the registry that was just
         # built. Without this call every "run" answered "routines aren't ready
@@ -187,7 +188,7 @@ class NexusLive(WakeMixin, TypedCommandsMixin, AudioMixin, SessionMixin, ToolsMi
             _isa.registrar("sistema", "Núcleo I.S.A. iniciado",
                            f"{len(self._action_registry.names())} funções prontas", origem="sistema")
         except Exception:
-            pass
+            _engolida("assistant/core.py:190")
         self.ui.get_plugin_settings = self._plugin_registry.settings_schemas  # ⚙ settings tab
         self.ui.request_say = self.plugin_say   # plugins: mid-task speech channel
 

@@ -20,6 +20,7 @@ from pathlib import Path
 import numpy as np
 
 from core import audio_feat as AF
+from core.protecao import engolida as _engolida
 
 ARQ_CALIB = Path(__file__).resolve().parent.parent / "config" / "voz_calibracao.json"
 ESTADOS_CALIB = ("neutro", "cansado", "agitado")
@@ -75,7 +76,7 @@ class Emocao:
             for fala in self.seg.alimentar(bloco):
                 self._fila.append(fala)
         except Exception:
-            pass
+            _engolida("core/voz_emocao.py:78")
 
     def processar(self) -> str | None:
         """Analisa as falas pendentes. Devolve a dica quando o estado muda e passou o cooldown."""

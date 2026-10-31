@@ -31,7 +31,7 @@ for _stream in ("stdout", "stderr"):
         if _s is not None and hasattr(_s, "reconfigure"):
             _s.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
-        pass          # pythonw / redirected pipes / anything exotic — never fatal
+        _s = None          # pythonw / redirected pipes / anything exotic — never fatal
 
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -41,6 +41,7 @@ for _stream in ("stdout", "stderr"):
 # (0,7 s) e o motor é importado na thread do runner, com a janela já na tela.
 import asyncio
 import threading
+from core.protecao import engolida as _engolida
 from ui import NexusUI  # noqa: F401
 
 
@@ -56,7 +57,7 @@ def _esperar_o_antigo_sair() -> bool:
         import psutil
         psutil.Process(int(pid)).wait(timeout=15)
     except Exception:
-        pass
+        _engolida("main.py:59")
     return True
 
 
@@ -80,6 +81,11 @@ def main():
     # 2.3 — erros que antes derrubavam o programa em silêncio agora são gravados e contidos
     from core import protecao
     protecao.instalar()
+    try:
+        from core import cofre as _cofre
+        _cofre.sincronizar()     # 4.6.0 — segredo digitado fora do cofre vai para ele (só se o cofre estiver ligado)
+    except Exception:
+        protecao.anotar("sincronizar o cofre de chaves")
     reinicio = _esperar_o_antigo_sair()
     # 2.4 — uma cópia só: abrir de novo traz a janela que já está aberta
     if protecao.ja_esta_aberto(esperar_s=15 if reinicio else 0):
@@ -90,7 +96,7 @@ def main():
                     None, "O NEXUS já está aberto (veja a barra de tarefas ou a bandeja).",
                     "NEXUS Ultra 2026", 0x40)
             except Exception:
-                pass
+                _engolida("main.py:98")
         return
     aviso_queda = protecao.abrir_sessao()
     ui = NexusUI("face.png")
@@ -99,7 +105,7 @@ def main():
         try:
             ui.write_log("SYS: ⚠ " + aviso_queda)
         except Exception:
-            pass
+            _engolida("main.py:107")
 
     def runner():
         try:
@@ -110,7 +116,7 @@ def main():
                 ui.write_log("ERR: O motor do NEXUS não carregou — veja memory/falhas.log "
                              "(rode 'Instalar o NEXUS (primeira vez).bat' se faltar pacote).")
             except Exception:
-                pass
+                _engolida("main.py:118")
             return
         ui.wait_for_api_key()
         jarvis = NexusLive(ui)
@@ -134,14 +140,20 @@ def main():
                     try:
                         ui.write_log("ERR: O motor caiu várias vezes seguidas — veja memory/falhas.log.")
                     except Exception:
-                        pass
+                        _engolida("main.py:142")
                     return
                 try:
                     ui.write_log("SYS: ⚠ O motor tropeçou e foi reiniciado sozinho.")
                 except Exception:
-                    pass
+                    _engolida("main.py:147")
                 _t.sleep(1.5)
-                jarvis = NexusLive(ui)
+                velho, jarvis = jarvis, NexusLive(ui)
+                try:   # 4.6.0 — o motor novo continua a conversa do que caiu (handle e falas só na memória)
+                    from core.continuidade import herdar
+                    if herdar(velho, jarvis)["handle"]:
+                        ui.write_log("SYS: Retomando a conversa de onde parou.")
+                except Exception:
+                    protecao.anotar("continuidade ao reiniciar o motor")
                 caixa["jarvis"] = jarvis
 
     threading.Thread(target=runner, daemon=True).start()
@@ -171,7 +183,7 @@ def _registrar_erro_ao_abrir() -> None:
                 None, "O NEXUS não conseguiu abrir.\n\nO motivo foi gravado em:\n" + onde +
                 "\n\nMande esse arquivo para quem cuida do NEXUS.", "NEXUS Ultra 2026", 0x10)
     except Exception:
-        pass
+        _engolida("main.py:185")
 
 
 if __name__ == "__main__":

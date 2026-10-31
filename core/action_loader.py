@@ -33,6 +33,7 @@ import traceback
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Optional
+from core.protecao import engolida as _engolida
 
 _NAME_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]{0,63}$")
 _DEFAULT_PARAMS = {"type": "OBJECT", "properties": {}}
@@ -135,7 +136,7 @@ def _guardrail_entrada(nome: str, parametros: dict, ctx: dict | None) -> str:
         if acao == "bloquear":
             return f"[failed] Guardrail “{regra}”: {motivo}. A chamada não foi feita."
     except Exception:
-        pass
+        _engolida("core/action_loader.py:138")
     return ""
 
 
@@ -153,7 +154,7 @@ def _trace(nome: str, ctx: dict | None, ms: float, ok: bool, parametros, resulta
         c = ctx or {}
         trace_local.registrar(nome, str(c.get("ator") or "nexus"), str(c.get("missao") or ""), ms, ok, parametros, str(resultado), extra)
     except Exception:
-        pass
+        _engolida("core/action_loader.py:156")
 
 
 _NAO_AUDITAR = {"memoria_semantica", "resumo_diario", "tarefas", "quick_notes", "perfil", "auditoria"}
@@ -170,7 +171,7 @@ def _auditar(nome: str, parametros: dict, resultado, ctx: dict | None) -> None:
                             motivo=str(c.get("motivo") or ""), modelo=str(c.get("modelo") or ""),
                             resultado=str(resultado)[:200], missao=str(c.get("missao") or ""))
     except Exception:
-        pass
+        _engolida("core/action_loader.py:173")
 
 
 def _call_handler(fn: Callable, parameters: dict, ctx: dict) -> str:

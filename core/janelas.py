@@ -22,6 +22,7 @@ import re
 import sys
 import time
 import unicodedata
+from core.protecao import engolida as _engolida
 
 _OS = platform.system()
 
@@ -79,9 +80,9 @@ def pids_do_nexus() -> set[int]:
                 if _base_exe(f.name()).startswith(("python", "nexus", "pythonw")):
                     out.add(f.pid)
             except Exception:
-                pass
+                _engolida("core/janelas.py:82")
     except Exception:
-        pass
+        _engolida("core/janelas.py:84")
     return out
 
 
@@ -150,7 +151,7 @@ def janelas(pids: set[int] | None = None) -> list[tuple[int, int, str, str]]:
             if buf.value.strip() and cls.value not in _CLASSES_PROTEGIDAS:
                 out.append((int(hwnd), int(pid.value), buf.value, cls.value))
         except Exception:
-            pass
+            _engolida("core/janelas.py:153")
         return True
 
     u.EnumWindows(PROC(_cb), 0)
@@ -217,7 +218,7 @@ def fechar_app(nome: str, forcar: bool = False, espera: float = 5.0) -> str:
             try:
                 p.terminate()                      # SIGTERM: o pedido educado do Unix
             except Exception:
-                pass
+                _engolida("core/janelas.py:220")
         return f"Pedi para fechar {nome} ({len(procs)} processo(s))."
     pids = {p.pid for p in procs}
     alvos = janelas(pids) if pids else []
@@ -236,7 +237,7 @@ def fechar_app(nome: str, forcar: bool = False, espera: float = 5.0) -> str:
         try:
             u.PostMessageW(hwnd, WM_CLOSE, 0, 0)
         except Exception:
-            pass
+            _engolida("core/janelas.py:239")
     fim = time.monotonic() + espera
     restantes = pids
     if alvo != "explorer":
@@ -256,7 +257,7 @@ def fechar_app(nome: str, forcar: bool = False, espera: float = 5.0) -> str:
                 if p.pid in restantes:
                     p.terminate()
             except Exception:
-                pass
+                _engolida("core/janelas.py:259")
         return (f"{nome} não fechou sozinho; encerrei à força "
                 f"(alterações não salvas foram perdidas).")
     ainda = [j[2] for j in janelas(restantes)][:2]
@@ -347,7 +348,7 @@ def limite_da_plataforma() -> str:
                     return ("o macOS ainda não deu a permissão de Acessibilidade ao NEXUS "
                             "(Ajustes › Privacidade e Segurança › Acessibilidade)")
             except Exception:
-                pass
+                _engolida("core/janelas.py:350")
     except Exception:
         return ""
     return ""

@@ -23,6 +23,7 @@ import subprocess
 import sys
 import threading
 import time
+from core.protecao import engolida as _engolida
 
 _URL = re.compile(r"https://[a-z0-9-]+\.trycloudflare\.com")
 DURACAO_PADRAO_H = 4.0
@@ -92,7 +93,7 @@ class Tunel:
                             self.url = m.group(0)
                             achou.set()
                 except Exception:
-                    pass
+                    _engolida("core/tunel.py:95")
                 achou.set()
 
             threading.Thread(target=ler, daemon=True, name="tunel-leitor").start()
@@ -126,7 +127,7 @@ class Tunel:
                 try:
                     p.kill()
                 except Exception:
-                    pass
+                    _engolida("core/tunel.py:129")
         if had and self._ao_mudar:
             self._ao_mudar("")
 

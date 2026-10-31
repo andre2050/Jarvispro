@@ -3,6 +3,7 @@ from core.pt_time import agora
 import json
 import sys
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 def get_base_dir() -> Path:
     if getattr(sys, "frozen", False):
@@ -40,7 +41,8 @@ def load_api_keys() -> dict:
     if not CONFIG_FILE.exists():
         return {}
     try:
-        return json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
+        from core.cofre import resolver
+        return resolver(json.loads(CONFIG_FILE.read_text(encoding="utf-8")))
     except Exception as e:
         print(f"❌ Failed to load api_keys.json: {e}")
         return {}
@@ -309,6 +311,17 @@ def _patch_config(**fields) -> None:
             data = {}
     data.update(fields)
     CONFIG_FILE.write_text(json.dumps(data, indent=4), encoding="utf-8")
+    _sincronizar_cofre()
+
+
+def _sincronizar_cofre() -> None:
+    """4.6.0 — com o cofre ligado, um segredo recém-salvo vai para o cofre (sem cofre ligado, não faz nada)."""
+    try:
+        if "cofre_chaves" in CONFIG_FILE.read_text(encoding="utf-8"):
+            from core.cofre import sincronizar
+            sincronizar(CONFIG_FILE)
+    except Exception:
+        _engolida("memory/config_manager.py:323")
 
 
 def get_input_device() -> str:

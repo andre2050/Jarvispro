@@ -9,6 +9,7 @@ voice, and more than one can run at the same time.
 
 import threading
 import time
+from core.protecao import engolida as _engolida
 
 try:
     import numpy as np
@@ -55,7 +56,7 @@ def _run_timer(name: str, seconds: float, label: str, player=None) -> None:
             try:
                 old["thread"].cancel()             # stop the pending thread
             except Exception:
-                pass
+                _engolida("actions/timer_action.py:58")
         entry = {
             "ends_at":   time.time() + seconds,
             "cancel":    threading.Event(),
@@ -119,7 +120,7 @@ def timer_action(parameters: dict, player=None, session_memory=None) -> str:
                 try:
                     entry["thread"].cancel()
                 except Exception:
-                    pass
+                    _engolida("actions/timer_action.py:122")
                 msg = f"Timer {target} cancelled, sir."
             elif target:
                 msg = f"Sir, there is no timer named {target}."
@@ -129,7 +130,7 @@ def timer_action(parameters: dict, player=None, session_memory=None) -> str:
                     try:
                         v["thread"].cancel()
                     except Exception:
-                        pass
+                        _engolida("actions/timer_action.py:132")
                 _ACTIVE.clear()
                 msg = "All timers cancelled, sir."
             else:
@@ -160,7 +161,7 @@ def timer_action(parameters: dict, player=None, session_memory=None) -> str:
                         try:
                             entry["thread"].cancel()
                         except Exception:
-                            pass
+                            _engolida("actions/timer_action.py:163")
                         t = threading.Timer(remaining, _fire,
                                             args=(name, entry["label"], player))
                         entry["thread"]  = t
@@ -180,7 +181,7 @@ def timer_action(parameters: dict, player=None, session_memory=None) -> str:
                         try:
                             entry["thread"].cancel()
                         except Exception:
-                            pass
+                            _engolida("actions/timer_action.py:183")
                         entry["paused"] = True
                         msg = (f"Timer {name} paused — "
                                f"{_human(entry['remaining'])} left, sir.")
@@ -242,7 +243,7 @@ def _log(message: str, player=None) -> None:
         try:
             player.write_log(f"NEXUS: {message}")
         except Exception:
-            pass
+            _engolida("actions/timer_action.py:245")
 
 
 # ── Tool declaration (auto-discovered by core/action_loader.py) ──────────────

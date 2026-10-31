@@ -1,5 +1,6 @@
 """Voz mais natural: liga/desliga a leitura de emoção na sua voz e a interrupção por voz. Tudo local, desligado por padrão."""
 from memory import config_manager as CM
+from core.protecao import engolida as _engolida
 
 _CHAVES = {"emotion": "voz_emocao", "emocao": "voz_emocao", "interrupt": "voz_interrupcao", "interrupcao": "voz_interrupcao"}
 
@@ -30,7 +31,7 @@ def voz_natural(parameters: dict, **_kw) -> str:
             from core import voz_emocao
             voz_emocao._cache_cfg["t"] = -1e9
         except Exception:
-            pass
+            _engolida("actions/voz_natural.py:33")
         extra = " Teste num ambiente com fone; com caixa de som o eco pode atrapalhar." if chave == "voz_interrupcao" and acao in ("on", "ligar") else ""
         return f"[done] {rec}: {'ligado' if acao in ('on', 'ligar') else 'desligado'}.{extra}"
     return (f"Emoção na voz: {'ligada' if k.get('voz_emocao') else 'desligada'}. "

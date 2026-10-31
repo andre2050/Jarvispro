@@ -31,6 +31,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 CATEGORIAS: list[tuple[str, set[str]]] = [
     ("Imagens", {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".svg", ".ico", ".heic",
@@ -221,19 +222,19 @@ def organizar(modo: str = "tipo", simular: bool = False, alinhar_icones: bool = 
             push_undo(f"organizei a área de trabalho ({len(movidos)} arquivos)",
                       lambda r=reg: desfazer(r))
         except Exception:
-            pass
+            _engolida("core/organizador.py:224")
         try:
             from core import isa
             isa.registrar("resultado", "Área de trabalho organizada",
                           f"{len(movidos)} arquivo(s) — {_resumo_pastas(movidos)}", origem="arquivos")
         except Exception:
-            pass
+            _engolida("core/organizador.py:230")
     if alinhar_icones:
         try:
             from actions.file_controller import arrange_desktop_icons
             arrange_desktop_icons()
         except Exception:
-            pass
+            _engolida("core/organizador.py:236")
 
     if not movidos and not abertos:
         msg = "A área de trabalho já está organizada: não há arquivos soltos para guardar."
@@ -297,12 +298,12 @@ def desfazer(reg: dict | None = None) -> str:
             if p.is_dir() and not any(p.iterdir()):
                 p.rmdir()
         except Exception:
-            pass
+            _engolida("core/organizador.py:300")
     if salvo and salvo.get("quando") == reg.get("quando"):
         try:
             _registro().replace(_registro().with_suffix(".desfeito.json"))
         except Exception:
-            pass
+            _engolida("core/organizador.py:305")
     msg = f"Desfiz a organização: {voltaram} arquivo(s) voltaram para a área de trabalho."
     if faltaram:
         msg += (f" {len(faltaram)} não estavam mais na pasta (você mudou de lugar ou apagou): "

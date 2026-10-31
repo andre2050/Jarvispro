@@ -4,6 +4,7 @@ Mixin of NexusLive (assistant/core.py); methods moved verbatim from main.py."""
 from __future__ import annotations
 
 from .common import _P, asyncio, busy_reason, filter_alerts, list_monitors, load_memory, monitor_allowed, monitor_check_all, time  # noqa: F401
+from core.protecao import engolida as _engolida
 
 
 class BackgroundMixin:
@@ -393,7 +394,7 @@ class BackgroundMixin:
                 if _F.active_reason():
                     return
             except Exception:
-                pass
+                _engolida("assistant/background.py:396")
             asyncio.run_coroutine_threadsafe(self.session.send_client_content(
                 turns={"role": "user", "parts": [{"text": texto}]}, turn_complete=True), self._loop)
         try:
@@ -512,7 +513,7 @@ class BackgroundMixin:
                 if _perfis.silencia_proativo():
                     continue
             except Exception:
-                pass
+                _engolida("assistant/background.py:515")
 
             with self._speaking_lock:
                 speaking = self._is_speaking
@@ -629,7 +630,7 @@ class BackgroundMixin:
                                        "tudo normal" if online else "continuo com rotinas, notas, lembretes e o que é local",
                                        origem="rede")
                     except Exception:
-                        pass
+                        _engolida("assistant/background.py:632")
                     self.ui.write_log("SYS: 📡 A internet voltou." if online else
                                       "SYS: 📡 Sem internet — continuo com o que é local (notas, lembretes, "
                                       "rotinas, aplicativos). Pesquisa e e-mail esperam a conexão.")
@@ -651,7 +652,7 @@ class BackgroundMixin:
                         from core import isa as _isa
                         _isa.registrar("acao", f"Rotina agendada: {nome}", saida[:200], origem="rotina")
                     except Exception:
-                        pass
+                        _engolida("assistant/background.py:654")
                     if self.session and self._awake and not self._is_speaking:
                         try:
                             await self.session.send_client_content(
@@ -729,7 +730,7 @@ class BackgroundMixin:
                 if _perfis.silencia_agua():
                     continue
             except Exception:
-                pass
+                _engolida("assistant/background.py:732")
             if time.monotonic() - self._agua_ultima < max(60, minutes * 60):
                 continue
             with self._speaking_lock:
@@ -765,12 +766,12 @@ class BackgroundMixin:
                 from core import perfis as _perfis
                 quieto = _perfis.silencia_proativo()
             except Exception:
-                pass
+                _engolida("assistant/background.py:768")
         try:                                           # 4.0 — horas em que você nunca usa: aviso espontâneo espera
             from core import adaptacao as _adapt
             quieto = quieto or _adapt.calar_agora()
         except Exception:
-            pass
+            _engolida("assistant/background.py:773")
         if (speaking or quieto or busy_reason() or self._is_quiet_now()
                 or (time.monotonic() - self._last_user_speech) < 15):
             return
@@ -782,7 +783,7 @@ class BackgroundMixin:
                 from core import adaptacao as _adapt
                 _adapt.observar("aviso")
             except Exception:
-                pass
+                _engolida("assistant/background.py:785")
         except Exception as e:
             print(f"[{tag}] ⚠️ aviso não enviado: {e}")
 

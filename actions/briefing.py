@@ -16,6 +16,7 @@ from core.pt_time import agora
 from core.pt_time import data_extensa
 from datetime import datetime
 from urllib.parse import quote_plus
+from core.protecao import engolida as _engolida
 
 
 def fetch_weather(city: str) -> str:
@@ -51,7 +52,7 @@ def gather_context(city: str = None, player=None) -> str:
             recent = "; ".join(str(n.get("text", "")) for n in notes[-3:])
             sections.append(f"NOTES ({len(notes)} pending): {recent}")
     except Exception:
-        pass
+        _engolida("actions/briefing.py:54")
 
     # ── running timers ──
     try:
@@ -68,7 +69,7 @@ def gather_context(city: str = None, player=None) -> str:
                              f"{left // 60} min left)")
             sections.append("TIMERS: " + "; ".join(parts))
     except Exception:
-        pass
+        _engolida("actions/briefing.py:71")
 
     # ── price alerts ──
     try:
@@ -77,7 +78,7 @@ def gather_context(city: str = None, player=None) -> str:
         if s:
             sections.append(s)
     except Exception:
-        pass
+        _engolida("actions/briefing.py:80")
 
     # ── aniversários de hoje (2.2) ──
     try:
@@ -86,7 +87,7 @@ def gather_context(city: str = None, player=None) -> str:
         if nomes:
             sections.append("BIRTHDAYS TODAY: " + ", ".join(nomes))
     except Exception:
-        pass
+        _engolida("actions/briefing.py:89")
 
     # ── hábitos de hoje (2.2) ──
     try:
@@ -97,7 +98,7 @@ def gather_context(city: str = None, player=None) -> str:
         if abertos:
             sections.append("HABITS STILL OPEN TODAY: " + ", ".join(abertos[:5]))
     except Exception:
-        pass
+        _engolida("actions/briefing.py:100")
 
     return "\n".join(sections)
 
@@ -133,7 +134,7 @@ def _log(message: str, player=None) -> None:
         try:
             player.write_log(f"NEXUS: {message}")
         except Exception:
-            pass
+            _engolida("actions/briefing.py:136")
 
 
 # ── Tool declaration (auto-discovered by core/action_loader.py) ──────────────

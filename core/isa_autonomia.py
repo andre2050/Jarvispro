@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 NIVEIS = ("avisar", "seguros")
 DESCANSOS_S = (1800, 7200)           # 1º e 2º descanso de uma tarefa que desistiu
@@ -105,7 +106,7 @@ def _aud(o_que: str, motivo: str) -> None:
         from core import auditoria
         auditoria.registrar("sistema", "isa_autonomia", o_que, motivo=motivo)
     except Exception:
-        pass
+        _engolida("core/isa_autonomia.py:108")
 
 
 def saude() -> tuple[bool, str]:

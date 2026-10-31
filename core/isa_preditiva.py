@@ -22,6 +22,7 @@ import threading
 import time
 
 from core import armazem
+from core.protecao import engolida as _engolida
 
 ARQ = armazem.PASTA_MEMORIA / "isa_series.json"
 AMOSTRA_S = 300
@@ -46,7 +47,7 @@ def medir() -> dict:
         try:
             m["disco_livre_gb"] = round(psutil.disk_usage(str(armazem.PASTA_MEMORIA.anchor or "/")).free / 1e9, 2)
         except Exception:
-            pass
+            _engolida("core/isa_preditiva.py:49")
         eu = psutil.Process()
         m["nexus_mb"] = round(eu.memory_info().rss / 1e6, 1)
         m["threads"] = eu.num_threads()
@@ -54,19 +55,19 @@ def medir() -> dict:
         if bat is not None and not bat.power_plugged:
             m["bateria"] = bat.percent
     except Exception:
-        pass
+        _engolida("core/isa_preditiva.py:57")
     try:
         from core import latencia
         r = latencia.relatorio(10)
         if r.get("fala_mediana_ms"):
             m["resposta_ms"] = r["fala_mediana_ms"]
     except Exception:
-        pass
+        _engolida("core/isa_preditiva.py:64")
     try:
         from core import isa
         m["erros"] = isa.estatisticas()["acoes_erro"]
     except Exception:
-        pass
+        _engolida("core/isa_preditiva.py:69")
     return m
 
 
@@ -187,7 +188,7 @@ def _aplicar_prioridade(modo: str) -> None:
         elif modo == "economia":
             eu.nice(min(19, max(eu.nice(), 5)))                       # Unix: só dá para ficar mais gentil
     except Exception:
-        pass
+        _engolida("core/isa_preditiva.py:190")
 
 
 def definir_modo(modo: str, motivo: str = "", manual: bool = False) -> str:
@@ -204,7 +205,7 @@ def definir_modo(modo: str, motivo: str = "", manual: bool = False) -> str:
         isa.definir("desempenho", modo)
         isa.registrar("sistema", f"Desempenho: {modo}", motivo, origem="isa")
     except Exception:
-        pass
+        _engolida("core/isa_preditiva.py:207")
     return modo
 
 
@@ -237,13 +238,13 @@ def otimizar() -> list[str]:
         n = gc.collect()
         feitos.append(f"memória do NEXUS liberada ({n} objetos)")
     except Exception:
-        pass
+        _engolida("core/isa_preditiva.py:240")
     try:
         from core import cache_respostas
         cache_respostas.limpar()
         feitos.append("cache de respostas limpo")
     except Exception:
-        pass
+        _engolida("core/isa_preditiva.py:246")
     return feitos
 
 
@@ -277,5 +278,5 @@ def passo(agora: float | None = None, ocupado: bool = False, auto: bool = True) 
             from core import isa
             isa.registrar("sistema", "Previsão da I.S.A.", p["texto"], origem="isa")
         except Exception:
-            pass
+            _engolida("core/isa_preditiva.py:280")
     return avisos

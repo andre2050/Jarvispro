@@ -12,6 +12,7 @@ from __future__ import annotations
 from core.pt_time import agora, dia_hora
 
 from datetime import datetime
+from core.protecao import engolida as _engolida
 
 _MAX_SPOKEN = 600
 
@@ -60,7 +61,7 @@ def daily_planner_action(parameters: dict, player=None, session_memory=None) -> 
         from actions import tarefas as _T
         notes = _T.resumo_para_plano() + notes
     except Exception:
-        pass
+        _engolida("actions/daily_planner.py:63")
     if not (notes or facts or focus):
         return ("Sir, I have nothing to plan from yet. Tell me your tasks or ask me to "
                 "take a few notes, and I'll organise them.")
@@ -92,7 +93,7 @@ def daily_planner_action(parameters: dict, player=None, session_memory=None) -> 
         try:
             player.show_content("DAILY PLAN", plan)
         except Exception:
-            pass
+            _engolida("actions/daily_planner.py:95")
     return plan[:_MAX_SPOKEN]
 
 

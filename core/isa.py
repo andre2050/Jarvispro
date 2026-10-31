@@ -35,6 +35,7 @@ import threading
 import time
 from collections import Counter, deque
 from typing import Callable
+from core.protecao import engolida as _engolida
 
 __all__ = ["registrar", "iniciar_acao", "concluir_acao", "eventos", "definir", "status",
            "estatisticas", "em_andamento", "ouvir", "parar_de_ouvir", "limpar", "nome_da_funcao",
@@ -90,7 +91,7 @@ def nome_da_funcao(nome: str) -> str:
         if nome in COMANDOS:
             return COMANDOS[nome][0]
     except Exception:
-        pass
+        _engolida("core/isa.py:93")
     return nome.replace("_", " ").strip().capitalize()
 
 
@@ -145,7 +146,7 @@ def registrar(tipo: str, titulo: str, detalhe: str = "", origem: str = "",
             try:
                 fn(ev)
             except Exception:
-                pass
+                _engolida("core/isa.py:148")
         return ev
     except Exception:
         return {}
@@ -180,7 +181,7 @@ def concluir_acao(tok: dict | None, resultado=None, ok: bool | None = None) -> N
         else:
             registrar("resultado", f"{tok['titulo']} — pronto", texto[:200], origem=tok.get("origem", ""), ms=ms)
     except Exception:
-        pass
+        _engolida("core/isa.py:183")
 
 
 def registrar_latencia(ms: float) -> None:

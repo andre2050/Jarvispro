@@ -5,6 +5,7 @@ from datetime import datetime
 from threading import Lock
 from pathlib import Path
 import sys
+from core.protecao import engolida as _engolida
 
 
 def get_base_dir() -> Path:
@@ -113,7 +114,7 @@ def _trim_to_limit(memory: dict) -> dict:
                 f"({', '.join(dropped[:3])}{'…' if len(dropped) > 3 else ''})"
             )
         except Exception:
-            pass
+            _engolida("memory/memory_manager.py:116")
     return memory
 
 def save_memory(memory: dict) -> None:

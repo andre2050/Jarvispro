@@ -19,6 +19,7 @@ from playwright.async_api import (
     Playwright,
     TimeoutError as PlaywrightTimeout,
 )
+from core.protecao import engolida as _engolida
 _OS = platform.system()   # "Windows" | "Darwin" | "Linux"
 
 def _normalize_url(url: str) -> str:
@@ -188,7 +189,7 @@ def _find_opera_windows() -> Optional[str]:
                 except Exception:
                     continue
     except Exception:
-        pass
+        _engolida("actions/browser_control.py:191")
 
     return shutil.which("opera") or None
 
@@ -211,7 +212,7 @@ def _find_exe_windows(prog_name: str) -> Optional[str]:
                 except Exception:
                     continue
     except Exception:
-        pass
+        _engolida("actions/browser_control.py:214")
     return None
 
 _BROWSER_SPECS: dict[str, dict] = {
@@ -341,7 +342,7 @@ def _detect_default_browser() -> str:
                 if kw in out:
                     return kw
     except Exception:
-        pass
+        _engolida("actions/browser_control.py:344")
     return "chrome"
 
 
@@ -437,7 +438,7 @@ def _open_native(url: str, browser_name: Optional[str]) -> str:
             if webbrowser.open(url):
                 return f"Opened in your default browser: {url}"
         except Exception:
-            pass
+            _engolida("actions/browser_control.py:440")
         return f"Could not open a browser for: {url}"
 
 
@@ -495,12 +496,12 @@ class _BrowserSession:
             try:
                 await self._context.close()
             except Exception:
-                pass
+                _engolida("actions/browser_control.py:498")
         if self._pw:
             try:
                 await self._pw.stop()
             except Exception:
-                pass
+                _engolida("actions/browser_control.py:503")
         self._context = self._page = None
 
     async def _adopt_page(self) -> Page:
@@ -530,7 +531,7 @@ class _BrowserSession:
         try:
             ctx.on("close", _fechou)
         except Exception:
-            pass
+            _engolida("actions/browser_control.py:533")
 
     @property
     def vivo(self) -> bool:
@@ -783,7 +784,7 @@ class _BrowserSession:
                     await loc.first.click(timeout=5_000)
                     return f"Clicked ({role}): '{description}'"
             except Exception:
-                pass
+                _engolida("actions/browser_control.py:786")
         for attempt in (
             lambda: page.get_by_text(description, exact=False).first.click(timeout=5_000),
             lambda: page.get_by_placeholder(description, exact=False).first.click(timeout=5_000),
@@ -796,7 +797,7 @@ class _BrowserSession:
                 await attempt()
                 return f"Clicked: '{description}'"
             except Exception:
-                pass
+                _engolida("actions/browser_control.py:799")
         return f"Could not find element: '{description}'"
 
     async def smart_type(self, description: str, text: str) -> str:
@@ -948,7 +949,7 @@ class _SessionRegistry:
             try:
                 s.close()
             except Exception:
-                pass
+                _engolida("actions/browser_control.py:951")
         return "All browsers closed: " + (", ".join(names) if names else "none")
 
     def list_sessions(self) -> str:

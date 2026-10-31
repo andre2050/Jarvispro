@@ -1,5 +1,31 @@
 # Mudanças
 
+## 4.6.0 — 31/10/2026
+
+### ⚡ Perfil "dinâmico" (`core/carga_ferramentas.py`)
+* Quarto perfil: o modelo recebe o básico (**44 ferramentas, cerca de 9,9 mil tokens**, contra 31,5 mil do completo) mais duas ferramentas, `tool_search` e `tool_call`, que alcançam **todas as outras** sob demanda. A chamada passa pelo mesmo caminho das demais (confirmações, auditoria e proteções valem igual).
+* Ative em Configurações › FERRAMENTAS ou por voz ("usa o perfil dinâmico"). O padrão continua sendo o completo.
+
+### 🔁 Conversa que continua (`core/continuidade.py`)
+* Quando o motor de voz reinicia sozinho (queda de rede, erro), a conversa **retoma de onde parou**: o identificador de retomada do Gemini Live e o resumo das últimas falas passam para o motor novo. O identificador fica só na memória (não vai para o disco).
+
+### 🔐 Cofre de chaves (`core/cofre.py`, `actions/cofre_chaves.py`) — opcional, começa desligado
+* "Guarda minhas chaves no cofre": chaves de API, tokens e senhas saem do `config/api_keys.json` e vão para o cofre do sistema (Gerenciador de Credenciais do Windows, Keychain do macOS, Secret Service no Linux), via `keyring`. No arquivo fica só `@cofre`.
+* Antes de mudar o arquivo, uma cópia é guardada em `config/api_keys.json.antes_do_cofre`. Se um segredo não for confirmado no cofre, ele **continua no arquivo**. "Tira as chaves do cofre" traz tudo de volta e não mexe em nada se faltar algum valor.
+* Os leitores de configuração (`load_api_keys`, `get_config` e as ações que liam a chave direto) resolvem o `@cofre` sozinhos; o backup leva os valores reais. Um segredo novo digitado numa tela é levado ao cofre ao abrir o NEXUS e ao salvar.
+* **Não foi possível testar o cofre real do Windows neste ambiente** — os testes usam um cofre falso. Teste com "chaves no cofre: status" antes de apagar a cópia `.antes_do_cofre`.
+
+### 🪵 Erros engolidos deixam rastro
+* 479 lugares que faziam `except Exception: pass` agora chamam `core.protecao.engolida()`: o programa segue igual, mas uma linha vai para `memory/falhas_menores.log` (arquivo à parte, sem repetir a mesma linha em menos de 60 s). Ficaram de fora a leitura inicial de console em `main.py` e as importações opcionais.
+
+### 🧱 Código mais fácil de mexer
+* `ui/main_window.py` (3.808 linhas) foi dividido em **seis arquivos** `ui/janela_*.py` por assunto (câmera e vídeo, atalhos do sistema, conteúdo e quiz, voz e entrada, painéis, licença e atalhos de teclado); `ui/modern.py` em quatro `ui/modern_*.py`. Sem mudança de comportamento; `ui.modern` continua exportando os mesmos nomes.
+* Repositório sem as 26 pastas `Nexus-vX.Y.Z/` (cerca de 140 MB). Elas continuam no histórico do git (tag `arquivo-copias-v4.5.0`).
+* `isa_core`, `isa_nucleo` e `neural_core` **não** foram unificados: avaliei e não se sobrepõem (relatório da I.S.A., módulos/autonomia e redes neurais de verdade).
+
+### Bom saber
+* 29 testes novos (`tests/test_46_*.py`). Suíte: 1301 passam, 4 ficam de fora por dependerem do sistema; `ruff` limpo.
+
 ## 4.5.0 — 31/10/2026
 
 ### ⚡ Perfil de ferramentas (`core/carga_ferramentas.py`, `actions/carga_ferramentas.py`)

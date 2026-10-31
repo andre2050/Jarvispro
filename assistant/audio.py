@@ -13,6 +13,7 @@ _PARALELAS = frozenset({"open_app", "web_search", "weather_report", "recall_memo
 
 
 import re as _re
+from core.protecao import engolida as _engolida
 
 _VAZOU = _re.compile(r"^(?:function|function_call|tool_code|tool_call)\b[\s:]*", _re.IGNORECASE)
 
@@ -65,11 +66,11 @@ class AudioMixin:
             from core import adaptacao as _adapt
             _adapt.observar("interrompeu")
         except Exception:
-            pass
+            _engolida("assistant/audio.py:68")
         try:   # 1.5 — motor próprio: corta a voz local
             self._proprio_parar_fala()
         except Exception:
-            pass
+            _engolida("assistant/audio.py:72")
         self._interrupted = getattr(self, "_motor_ativo", "gemini_live") != "proprio"
         q = self.audio_in_queue
         if q:
@@ -150,7 +151,7 @@ class AudioMixin:
                     _vid.captura.alimentar(indata)
                     return
             except Exception:
-                pass
+                _engolida("assistant/audio.py:153")
             # ── Wake-word gate ───────────────────────────────────────────────
             # While asleep, the mic audio NEVER goes to Gemini (nothing is
             # streamed, so NEXUS can't respond to speech not addressed to it and
@@ -196,7 +197,7 @@ class AudioMixin:
                         if _int.bloco(indata):
                             loop.call_soon_threadsafe(self.interrupt)
                 except Exception:
-                    pass
+                    _engolida("assistant/audio.py:199")
                 return
 
             # ── Echo tail ────────────────────────────────────────────────────
@@ -229,13 +230,13 @@ class AudioMixin:
                     from core import voz_id as _vid
                     _vid.anel.adicionar(indata)
                 except Exception:
-                    pass
+                    _engolida("assistant/audio.py:232")
                 try:                                    # 3.8: emoção na voz (opt-in; só mede, nada é gravado)
                     from core import voz_emocao as _ve
                     if _ve.emocao_ligada():
                         _ve.tracker.alimentar(indata)
                 except Exception:
-                    pass
+                    _engolida("assistant/audio.py:238")
                 loop.call_soon_threadsafe(
                     self.out_queue.put_nowait,
                     {"data": data, "mime_type": "audio/pcm"}
@@ -246,7 +247,7 @@ class AudioMixin:
                 try:
                     self.ui.set_audio_level(_pcm_level(indata))
                 except Exception:
-                    pass
+                    _engolida("assistant/audio.py:249")
 
         try:
             def _open_mic(dev):
@@ -395,7 +396,7 @@ class AudioMixin:
                                         from core import latencia as _lat       # 3.3
                                         _lat.registrar_total("gemini", (time.monotonic() - self._fala_fim) * 1000)
                                     except Exception:
-                                        pass
+                                        _engolida("assistant/audio.py:398")
                                     self._fala_fim = None
                             if self._turn_done_event and self._turn_done_event.is_set():
                                 self._turn_done_event.clear()
@@ -475,7 +476,7 @@ class AudioMixin:
                                     from core import isa as _isa
                                     _isa.registrar("entrada", full_in, "você falou", origem="voz")
                                 except Exception:
-                                    pass
+                                    _engolida("assistant/audio.py:478")
                                 if self._dashboard:
                                     asyncio.create_task(self._dashboard.broadcast({
                                         "type": "log", "speaker": "user",
@@ -499,7 +500,7 @@ class AudioMixin:
                                     from core import isa as _isa
                                     _isa.registrar("resposta", full_out, origem="gemini")
                                 except Exception:
-                                    pass
+                                    _engolida("assistant/audio.py:502")
                                 if self._dashboard:
                                     asyncio.create_task(self._dashboard.broadcast({
                                         "type": "log", "speaker": "jarvis",
@@ -585,7 +586,7 @@ class AudioMixin:
             print(f"[NEXUS] 🔊 Output latency {self._out_latency*1000:.0f} ms "
                   f"→ echo tail {(self._out_latency + _TAIL_MARGIN)*1000:.0f} ms")
         except Exception:
-            pass
+            _engolida("assistant/audio.py:588")
 
         try:
             while True:
@@ -663,7 +664,7 @@ class AudioMixin:
                         self._out_level = lvl
                         self._echo.note_output(pcm, RECEIVE_SAMPLE_RATE, lvl)
                 except Exception:
-                    pass
+                    _engolida("assistant/audio.py:666")
 
                 try:
                     await asyncio.to_thread(stream.write, bytes(batch))

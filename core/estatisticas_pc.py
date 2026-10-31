@@ -7,6 +7,7 @@ sistema informa. As sugestões são regras simples e explicáveis; nada é fecha
 from __future__ import annotations
 
 import time
+from core.protecao import engolida as _engolida
 
 
 def _gb(b) -> float:
@@ -29,9 +30,9 @@ def coletar(psu=None, agora: float | None = None, top: int = 5) -> dict:
                 u = psu.disk_usage(p.mountpoint)
                 discos.append({"ponto": p.mountpoint, "livre_gb": _gb(u.free), "total_gb": _gb(u.total), "pct": u.percent})
             except Exception:
-                pass
+                _engolida("core/estatisticas_pc.py:32")
     except Exception:
-        pass
+        _engolida("core/estatisticas_pc.py:34")
     d["discos"] = discos[:8]
     try:
         n = psu.net_io_counters()
@@ -64,7 +65,7 @@ def coletar(psu=None, agora: float | None = None, top: int = 5) -> dict:
             e["cpu"] += float(i.get("cpu_percent") or 0)
             e["n"] += 1
     except Exception:
-        pass
+        _engolida("core/estatisticas_pc.py:67")
     d["top_mem"] = sorted(por_nome.values(), key=lambda x: -x["mem_mb"])[:top]
     return d
 

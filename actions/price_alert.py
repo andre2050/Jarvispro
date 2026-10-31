@@ -12,6 +12,7 @@ import json
 import threading
 import time
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 try:
     CONFIG_DIR = Path(__file__).resolve().parent.parent / "memory"
@@ -46,7 +47,7 @@ def _load() -> list:
         if isinstance(data, list):
             return data
     except Exception:
-        pass
+        _engolida("actions/price_alert.py:49")
     return []
 
 
@@ -148,7 +149,7 @@ def _watch_loop() -> None:
         try:
             _check_alerts(_PLAYER)
         except Exception:
-            pass
+            _engolida("actions/price_alert.py:151")
         time.sleep(_CHECK_SECS)
 
 
@@ -352,7 +353,7 @@ def _log(message: str, player=None) -> None:
         try:
             player.write_log(f"NEXUS: {message}")
         except Exception:
-            pass
+            _engolida("actions/price_alert.py:355")
 
 
 # ── Tool declaration (auto-discovered by core/action_loader.py) ──────────────

@@ -26,6 +26,7 @@ from pathlib import Path
 from .._qt import *  # noqa: F401,F403
 from .._base import C, FONT_MAIN  # noqa: F401
 from ..overlays.base import _HudOverlay  # noqa: F401
+from core.protecao import engolida as _engolida
 
 
 def _mb(n: int) -> str:
@@ -393,7 +394,7 @@ class UpdateOverlay(_HudOverlay):
             try:
                 self._log_fn(texto)
             except Exception:
-                pass
+                _engolida("ui/overlays/update.py:396")
 
     def _fechar(self) -> None:
         self.hide()
@@ -421,7 +422,7 @@ def reiniciar_nexus() -> None:
         from core import protecao as _prot
         _prot.fechar_sessao()
     except Exception:
-        pass
+        _engolida("ui/overlays/update.py:424")
     # Depois do quit o laço do Qt para: quem garante a saída é esta thread.
     saida = threading.Timer(1.5, os._exit, args=(0,))
     saida.daemon = False

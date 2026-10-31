@@ -16,6 +16,7 @@ import time
 from pathlib import Path
 
 import numpy as np
+from core.protecao import engolida as _engolida
 
 PASTA = Path(__file__).resolve().parent.parent / "memory"
 ARQ_CSV = PASTA / "metricas.csv"
@@ -84,7 +85,7 @@ def registrar(m: dict) -> None:
             linhas = ARQ_CSV.read_text(encoding="utf-8").splitlines()
             ARQ_CSV.write_text("\n".join([linhas[0]] + linhas[-MAX_LINHAS // 2:]) + "\n", encoding="utf-8")
     except Exception:
-        pass
+        _engolida("core/anomalia.py:87")
 
 
 def ler() -> np.ndarray:

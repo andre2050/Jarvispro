@@ -13,6 +13,7 @@ import re
 import threading
 import time
 from typing import Callable
+from core.protecao import engolida as _engolida
 
 MAX_PASSOS = 25
 MAX_SEGUNDOS = 300
@@ -102,7 +103,7 @@ class Uso:
             from core import auditoria
             auditoria.registrar("acao", "computer_use", o_que, motivo=motivo)
         except Exception:
-            pass
+            _engolida("core/computer_use.py:105")
 
     def rodar(self) -> str:
         inicio = self.relogio()
@@ -163,7 +164,7 @@ def ver_tela_real() -> tuple[bytes, tuple[int, int], str]:
         win = pyautogui.getActiveWindow()
         titulo = (getattr(win, "title", "") or "")
     except Exception:
-        pass
+        _engolida("core/computer_use.py:166")
     return buf.getvalue(), (w, h), titulo
 
 

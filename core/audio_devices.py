@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import threading
 import time
+from core.protecao import engolida as _engolida
 
 # The label shown for "let the OS decide", and the value stored in config for
 # it. Empty string, so an untouched install and a deliberately-default install
@@ -236,7 +237,7 @@ def _usable(idx: int, kind: str) -> bool:
             try:
                 st.stop(); st.close()
             except Exception:
-                pass
+                _engolida("core/audio_devices.py:239")
 
 # Aliases for "the default device" and internal routing endpoints. Matched
 # case-insensitively as substrings against the device name.

@@ -36,6 +36,7 @@ import unicodedata
 from datetime import datetime
 from pathlib import Path
 from typing import Callable
+from core.protecao import engolida as _engolida
 
 NO_WINDOWS = sys.platform.startswith("win")
 
@@ -121,7 +122,7 @@ def janelas_do_bloco() -> list[int]:
             if u.IsWindowVisible(hwnd) and _classe(hwnd) == "Notepad":
                 achadas.append(int(hwnd))
         except Exception:
-            pass
+            _engolida("core/bloco_de_notas.py:124")
         return True
 
     u.EnumWindows(PROTO(_cb), 0)
@@ -142,7 +143,7 @@ def _editor_de(hwnd: int) -> int | None:
             if _classe(h) in _CLASSES_EDITOR:
                 (visiveis if u.IsWindowVisible(h) else ocultos).append(int(h))
         except Exception:
-            pass
+            _engolida("core/bloco_de_notas.py:145")
         return True
 
     u.EnumChildWindows(hwnd, PROTO(_cb), 0)
@@ -194,7 +195,7 @@ class JanelaBlocoDeNotas:
             if frente in janelas:
                 return cls(frente)
         except Exception:
-            pass
+            _engolida("core/bloco_de_notas.py:197")
         return cls(janelas[0])
 
     def _editor(self) -> int | None:
@@ -251,7 +252,7 @@ class JanelaBlocoDeNotas:
         try:
             _user32().SetForegroundWindow(self.hwnd)
         except Exception:
-            pass
+            _engolida("core/bloco_de_notas.py:254")
 
 
 def abrir_no_editor(arquivo: Path) -> None:
@@ -408,7 +409,7 @@ class Ditado:
                     abrir_no_editor(arquivo)
                     self._aberto_no_editor = True
                 except Exception:
-                    pass
+                    _engolida("core/bloco_de_notas.py:411")
             self.ativo = True
             self._inicio = self._ultimo = time.time()
             # Ligado por voz, o NEXUS ainda diz "pode falar" (até o fim desse turno)
@@ -442,7 +443,7 @@ class Ditado:
             try:
                 abrir_no_editor(arquivo)
             except Exception:
-                pass
+                _engolida("core/bloco_de_notas.py:445")
         msg = (f"Ditado terminado: {palavras} palavra(s). Uma cópia ficou salva em "
                f"{arquivo}." if arquivo else "Ditado terminado.")
         self._isa("sistema", "Ditado terminado", f"{palavras} palavra(s) — {arquivo.name if arquivo else ''}")
@@ -577,7 +578,7 @@ class Ditado:
             try:
                 self.janela.apagar_ultimos(entrou)
             except Exception:
-                pass
+                _engolida("core/bloco_de_notas.py:580")
         if self._texto.endswith(texto):
             self._texto = self._texto[: -len(texto)]
         self._salvar_arquivo()
@@ -607,21 +608,21 @@ class Ditado:
             try:
                 self.log(texto)
             except Exception:
-                pass
+                _engolida("core/bloco_de_notas.py:610")
 
     def _isa(self, tipo: str, titulo: str, detalhe: str = "") -> None:
         try:
             from core import isa
             isa.registrar(tipo, titulo, detalhe, origem="ditado")
         except Exception:
-            pass
+            _engolida("core/bloco_de_notas.py:617")
 
     def _avisar_tela(self, ligado: bool) -> None:
         for fn in list(self.ao_mudar):
             try:
                 fn(ligado)
             except Exception:
-                pass
+                _engolida("core/bloco_de_notas.py:624")
 
     def texto(self) -> str:
         return self._texto

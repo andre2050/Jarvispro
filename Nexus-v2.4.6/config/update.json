@@ -1,6 +1,0 @@
-{
-    "_leia": "Repositório do NEXUS Pro no GitHub (usuario/repositorio). O botão ATUALIZAR confere a última release e, sem release, a branch (o memory/version.json de lá diz a versão). branch vazio = a branch principal do repositório. Vazio em github_repo = desligado.",
-    "github_repo": "andre2050/Jarvispro",
-    "asset_contains": "",
-    "branch": ""
-}

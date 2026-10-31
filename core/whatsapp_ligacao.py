@@ -22,6 +22,7 @@ import re
 import sys
 import time
 import unicodedata
+from core.protecao import engolida as _engolida
 
 TIPOS = ("voz", "video")
 
@@ -161,7 +162,7 @@ def _janela_whatsapp(espera: float = 12.0):
             for w in Desktop(backend="uia").windows(title_re=_JANELA.pattern, visible_only=True):
                 return w
         except Exception:
-            pass
+            _engolida("core/whatsapp_ligacao.py:164")
         time.sleep(0.4)
     return None
 
@@ -197,7 +198,7 @@ def _abrir_conversa(nome: str, numero: str) -> tuple[object | None, str]:
     try:
         os.startfile("whatsapp:")                            # type: ignore[attr-defined]
     except Exception:
-        pass
+        _engolida("core/whatsapp_ligacao.py:200")
     janela = _janela_whatsapp()
     if janela is None:
         return None, "a janela do WhatsApp não apareceu"
@@ -223,7 +224,7 @@ def _abrir_conversa(nome: str, numero: str) -> tuple[object | None, str]:
         if not any(_sem_acento(nome) in t for t in textos if t):
             return None, f"não encontrei a conversa de {nome} no WhatsApp"
     except Exception:
-        pass
+        _engolida("core/whatsapp_ligacao.py:226")
     return janela, ""
 
 
@@ -246,7 +247,7 @@ def _clicar_ligar(janela, tipo: str) -> str:
             if j >= 0:
                 itens[j].click_input()
         except Exception:
-            pass
+            _engolida("core/whatsapp_ligacao.py:249")
     return ""
 
 
@@ -265,7 +266,7 @@ def _conferir_chamada(espera: float = 6.0) -> bool:
                 if any(e_botao_encerrar(_nome(b)) for b in _botoes(w)):
                     return True
         except Exception:
-            pass
+            _engolida("core/whatsapp_ligacao.py:268")
         time.sleep(0.5)
     return False
 

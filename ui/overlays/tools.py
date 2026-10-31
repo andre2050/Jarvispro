@@ -10,6 +10,7 @@ from .._qt import *  # noqa: F401,F403
 from .._base import _base_dir  # noqa: F401
 from .._base import C, FONT_MAIN  # noqa: F401
 from ..overlays.base import _HudOverlay  # noqa: F401
+from core.protecao import engolida as _engolida
 
 class VisionOverlay(_HudOverlay):
     """Painel 🤖 VISÃO COMPUTACIONAL (2.4.4; antes 👁 VISÃO, 1.4.2) — tudo no PC, sem internet.
@@ -295,7 +296,7 @@ class VisionOverlay(_HudOverlay):
             try:
                 self._log_fn(f"SYS: 👁 {msg}")
             except Exception:
-                pass
+                _engolida("ui/overlays/tools.py:298")
         self._ajustar()
 
     def _ajustar(self) -> None:
@@ -521,7 +522,7 @@ class VisionOverlay(_HudOverlay):
                     import numpy as np
                     d["jpeg"] = self._jpeg(np.asarray(img.convert("RGB"))[:, :, ::-1].copy())
                 except Exception:
-                    pass
+                    _engolida("ui/overlays/tools.py:524")
             except Exception as e:
                 d["msg"] = f"Não consegui: {e}"
             self._emitir(d)
@@ -673,7 +674,7 @@ class IntelOverlay(_HudOverlay):
             try:
                 self._log_fn("SYS: system intel refreshed")
             except Exception:
-                pass
+                _engolida("ui/overlays/tools.py:676")
 
 
 class ClipOverlay(_HudOverlay):
@@ -762,7 +763,7 @@ class ClipOverlay(_HudOverlay):
             try:
                 self._log_fn("SYS: clipboard history cleared")
             except Exception:
-                pass
+                _engolida("ui/overlays/tools.py:765")
 
     def _copy_back(self, text: str):
         from PyQt6.QtWidgets import QApplication as _QApp
@@ -772,7 +773,7 @@ class ClipOverlay(_HudOverlay):
             try:
                 self._log_fn("SYS: clipboard item restored")
             except Exception:
-                pass
+                _engolida("ui/overlays/tools.py:775")
 
     def _rebuild(self):
         while self._list_host.count():
@@ -1176,7 +1177,7 @@ class NotesOverlay(_HudOverlay):
             _save(notes)
             return
         except Exception:
-            pass
+            _engolida("ui/overlays/tools.py:1179")
         try:
             Path("config/quick_notes.json").parent.mkdir(parents=True,
                                                         exist_ok=True)
@@ -1184,7 +1185,7 @@ class NotesOverlay(_HudOverlay):
                 json.dumps(notes[-200:], indent=1, ensure_ascii=False),
                 encoding="utf-8")
         except Exception:
-            pass
+            _engolida("ui/overlays/tools.py:1187")
 
     def _when(self, at: float) -> str:
         diff = time.time() - at
@@ -1215,7 +1216,7 @@ class NotesOverlay(_HudOverlay):
             try:
                 self._log_fn(f"SYS: 📝 Nota salva — {text[:60]}")
             except Exception:
-                pass
+                _engolida("ui/overlays/tools.py:1218")
         self._rebuild()
 
     def _delete_note(self, idx_newest_first: int):
@@ -1232,7 +1233,7 @@ class NotesOverlay(_HudOverlay):
             try:
                 self._log_fn("SYS: 📝 Todas as notas foram apagadas.")
             except Exception:
-                pass
+                _engolida("ui/overlays/tools.py:1235")
         self._rebuild()
 
     def _rebuild(self):

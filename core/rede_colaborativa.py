@@ -26,6 +26,7 @@ import threading
 import time
 
 from core import armazem
+from core.protecao import engolida as _engolida
 
 PORTA = 47474
 MAX_BYTES = 16_000
@@ -177,7 +178,7 @@ def _ouvir() -> None:
                 isa.registrar("sistema", "Rede colaborativa", f"aprendi {n} par(es) falha→remédio de outro NEXUS",
                               origem="isa")
             except Exception:
-                pass
+                _engolida("core/rede_colaborativa.py:180")
     with _trava:
         _estado["rodando"] = False
 

@@ -17,6 +17,7 @@ import sys
 import time
 import zipfile
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 CONFIG_FILE = BASE_DIR / "config" / "api_keys.json"
@@ -50,7 +51,7 @@ def app_version() -> str:
         data = _json.loads((MEMORY_DIR / "version.json").read_text(encoding="utf-8"))
         return str(data.get("version") or "desconhecida")
     except Exception:
-        pass
+        _engolida("core/settings_tools.py:53")
     try:
         return VERSION_FILE.read_text(encoding="utf-8").strip() or "desconhecida"
     except Exception:
@@ -59,7 +60,8 @@ def app_version() -> str:
 
 def _read_config() -> dict:
     try:
-        return json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
+        from core.cofre import resolver
+        return resolver(json.loads(CONFIG_FILE.read_text(encoding="utf-8")))
     except Exception:
         return {}
 
@@ -242,7 +244,11 @@ def create_backup(dest: str | Path) -> Path:
         raise FileNotFoundError("nada para copiar (config e memória não encontradas)")
     with zipfile.ZipFile(dest, "w", zipfile.ZIP_DEFLATED) as zf:
         for path, arc in members:
-            zf.write(path, arc)
+            if path == CONFIG_FILE:
+                # 4.6.0 — com o cofre ligado o arquivo só tem "@cofre"; o backup leva os valores reais
+                zf.writestr(arc, json.dumps(_read_config(), indent=4, ensure_ascii=False))
+            else:
+                zf.write(path, arc)
         zf.writestr("backup_info.json", json.dumps({
             "app": "NEXUS", "version": app_version(),
             "created": time.strftime("%Y-%m-%d %H:%M:%S"),

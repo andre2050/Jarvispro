@@ -15,6 +15,7 @@ carries a short excerpt plus the file path.
 import re
 import time
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 _OUTPUT_DIR = Path(__file__).resolve().parent.parent / "memory" / "llm_outputs"
 _MAX_VOICE_CHARS = 600
@@ -200,7 +201,7 @@ def _log(message: str, player=None) -> None:
         try:
             player.write_log(f"NEXUS: {message}")
         except Exception:
-            pass
+            _engolida("actions/llm_brain.py:203")
 
 
 # ── Tool declaration (auto-discovered by core/action_loader.py) ──────────────

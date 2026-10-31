@@ -14,6 +14,7 @@ import html
 import re
 import webbrowser
 from urllib.parse import quote_plus
+from core.protecao import engolida as _engolida
 
 _BASE = "https://news.google.com/rss"
 _REGIAO = "hl=pt-BR&gl=BR&ceid=BR:pt-419"
@@ -101,7 +102,7 @@ def noticias(parameters: dict, player=None) -> str:
                            else f"{i}. {x['titulo']} — *{x['fonte']}*" for i, x in enumerate(itens, 1))
             player.show_content("NOTÍCIAS" + (f" — {assunto.upper()}" if assunto else ""), md)
         except Exception:
-            pass
+            _engolida("actions/noticias.py:104")
     corpo = " | ".join(f"{i}. {x['titulo']}" + (f" ({x['fonte']})" if x["fonte"] else "")
                        for i, x in enumerate(itens, 1))
     return (f"{len(itens)} manchete(s)" + (f" sobre {assunto}" if assunto else " do dia") + f": {corpo}. "

@@ -8,6 +8,7 @@ from core.pt_time import agora
 
 import json
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 _FILE = Path(__file__).resolve().parent.parent / "memory" / "audit.log"
 MAX_BYTES = 2 * 1024 * 1024
@@ -38,7 +39,7 @@ def record(tool: str, args: dict, result, ms: int | None = None) -> None:
         with _FILE.open("a", encoding="utf-8") as f:
             f.write(json.dumps(linha, ensure_ascii=False) + "\n")
     except Exception:
-        pass   # auditing must never break a tool call
+        _engolida("core/audit.py:41")   # auditing must never break a tool call
 
 
 def ler(arquivo: Path | None = None, limite: int = 5000) -> list[dict]:

@@ -70,6 +70,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from core import forge_android as AND
+from core.protecao import engolida as _engolida
 
 try:
     import anthropic
@@ -504,7 +505,7 @@ class NexusForge:
             if self.pasta.resolve() in apk.parents and apk.is_file():
                 return apk
         except Exception:
-            pass
+            _engolida("core/forge_engine.py:507")
         return None
 
     def entregar_apk(self) -> Optional[Path]:
@@ -672,7 +673,7 @@ class NexusForge:
                 linhas.append(f"- **{p.get('gravidade')}** `{p.get('arquivo', '')}`: {p.get('descricao')}")
             (self.pasta / ".forge" / "revisao.md").write_text("\n".join(linhas), encoding="utf-8")
         except Exception:
-            pass
+            _engolida("core/forge_engine.py:675")
 
     # ------------------------------------------------------------ agente (loop de ferramentas)
     def _agente(self, sistema, inicio, modelo, tools, final, max_passos=MAX_PASSOS) -> dict:
@@ -1031,7 +1032,7 @@ class NexusForge:
                 self.pasta = p
                 self.plano = json.loads((p / ".forge" / "plano.json").read_text(encoding="utf-8"))
         except Exception:
-            pass
+            _engolida("core/forge_engine.py:1034")
 
     def _projetos(self):
         return sorted(d for d in self.raiz.iterdir() if (d / ".forge" / "plano.json").exists())
@@ -1081,7 +1082,7 @@ class NexusForge:
             with open(self.pasta / ".forge" / "trace.jsonl", "a", encoding="utf-8") as f:
                 f.write(json.dumps(linha, ensure_ascii=False, default=str)[:3000] + "\n")
         except Exception:
-            pass
+            _engolida("core/forge_engine.py:1084")
 
     def _historico(self, tipo: str, texto: str):
         try:
@@ -1089,7 +1090,7 @@ class NexusForge:
                 f.write(json.dumps({"t": time.strftime("%Y-%m-%d %H:%M"), "tipo": tipo, "texto": texto[:500]},
                                    ensure_ascii=False) + "\n")
         except Exception:
-            pass
+            _engolida("core/forge_engine.py:1092")
 
     def _ler_historico(self, n: int) -> str:
         try:
@@ -1114,7 +1115,7 @@ class NexusForge:
             prefs["projetos_criados"] = prefs.get("projetos_criados", 0) + 1
             (CONFIG_DIR / "prefs.json").write_text(json.dumps(prefs, ensure_ascii=False), encoding="utf-8")
         except Exception:
-            pass
+            _engolida("core/forge_engine.py:1117")
 
     def _uso_arquivo(self) -> Path:
         return self.raiz / ".uso.json"
@@ -1137,7 +1138,7 @@ class NexusForge:
             dados = {hoje: dados.get(hoje, 0) + usados}
             self._uso_arquivo().write_text(json.dumps(dados), encoding="utf-8")
         except Exception:
-            pass
+            _engolida("core/forge_engine.py:1140")
 
     def _checar_orcamento(self):
         if self.tokens_missao > LIMITE_MISSAO:
@@ -1165,7 +1166,7 @@ class NexusForge:
             if chave:
                 return chave, "anthropic_api_key em config/api_keys.json"
         except Exception:
-            pass
+            _engolida("core/forge_engine.py:1168")
         chave = (os.environ.get("ANTHROPIC_API_KEY") or "").strip()
         if chave:
             return chave, "variável de ambiente ANTHROPIC_API_KEY"

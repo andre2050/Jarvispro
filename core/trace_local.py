@@ -13,6 +13,7 @@ import time
 from pathlib import Path
 
 from core.auditoria import _VALOR_SEGREDO, _enxugar
+from core.protecao import engolida as _engolida
 
 ARQUIVO = Path(__file__).resolve().parent.parent / "memory" / "trace.jsonl"
 MAX_LINHAS = 5000
@@ -36,7 +37,7 @@ def registrar(nome: str, ator: str = "", missao: str = "", dur_ms: float = 0.0, 
             if _n % 200 == 0:
                 _aparar(a)
     except Exception:
-        pass
+        _engolida("core/trace_local.py:39")
 
 
 def _aparar(a: Path, maximo: int = MAX_LINHAS) -> None:
@@ -45,7 +46,7 @@ def _aparar(a: Path, maximo: int = MAX_LINHAS) -> None:
         if len(ls) > maximo:
             a.write_text("\n".join(ls[-maximo:]) + "\n", encoding="utf-8")
     except Exception:
-        pass
+        _engolida("core/trace_local.py:48")
 
 
 def ler(arq=None) -> list[dict]:

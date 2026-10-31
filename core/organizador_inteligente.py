@@ -15,6 +15,7 @@ import time
 from pathlib import Path
 
 from core import organizador as O
+from core.protecao import engolida as _engolida
 
 ARQ_REGRAS = Path(__file__).resolve().parent.parent / "config" / "regras_organizacao.json"
 ARQ_REG = Path(__file__).resolve().parent.parent / "memory" / "organizacao_inteligente.json"
@@ -175,6 +176,6 @@ def desfazer(registro=None) -> str:
             if pp.is_dir() and not any(pp.iterdir()):
                 pp.rmdir()
         except Exception:
-            pass
+            _engolida("core/organizador_inteligente.py:178")
     _g(arq, reg)
     return f"Voltaram {ok} arquivo(s)." + (f" {falta} não foram achados." if falta else "")

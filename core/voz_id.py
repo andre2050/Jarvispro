@@ -30,6 +30,7 @@ from pathlib import Path
 import numpy as np
 
 from core import audio_feat as A
+from core.protecao import engolida as _engolida
 
 _BASE = Path(__file__).resolve().parent.parent
 ARQ_MODELO = _BASE / "memory" / "voz_dono.npz"
@@ -223,7 +224,7 @@ def config() -> dict:
     try:
         d.update({k: v for k, v in json.loads(ARQ_CONFIG.read_text(encoding="utf-8")).items() if k in d})
     except Exception:
-        pass
+        _engolida("core/voz_id.py:226")
     if d["rigor"] not in RIGOR:
         d["rigor"] = "normal"
     return d

@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
+from core.protecao import engolida as _engolida
 
 # ── O que é cada área (texto curto, para tela e para voz) ───────────────────
 
@@ -407,7 +408,7 @@ def como_aprendo() -> str:
                           f"e acerta {_pct(st.get('val_acc'))} nos testes"
                           + (f", sendo {_n(st['user_examples'])} seus." if st.get("user_examples") else "."))
     except Exception:
-        pass
+        _engolida("core/ia_status.py:410")
     partes.append("Tudo isso fica no seu computador.")
     return " ".join(partes)
 

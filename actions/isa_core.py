@@ -5,6 +5,7 @@
 (core/isa.py) e conta o que entendeu, o que decidiu e o que executou.
 """
 from __future__ import annotations
+from core.protecao import engolida as _engolida
 
 
 def _estado_modulos() -> str:
@@ -18,7 +19,7 @@ def _estado_modulos() -> str:
         from core.intent_net import brain
         partes.append("rede neural local: " + ("pronta" if brain.ready else "treinando ou desligada"))
     except Exception:
-        pass
+        _engolida("actions/isa_core.py:21")
     if st.get("funcoes") is not None:
         partes.append(f"{st['funcoes']} funções de automação")
     if st.get("plugins"):
@@ -30,7 +31,7 @@ def _estado_modulos() -> str:
             liberados = sum(1 for v in perms.values() if v)
             partes.append(f"permissões do atuador: {liberados} de {len(perms)} grupos liberados")
     except Exception:
-        pass
+        _engolida("actions/isa_core.py:33")
     n = isa.em_andamento()
     if n:
         partes.append(f"{n} ação(ões) rodando agora")
@@ -118,7 +119,7 @@ def isa_core(parameters: dict, player=None) -> str:
         from core import autoregeneracao as AR
         estado += f" Desempenho: {IP.modo()}. " + AR.resumo_texto()
     except Exception:
-        pass
+        _engolida("actions/isa_core.py:121")
     return f"{texto} Módulos: {estado}" if estado else texto
 
 

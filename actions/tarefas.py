@@ -22,6 +22,7 @@ import time
 import unicodedata
 from datetime import date, datetime, timedelta
 from pathlib import Path
+from core.protecao import engolida as _engolida
 
 _ARQ = Path(__file__).resolve().parent.parent / "memory" / "tarefas.json"
 _LOCK = threading.RLock()
@@ -309,7 +310,7 @@ def _log(msg: str, player=None) -> None:
         try:
             player.write_log(f"SYS: {msg}")
         except Exception:
-            pass
+            _engolida("actions/tarefas.py:312")
 
 
 TOOL = {
