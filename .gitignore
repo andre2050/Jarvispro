@@ -181,5 +181,5 @@ memory/rag_config.json
 config/focus_state.json
 memory/perfil.json
 
-# ── Cópias antigas por versão (até a 4.5.0): ficam no histórico do git (tag arquivo-copias-v4.5.0) ──
+# ── Cópias antigas por versão (até a 4.5.0): ficam no histórico do git (commit b88b0b6, o da 4.5.0) ──
 Nexus-v*/

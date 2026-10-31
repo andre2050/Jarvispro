@@ -20,7 +20,7 @@
 
 ### 🧱 Código mais fácil de mexer
 * `ui/main_window.py` (3.808 linhas) foi dividido em **seis arquivos** `ui/janela_*.py` por assunto (câmera e vídeo, atalhos do sistema, conteúdo e quiz, voz e entrada, painéis, licença e atalhos de teclado); `ui/modern.py` em quatro `ui/modern_*.py`. Sem mudança de comportamento; `ui.modern` continua exportando os mesmos nomes.
-* Repositório sem as 26 pastas `Nexus-vX.Y.Z/` (cerca de 140 MB). Elas continuam no histórico do git (tag `arquivo-copias-v4.5.0`).
+* Repositório sem as 26 pastas `Nexus-vX.Y.Z/` (cerca de 140 MB). Elas continuam no histórico do git (commit `b88b0b6`, o da 4.5.0).
 * `isa_core`, `isa_nucleo` e `neural_core` **não** foram unificados: avaliei e não se sobrepõem (relatório da I.S.A., módulos/autonomia e redes neurais de verdade).
 
 ### Bom saber
